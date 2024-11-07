@@ -25,11 +25,11 @@ class AdminSeeder extends Seeder
         ];
             
             foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
 
 
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
 
         $adminRole->syncPermissions(Permission::all());
 
@@ -39,9 +39,9 @@ class AdminSeeder extends Seeder
                 'first_name' => 'Admin',
                 'last_name' => 'Admin',
                 'password' => Hash::make('password'),
-            ]
+            ], 
         );
-
+         
         $admin->assignRole($adminRole);
 
 

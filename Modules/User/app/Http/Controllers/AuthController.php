@@ -2,6 +2,7 @@
 
 namespace Modules\User\Http\Controllers;
 
+use App\Http\Controllers\Contract\ApiController;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Modules\User\Http\Requests\Auth\Loginrequest;
 use Modules\User\Models\User;
 
-class AuthController extends Controller
+class AuthController extends ApiController
 {
     public function login (Loginrequest $request)
     {
@@ -50,7 +51,7 @@ class AuthController extends Controller
             //     ])
             // ->log('کار با ایمیل و پسورد وارد شد'); 
 
-        return response()->json(['msg' => 'کاربر با موفقیت ورود کرد', 'user' => $user, 'token' => $token]);
+        return $this->respondSuccess('کاربر ورود پیدا کرد', ['user' => $user, 'token' => $token]);
     } 
     public function logout(Request $request)
     {
@@ -69,8 +70,7 @@ class AuthController extends Controller
             //     ])
             // ->log('کاربر از حساب کاربری خود خارج شد'); 
 
-            
-            return response()->json(['msg' => 'کاربر از حساب کاربری خود خارج شد', 'user' => $user]);
+            return $this->respondSuccess('کاربر از حساب  خود خارج شد', ['user' => $user]);            
         } catch (\Exception $e) {
             // Log::error('User logout failed', ['error' => $e->getMessage(), 'user' => $request->user()]);
             return response()->json(['msg' => 'مشکلی در خروج کاربر به وجود امد']);
