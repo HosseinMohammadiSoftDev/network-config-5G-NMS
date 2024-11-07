@@ -16,7 +16,7 @@ use Modules\User\Http\Controllers\UserController;
  *
 */
 
-Route::prefix('Auth')->group(function () {
-    Route::post('login', [AuthController::class, 'login']);
-    Route::post('logout', [AuthController::class, 'logout']);
-});
+
+Route::post('login', [AuthController::class, 'login']);
+Route::post('logout', [AuthController::class, 'logout']);
+

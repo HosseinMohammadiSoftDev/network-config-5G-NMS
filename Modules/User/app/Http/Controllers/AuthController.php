@@ -3,11 +3,12 @@
 namespace Modules\User\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Modules\User\Http\Requests\Auth\Loginrequest;
+use Modules\User\Models\User;
 
 class AuthController extends Controller
 {
@@ -15,7 +16,7 @@ class AuthController extends Controller
     {
         $credentials = $request->validated();
 
-        $user = User::where('email', $credentials['email'])->first();
+        $user = User::where('auth_name', $credentials['auth_name'])->first();
 
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
             
