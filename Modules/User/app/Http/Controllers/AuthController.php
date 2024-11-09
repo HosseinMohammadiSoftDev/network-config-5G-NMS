@@ -21,17 +21,18 @@ class AuthController extends ApiController
 
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
             
-            // activity('login')
-            //     ->causedBy(Auth::user())
-            //     ->event('login')
-            //     ->withProperties([
-            //         'code' => '5',
-            //         'route' => request()->fullUrl(),
-            //         'method' => 'login',
-            //         'email' => $credentials['email'],
-            //         'password' => $credentials['password']
-            //     ])
-            // ->log('کاربر زمان ورود ایمیل یا کلمه عبور اشتباه وارد کرده است'); 
+            activity('auth-name-or-passord-wrong')
+                ->causedBy(Auth::user())
+                ->event('login')
+                ->withProperties([
+                    'tag' => 'app',
+                    'code' => '5',
+                    'route' => request()->fullUrl(),
+                    'method' => 'login',
+                    'auth-name' => $credentials['auth_name'],
+                    'password' => $credentials['password']
+                ])
+            ->log('کاربر زمان ورود ایمیل یا کلمه عبور اشتباه وارد کرده است'); 
 
             return response()->json(['msg' => 'نام کاربری یا رمز عبور را اشتباه وارد کردید'], 422);
         }
@@ -40,16 +41,16 @@ class AuthController extends ApiController
         $user->tokens()->delete();
         $token = $user->createToken('apiToken')->plainTextToken;
 
-            // activity('email-or-passord-wrong')
-            //     ->causedBy(Auth::user())
-            //     ->event('login')
-            //     ->withProperties([
-            //         'route' => request()->fullUrl(),
-            //         'method' => 'login',
-            //         'user' => $user,
-            //         'token' => $token,
-            //     ])
-            // ->log('کار با ایمیل و پسورد وارد شد'); 
+            activity('login')
+                ->causedBy(Auth::user())
+                ->event('login')
+                ->withProperties([
+                    'route' => request()->fullUrl(),
+                    'method' => 'login',
+                    'user' => $user,
+                    'token' => $token,
+                ])
+            ->log('کار با نام کاربری و پسورد وارد شد'); 
 
         return $this->respondSuccess('کاربر ورود پیدا کرد', ['user' => $user, 'token' => $token]);
     } 
@@ -60,19 +61,29 @@ class AuthController extends ApiController
             $user = $request->user();
             $user->tokens()->delete();
 
-            // activity('logout')
-            //     ->causedBy(Auth::user())
-            //     ->event('louot')
-            //     ->withProperties([
-            //         'route' => request()->fullUrl(),
-            //         'method' => 'login',
-            //         'user' => $user
-            //     ])
-            // ->log('کاربر از حساب کاربری خود خارج شد'); 
+            activity('logout')
+                ->causedBy(Auth::user())
+                ->event('logout')
+                ->withProperties([
+                    'route' => request()->fullUrl(),
+                    'method' => 'logout',
+                    'user' => $user
+                ])
+            ->log('کاربر از حساب کاربری خود خارج شد'); 
 
             return $this->respondSuccess('کاربر از حساب  خود خارج شد', ['user' => $user]);            
         } catch (\Exception $e) {
-            // Log::error('User logout failed', ['error' => $e->getMessage(), 'user' => $request->user()]);
+
+            activity('logout')
+                ->causedBy(Auth::user())
+                ->event('logout')
+                ->withProperties([
+                    'route' => request()->fullUrl(),
+                    'method' => 'logout',
+                    'error' => $e->getMessage()
+                ])
+            ->log('مشکلی در خروج کاربر رخ داد'); 
+
             return response()->json(['msg' => 'مشکلی در خروج کاربر به وجود امد']);
         }
     }
