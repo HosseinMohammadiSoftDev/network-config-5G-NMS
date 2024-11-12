@@ -4,9 +4,9 @@ namespace Modules\Server\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-// use Modules\Server\Database\Factories\ServerFactory;
+// use Modules\Server\Database\Factories\ServiceFactory;
 
-class Server extends Model
+class Service extends Model
 {
     use HasFactory;
 
@@ -14,14 +14,9 @@ class Server extends Model
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        'name',
-        'ip',
-        'is_down',
+        'name', 
+        'server_id',
         'config'
     ];
 
-    // protected static function newFactory(): ServerFactory
-    // {
-    //     // return ServerFactory::new();
-    // }
 }

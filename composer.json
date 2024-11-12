@@ -9,6 +9,7 @@
         "laravel/framework": "^11.9",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
+        "mustangostang/spyc": "^0.6.3",
         "nwidart/laravel-modules": "^11.1",
         "spatie/laravel-activitylog": "^4.9",
         "spatie/laravel-permission": "^6.10",

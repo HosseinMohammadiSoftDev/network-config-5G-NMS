@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('servers', function (Blueprint $table) {
+        Schema::create('modules', function (Blueprint $table) {
             $table->id();
             
             $table->string('name')->unique();
-            $table->string('ip')->unique();
-            $table->boolean('is_down')->default(false);
+            
+            $table->foreignId('services_id')
+                ->constrained()->onDelete('cascade');
+
             $table->json('config')->nullable();
 
             $table->timestamps();
@@ -28,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('servers');
+        Schema::dropIfExists('modules');
     }
 };

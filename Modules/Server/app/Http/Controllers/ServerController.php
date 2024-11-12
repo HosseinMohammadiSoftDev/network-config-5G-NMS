@@ -2,64 +2,38 @@
 
 namespace Modules\Server\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Contract\ApiController;
+use Exception;
 use Illuminate\Http\Request;
+use Modules\Server\Http\Requests\Server\CreateServerRequest;
+use Modules\Server\Http\Requests\Server\UploadModuleRequest;
+use Modules\Server\Models\Server;
+use Modules\User\Services\PaginationService;
+use Spyc;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-class ServerController extends Controller
-{
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+
+class ServerController extends ApiController
+{   
+    protected $paginationService;
+    public function __construct(PaginationService $paginationService)
     {
-        return view('server::index');
+        $this->paginationService = $paginationService;
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function showAllServers (Request $request)
     {
-        return view('server::create');
+        $servers = Server::all();
+
+        return $this->respondSuccess('لیست سرور های شما', $servers);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function createServer (CreateServerRequest $request)
     {
-        //
-    }
-
-    /**
-     * Show the specified resource.
-     */
-    public function show($id)
-    {
-        return view('server::show');
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        return view('server::edit');
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-    {
-        //
+        $credentials = $request->validated();
+        
+        $server = Server::create($credentials);
+        
+        return $this->respondCreated('سرور با موفقیت ساخته شد', $server);
     }
 }

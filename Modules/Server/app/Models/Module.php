@@ -4,9 +4,9 @@ namespace Modules\Server\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-// use Modules\Server\Database\Factories\ServerFactory;
+// use Modules\Server\Database\Factories\ModuleFactory;
 
-class Server extends Model
+class Module extends Model
 {
     use HasFactory;
 
@@ -15,13 +15,7 @@ class Server extends Model
      */
     protected $fillable = [
         'name',
-        'ip',
-        'is_down',
+        'services_id',
         'config'
     ];
-
-    // protected static function newFactory(): ServerFactory
-    // {
-    //     // return ServerFactory::new();
-    // }
 }
