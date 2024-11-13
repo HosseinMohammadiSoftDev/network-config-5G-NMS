@@ -26,3 +26,6 @@ Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('upload-module', 
 Route::middleware(['auth:sanctum', 'role:admin|visitor|expert'])->get('show-config-module/{serverID}', [ModuleController::class, 'showConfigModule']);
 Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('create-module', [ModuleController::class, 'createModule']);
 Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('update-config-module', [ModuleController::class, 'updateConfigModule']);
+
+
+Route::get('test', [ModuleController::class, 'test']);

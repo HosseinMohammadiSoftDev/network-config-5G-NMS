@@ -11,6 +11,7 @@
         "laravel/tinker": "^2.9",
         "mustangostang/spyc": "^0.6.3",
         "nwidart/laravel-modules": "^11.1",
+        "phpseclib/phpseclib": "^3.0",
         "spatie/laravel-activitylog": "^4.9",
         "spatie/laravel-permission": "^6.10",
         "symfony/yaml": "^7.1"

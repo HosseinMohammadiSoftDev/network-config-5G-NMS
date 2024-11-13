@@ -19,7 +19,11 @@ class CreateModulesRequest extends FormRequest
                 if (!preg_match('/\.(yaml|yml|yaml\.in)$/i', $value->getClientOriginalName()))
                     $fail('فایل باید یکی از فرمت‌های .yaml, .yml, یا .yaml.in باشد.');
                 },
-            ]
+            ],
+            'host' => ['required', 'string'],
+            'username' => ['required', 'string'],
+            'password' => ['required', 'string']
+            
         ];
     }
 

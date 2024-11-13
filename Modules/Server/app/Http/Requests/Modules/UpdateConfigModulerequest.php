@@ -14,7 +14,10 @@ class UpdateConfigModulerequest extends FormRequest
         return [
             'module_id' => ['required', 'exists:modules,id', 'integer'],
             'field' => ['required', 'string'],
-            'value' => ['required']
+            'value' => ['required'],
+            'host' => ['required', 'string'],
+            'username' => ['required', 'string'],
+            'password' => ['required', 'string']
         ];
     }
 
