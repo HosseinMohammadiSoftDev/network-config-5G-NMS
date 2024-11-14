@@ -6,12 +6,16 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "arcanedev/log-viewer": "^11.0",
         "laravel/framework": "^11.9",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
+        "mustangostang/spyc": "^0.6.3",
         "nwidart/laravel-modules": "^11.1",
+        "phpseclib/phpseclib": "^3.0",
         "spatie/laravel-activitylog": "^4.9",
-        "spatie/laravel-permission": "^6.10"
+        "spatie/laravel-permission": "^6.10",
+        "symfony/yaml": "^7.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
