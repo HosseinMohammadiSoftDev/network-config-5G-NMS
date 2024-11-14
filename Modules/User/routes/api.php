@@ -30,3 +30,4 @@ Route::middleware(['auth:sanctum', 'role:admin'])->put('reset-password-and-auth-
 Route::middleware(['auth:sanctum', 'role:admin'])->delete('delete-member-Account/{UserID}', [UserController::class, 'deleteAccountMember']);
 
 Route::middleware(['auth:sanctum', 'role:admin'])->get('show-all-roles', [RoleController::class, 'showAllRolesPermissions']);
+    

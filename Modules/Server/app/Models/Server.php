@@ -29,6 +29,6 @@ class Server extends Model
         return LogOptions::defaults() 
             ->logAll()
             ->logOnlyDirty()
-            ->useLogName('role');
+            ->useLogName('server');
     }
 }
