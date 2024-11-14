@@ -78,7 +78,7 @@ class UserController extends ApiController
                         'method' => 'addMember',
                         'member' => $credentials,
                     ])
-                ->log('ادمین کاربر را به برنامه ااضافه کرد'); 
+                ->log('ادمین کاربر را به برنامه ااضافه کرد');
 
                 DB::commit();
             return $this->respondCreated('کاربر با موفقیت ساخته شد', ['user' => $user,'role' => $role ]);

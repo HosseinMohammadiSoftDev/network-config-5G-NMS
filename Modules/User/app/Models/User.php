@@ -38,7 +38,7 @@ class User extends Authenticatable
         return LogOptions::defaults() 
             ->logAll()
             ->logOnlyDirty()
-            ->useLogName('role');
+            ->useLogName('User');
     }
     
     protected $hidden = [
