@@ -20,15 +20,19 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ModuleController extends ApiController
 {
-
-
-  
   public function showConfigModule ($moduleId)
   {
       $module = Module::find($moduleId);
   
       if (!$module) {
-          return response()->json(['msg' => 'سرور پیدا نشد'], 404);
+          Log::channel('daily')->error('شناسه ماژول نامعتبر بود', [
+            'route' => request()->fullUrl(),
+            'method' => 'showConfigModule',
+            'module_id' => $moduleId,  
+            'user' => Auth::id()
+          ]);
+        
+          return response()->json(['msg' => 'ماژول پیدا نشد'], 404);
       }
   
       return response()->json([
@@ -36,6 +40,7 @@ class ModuleController extends ApiController
       ]);
   }  
  
+
     // اپلود فایل کانفیگ
   public function uploadModule(UploadModuleRequest $request)
   {
@@ -45,34 +50,59 @@ class ModuleController extends ApiController
       try {
           $yamlContent = $this->parseYamlWithSpyc($file);
       } catch (Exception $e) {
+
+        Log::channel('daily')->error('مشکلی در تبدیل فایل یمل به جیسون پیش امد', [
+          'route' => request()->fullUrl(),
+          'method' => 'uploadModule',
+          'error' => $e->getMessage(),
+          'user_id' => Auth::id(),
+        ]);
+
           return response()->json(['msg' => 'مشکلی در تبدیل فایل به جیسون پیش امد: ' . $e->getMessage()], 400);
       }
   
       $jsonContent = json_encode($yamlContent, JSON_PRETTY_PRINT);
   
-      $server = Module::find($credentials['module_id']);
-        if (!$server) 
+      $module = Module::find($credentials['module_id']);
+        if (!$module) 
             return response()->json(['msg' => 'شناسه سرویس نانعتبر است'], 404);
         
   
-      $server->config = $jsonContent;
-      $server->save();
+      $module->config = $jsonContent;
+      $module->save();
   
+      Log::channel('daily')->info('فایل کانفیگ در ماژول مورد نظر قرار گرفت', [
+        'route' => request()->fullUrl(),
+        'method' => 'uploadModule',
+        'module' => $module,
+        'user_id' => Auth::id(),
+      ]);
+
       return $this->respondSuccess('فایل با موفقت  تبدیل به جیسون شد', []);
   }
-
   private function parseYamlWithSpyc(UploadedFile $file)
   {
       $filePath = $file->getPathname();
-      $yamlContent = Spyc::YAMLLoad($filePath);
-      return $yamlContent;
+      $jsonContent = Spyc::YAMLLoad($filePath);
+
+      return $jsonContent;
   }
+
+
   private function uploadModuleFile ($file)
   {
 
     try {
       $yamlContent = $this->parseYamlWithSpyc($file);
     } catch (Exception $e) {
+
+      Log::channel('daily')->error('مشکلی در تبدیل فرمت فایل به جیسون پیش امد', [
+        'route' => request()->fullUrl(),
+        'method' => 'uploadModuleFile',
+        'error' => $e->getMessage(),
+        'user_id' => Auth::id(),
+      ]);
+
         return response()->json(['msg' => 'مشکلی در تبدیل فایل به جیسون پیش امد: ' . $e->getMessage()], 400);
     }
 
@@ -95,12 +125,19 @@ class ModuleController extends ApiController
       if (is_array($jsonContent) || is_object($jsonContent)) 
           return $jsonContent;
       
-      $command = 'echo "'. $jsonContent .'" > /mnt/c/Users/MOHAMMADI/Desktop/' . $creadtional['name'];
+      $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $creadtional['name'];
 
       try {
-          $output = SshHelper::runSshCommand($host, $username, $password, $command);
-          echo "Command output: " . $output;
+             SshHelper::runSshCommand($host, $username, $password, $command);
       } catch (Exception $e) {
+
+        Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
+          'route' => request()->fullUrl(),
+          'method' => 'createModule',
+          'error' => $e->getMessage(),
+          'user_id' => Auth::id(),
+        ]);
+
           return response()->json(["Error: " . $e->getMessage()]);
       }
     
@@ -138,13 +175,22 @@ class ModuleController extends ApiController
 
             //change to data type string and push to server 
         $jsonContent = json_encode($updateJson, JSON_PRETTY_PRINT);
-        $command = 'echo "'. $jsonContent .'" > /mnt/c/Users/MOHAMMADI/Desktop/mme111.txt';
+        $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $module['name'];
 
           try {
-              $output = SshHelper::runSshCommand($host, $username, $password, $command);
-              echo "Command output: " . $output;
+                SshHelper::runSshCommand($host, $username, $password, $command);
           } catch (Exception $e) {
-              return response()->json(["Error: " . $e->getMessage()]);
+                  Log::channel('daily')->error('مشکلی اتصال به سرور و اجرای کامند پیش امد', [
+                      'route' => request()->fullUrl(),
+                      'method' => '',
+                      'user' => Auth::id(),
+                      'host' => $host,
+                      'userName' => $username,
+                      'password' => $password,
+                      'command' => $command,
+                  ]);
+
+                return response()->json(["Error: مشکلی در روند اجرای برنامه رخ داد" . $e->getMessage()]);
           }
 
         $module->config = $updateJson;
@@ -154,6 +200,13 @@ class ModuleController extends ApiController
         return response()->json($updateJson);
       } catch (Exception $e) {
           DB::rollBack();
+
+            Log::channel('daily')->error('مشکلی در اپدیت کردن کانفیگ ماژول به وجود امد',[
+              'route' => request()->fullUrl(),
+              'method' => 'updateConfigModule',
+              'user' => Auth::user(),
+              'mofule'=> $module
+            ]);
 
           return $this->respondInternalError('در روند اجرای برنامه مشکلی پیش امد');
       }

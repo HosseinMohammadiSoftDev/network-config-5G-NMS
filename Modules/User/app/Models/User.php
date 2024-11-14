@@ -8,12 +8,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, HasApiTokens, SoftDeletes;
+    use HasFactory, Notifiable, HasRoles, HasApiTokens, SoftDeletes, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -30,11 +32,15 @@ class User extends Authenticatable
 
     protected $guard_name = 'web'; // گارد وب
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults() 
+            ->logAll()
+            ->logOnlyDirty()
+            ->useLogName('role');
+    }
+    
     protected $hidden = [
         'password',
         'remember_token',

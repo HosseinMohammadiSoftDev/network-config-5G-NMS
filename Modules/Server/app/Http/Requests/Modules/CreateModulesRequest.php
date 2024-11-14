@@ -3,6 +3,8 @@
 namespace Modules\Server\Http\Requests\Modules;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class CreateModulesRequest extends FormRequest
 {
@@ -17,7 +19,13 @@ class CreateModulesRequest extends FormRequest
             'config_file' => ['required', 'file',  function ($attribute, $value, $fail) {
                 
                 if (!preg_match('/\.(yaml|yml|yaml\.in)$/i', $value->getClientOriginalName()))
+                
                     $fail('فایل باید یکی از فرمت‌های .yaml, .yml, یا .yaml.in باشد.');
+
+                    Log::channel('daliy')->error('کاربری قصد اضافه کردن فایل کانفیگی فرمت مقایر دارد را داشت', [
+                        'fileName' => $value->getClientOriginalName(),
+                        'user' => Auth::user()
+                    ]);
                 },
             ],
             'host' => ['required', 'string'],

@@ -2,6 +2,9 @@
 
 namespace Modules\Server\Helpers;
 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+
 
 class JsonUpdater
 {
@@ -32,9 +35,19 @@ class JsonUpdater
                     throw new \Exception("بعد از این مورد کلید وجود دارد برسی کنید که ایا مسیر را اشتباه وارد نکردید");
             }
         }
-    
+
+        Log::channel('daily')->info('مقدار کانفیگ ماژول تعقییر کرد', [
+            'route' => request()->fullUrl(),
+            'method' => 'updateJsonValue',
+            'user' => Auth::id(),
+            'previous-value' => $currentNode,
+            'new-value' => $value,
+            'path' => $path,
+            'config' => $json
+        ]);
+
         $currentNode = $value;
-    
+
         return $json;
     }
 

@@ -3,6 +3,8 @@
 namespace Modules\Server\Http\Controllers;
 
 use App\Http\Controllers\Contract\ApiController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Modules\Server\Http\Requests\Service\CreateServiceRequest;
 use Modules\Server\Models\Server;
 use Modules\Server\Models\Service;
@@ -25,6 +27,14 @@ class ServiceController extends ApiController
         $credentials = $request->validated();
 
         $service = Service::create($credentials);
+
+        Log::channel('daily')->info('سرویس جدیدی به سرور اضافه شد', [
+            'route' => request()->fullUrl(),
+            'method' => 'createService',
+            'service' => $service,
+            'credentials' => $credentials,
+            'user_id' => Auth::id(),
+        ]);
 
         return $this->respondSuccess('سرویس شما با موفقیت ساخته شد', $service);
     }

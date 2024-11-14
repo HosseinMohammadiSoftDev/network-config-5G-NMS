@@ -12,7 +12,7 @@ class UploadModuleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'service_id' => ['required', 'integer', 'exists:services,id'],
+            'module_id' => ['required', 'integer', 'exists:module,id'],
             'config_file' => ['required', 'file'],
         ];
     }

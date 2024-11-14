@@ -2,13 +2,16 @@
 
 namespace Modules\Server\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
+
 // use Modules\Server\Database\Factories\ModuleFactory;
 
 class Module extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -18,4 +21,12 @@ class Module extends Model
         'services_id',
         'config'
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults() 
+            ->logAll()
+            ->logOnlyDirty()
+            ->useLogName('role');
+    }
 }
