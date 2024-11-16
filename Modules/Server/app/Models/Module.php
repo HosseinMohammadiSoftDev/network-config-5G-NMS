@@ -18,7 +18,8 @@ class Module extends Model
      */
     protected $fillable = [
         'name',
-        'services_id',
+        'type',
+        'server_id',
         'config'
     ];
 

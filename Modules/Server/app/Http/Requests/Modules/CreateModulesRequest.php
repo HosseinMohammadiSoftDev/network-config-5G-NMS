@@ -15,7 +15,8 @@ class CreateModulesRequest extends FormRequest
     {
         return [
             'name' => ['required', 'unique:modules,name', 'string', 'min:3', 'max:255'],
-            'service_id' => ['required', 'exists:services,id', 'numeric'],
+            'type' => ['required', 'string', 'min:3', 'max:255'],
+            'server_id' => ['required', 'exists:servers,id', 'numeric'],
             'config_file' => ['required', 'file',  function ($attribute, $value, $fail) {
                 
                 if (!preg_match('/\.(yaml|yml|yaml\.in)$/i', $value->getClientOriginalName()))
