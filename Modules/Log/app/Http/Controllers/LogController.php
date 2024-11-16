@@ -2,64 +2,32 @@
 
 namespace Modules\Log\Http\Controllers;
 
+use App\Http\Controllers\Contract\ApiController;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Modules\User\Services\PaginationService;
+use Spatie\Activitylog\Models\Activity;
 
-class LogController extends Controller
+class LogController extends ApiController
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected $paginationService;
+    public function __construct(PaginationService $paginationService)
     {
-        return view('log::index');
+        $this->paginationService = $paginationService;
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function showAllLogs (Request $request)
     {
-        return view('log::create');
-    }
+        $logsQuery = Activity::query()
+        ->when($request->input('search', ''), function ($query, $search) {
+            return $query->where(function ($query) use ($search) {
+                $query->where('log_name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        });
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        $logs = $this->paginationService->paginate($logsQuery, $request, ['id', 'log_name', 'description', 'created_at', 'updated_at']);
 
-    /**
-     * Show the specified resource.
-     */
-    public function show($id)
-    {
-        return view('log::show');
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        return view('log::edit');
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-    {
-        //
+        return $this->respondSuccess('تمام لاگ‌های انتخابی با موفقیت نمایش داده شدند', $logs);
     }
 }

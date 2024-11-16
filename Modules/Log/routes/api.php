@@ -14,6 +14,4 @@ use Modules\Log\Http\Controllers\LogController;
  *
 */
 
-Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
-    Route::apiResource('log', LogController::class)->names('log');
-});
+Route::middleware(['auth:sanctum', 'role:admin'])->get('show-all-logs', [LogController::class, 'showAllLogs']);
