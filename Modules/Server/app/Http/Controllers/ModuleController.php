@@ -12,11 +12,16 @@ use Illuminate\Support\Facades\Log;
 use Modules\Server\Helpers\JsonUpdater;
 use Modules\Server\Helpers\SshHelper;
 use Modules\Server\Http\Requests\Modules\CreateModulesRequest;
+use Modules\Server\Http\Requests\Modules\ShowAllModules;
+use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
+use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
 use Modules\Server\Http\Requests\Server\UploadModuleRequest;
 use Modules\Server\Models\Module;
 use Spyc;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+
+use function Laravel\Prompts\select;
 
 class ModuleController extends ApiController
 {
@@ -36,10 +41,20 @@ class ModuleController extends ApiController
       }
   
       return response()->json([
-          'config' => json_decode($module->config, true)
+          json_decode($module->config, true)
       ]);
   }  
- 
+  public function showAllModules (ShowAllModulesRequest $request )
+  {
+      $credentials = $request->validated();
+
+      $modules = Module::where('server_id', $credentials['server_id'])
+                      ->where('type', $credentials['type'])
+                      ->select('name')
+                      ->get();
+
+      return $this->respondSuccess('لیست ماژول های سرور شما', $modules);
+  }
 
     // اپلود فایل کانفیگ
   public function uploadModule(UploadModuleRequest $request)
@@ -142,17 +157,22 @@ class ModuleController extends ApiController
       }
     
     
-      Module::create([
+    $module = Module::create([
           'name' => $creadtional['name'],
-          'services_id' => $creadtional['service_id'],
+          'type' => $creadtional['type'],
+          'server_id' => $creadtional['server_id'],
           'config' => $jsonContent, 
       ]);
 
-      return $this->respondCreated('ماژول با موفقیت ساخته شد', []);
+      return $this->respondCreated('ماژول با موفقیت ساخته شد', [
+        'name' => $module['name'],
+        'type' => $module['type'],
+        'server_id' => $module['server_id'],
+      ]);
   }
   
   public function updateConfigModule (UpdateConfigModulerequest $request)
-    {
+  {
       $request->validated();
 
       $moduleId = $request->input('module_id');
@@ -210,6 +230,6 @@ class ModuleController extends ApiController
 
           return $this->respondInternalError('در روند اجرای برنامه مشکلی پیش امد');
       }
-    }
+  }
 
 }

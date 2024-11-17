@@ -105,8 +105,8 @@ class UserController extends ApiController
         
         $user = User::find($credentials['user_id']);
 
-        if ($user->hasRole('admin')) 
-            return response()->json(['msg' => 'شما نمیتوانید کاربری که نقش ادمین را دارد را حذف کنید'], 403);
+        if ($user->hasRole('admin') && !Auth::user()->hasRole('admin')) 
+            return response()->json(['msg' => 'شما نمیتوانید کاربری که نقش ادمین را دارد را حذف کنید'], 403); 
 
             
         try {
