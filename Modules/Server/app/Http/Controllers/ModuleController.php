@@ -5,6 +5,7 @@ namespace Modules\Server\Http\Controllers;
 use App\Http\Controllers\Contract\ApiController;
 use App\Http\Controllers\Controller;
 use Exception;
+use function Laravel\Prompts\select;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -18,10 +19,10 @@ use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
 use Modules\Server\Http\Requests\Server\UploadModuleRequest;
 use Modules\Server\Models\Module;
+use Modules\Server\Models\Server;
+
 use Spyc;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-
-use function Laravel\Prompts\select;
 
 class ModuleController extends ApiController
 {
@@ -44,16 +45,18 @@ class ModuleController extends ApiController
           json_decode($module->config, true)
       ]);
   }  
-  public function showAllModules (ShowAllModulesRequest $request )
+  public function showAllServiseAndModulesInServer ($serverId)
   {
-      $credentials = $request->validated();
+    $server = Server::with(['modules' => function ($query) {
+      $query->select('id', 'server_id', 'name', 'type');
+    }])->find($serverId);
+    
+      if(!$server)
+        return response()->json(['msg' => 'شناسه نامعتبر است'], 404);  
 
-      $modules = Module::where('server_id', $credentials['server_id'])
-                      ->where('type', $credentials['type'])
-                      ->select('name')
-                      ->get();
+    $modulesGroupedByType = $server->modules->groupBy('type');
 
-      return $this->respondSuccess('لیست ماژول های سرور شما', $modules);
+    return $this->respondSuccess('لیست سرویس های سرور و ماژول های انها', $modulesGroupedByType);
   }
 
     // اپلود فایل کانفیگ
@@ -130,31 +133,30 @@ class ModuleController extends ApiController
   {
       $creadtional = $request->validated();
       
-      $host = $request->input('host');
-      $username = $request->input('username');
-      $password = $request->input('password');
-
+      // $host = $request->input('host');
+      // $username = $request->input('username');
+      // $password = $request->input('password');
 
       $jsonContent = $this->uploadModuleFile($request->file('config_file'));
       
       if (is_array($jsonContent) || is_object($jsonContent)) 
           return $jsonContent;
       
-      $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $creadtional['name'];
+      // $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $creadtional['name'];
 
-      try {
-             SshHelper::runSshCommand($host, $username, $password, $command);
-      } catch (Exception $e) {
+      // try {
+      //        SshHelper::runSshCommand($host, $username, $password, $command);
+      // } catch (Exception $e) {
 
-        Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
-          'route' => request()->fullUrl(),
-          'method' => 'createModule',
-          'error' => $e->getMessage(),
-          'user_id' => Auth::id(),
-        ]);
+      //   Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
+      //     'route' => request()->fullUrl(),
+      //     'method' => 'createModule',
+      //     'error' => $e->getMessage(),
+      //     'user_id' => Auth::id(),
+      //   ]);
 
-          return response()->json(["Error: " . $e->getMessage()]);
-      }
+      //     return response()->json(["Error: " . $e->getMessage()]);
+      // }
     
     
     $module = Module::create([
@@ -180,9 +182,9 @@ class ModuleController extends ApiController
       $newValue = $request->input('value');
 
           // coonection server
-      $host = $request->input('host');
-      $username = $request->input('username');
-      $password = $request->input('password');
+      // $host = $request->input('host');
+      // $username = $request->input('username');
+      // $password = $request->input('password');
 
       $module = Module::find($moduleId);
       $moduleConfig = json_decode($module->config, 1);
@@ -194,24 +196,24 @@ class ModuleController extends ApiController
         $updateJson = JsonUpdater::updateJsonValue($moduleConfig, $fieldPath, $newValue);
 
             //change to data type string and push to server 
-        $jsonContent = json_encode($updateJson, JSON_PRETTY_PRINT);
-        $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $module['name'];
+        // $jsonContent = json_encode($updateJson, JSON_PRETTY_PRINT);
+        // $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $module['name'];
 
-          try {
-                SshHelper::runSshCommand($host, $username, $password, $command);
-          } catch (Exception $e) {
-                  Log::channel('daily')->error('مشکلی اتصال به سرور و اجرای کامند پیش امد', [
-                      'route' => request()->fullUrl(),
-                      'method' => '',
-                      'user' => Auth::id(),
-                      'host' => $host,
-                      'userName' => $username,
-                      'password' => $password,
-                      'command' => $command,
-                  ]);
+        //   try {
+        //         SshHelper::runSshCommand($host, $username, $password, $command);
+        //   } catch (Exception $e) {
+        //           Log::channel('daily')->error('مشکلی اتصال به سرور و اجرای کامند پیش امد', [
+        //               'route' => request()->fullUrl(),
+        //               'method' => '',
+        //               'user' => Auth::id(),
+        //               'host' => $host,
+        //               'userName' => $username,
+        //               'password' => $password,
+        //               'command' => $command,
+        //           ]);
 
-                return response()->json(["Error: مشکلی در روند اجرای برنامه رخ داد" . $e->getMessage()]);
-          }
+        //         return response()->json(["Error: مشکلی در روند اجرای برنامه رخ داد" . $e->getMessage()]);
+        //   }
 
         $module->config = $updateJson;
         $module->save();

@@ -31,4 +31,9 @@ class Server extends Model
             ->logOnlyDirty()
             ->useLogName('server');
     }
+
+    public function modules()
+    {
+        return $this->hasMany(Module::class);
+    }
 }

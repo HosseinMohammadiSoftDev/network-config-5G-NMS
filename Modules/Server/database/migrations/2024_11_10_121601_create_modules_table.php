@@ -20,7 +20,9 @@ return new class extends Migration
             $table->foreignId('server_id')
                 ->constrained()->onDelete('cascade');
 
-            $table->json('config')->nullable();
+            $table->json('initial_config')->nullable();
+            $table->json('previous_config')->nullable();
+            $table->json('current_config')->nullable();
 
             $table->timestamps();
         });

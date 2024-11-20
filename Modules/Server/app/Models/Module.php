@@ -30,4 +30,9 @@ class Module extends Model
             ->logOnlyDirty()
             ->useLogName('role');
     }
+
+    public function server()
+    {
+        return $this->belongsTo(Server::class);
+    }
 }
