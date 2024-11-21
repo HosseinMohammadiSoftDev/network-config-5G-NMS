@@ -176,15 +176,15 @@ class ModuleController extends ApiController
         'server_id' => $module['server_id'],
       ]);
   }
+
   
   public function updateConfigModule (UpdateConfigModulerequest $request)
   {
       $request->validated();
 
       $moduleId = $request->input('module_id');
-      $fieldPath = $request->input('field');
-      $newValue = $request->input('value');
-
+      $data = $request->input('data', []);
+      
           // coonection server
       // $host = $request->input('host');
       // $username = $request->input('username');
@@ -201,7 +201,11 @@ class ModuleController extends ApiController
         $moduleCurrentConfig = $module['current_config'];
         $module['previous_config'] = $moduleCurrentConfig;
 
-        $updateJson = JsonUpdater::updateJsonValue($moduleConfig, $fieldPath, $newValue);
+        foreach ($data as $key => $value) 
+        {
+          $updateJson = JsonUpdater::updateJsonValue($moduleConfig, $key, $value);
+          $moduleConfig = $updateJson;
+        }
 
             //change to data type string and push to server 
         // $jsonContent = json_encode($updateJson, JSON_PRETTY_PRINT);
@@ -241,6 +245,8 @@ class ModuleController extends ApiController
           return $this->respondInternalError('در روند اجرای برنامه مشکلی پیش امد');
       }
   }
+
+
   public function undoConfigModule (UndoConfigModulesRequest $request)
   {
     $creadtional = $request->validated();
