@@ -5,6 +5,7 @@ namespace Modules\Server\Http\Controllers;
 use App\Http\Controllers\Contract\ApiController;
 use App\Http\Controllers\Controller;
 use Exception;
+use PharIo\Version\UnsupportedVersionConstraintException;
 use function Laravel\Prompts\select;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +19,8 @@ use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
 use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
 use Modules\Server\Http\Requests\Server\UploadModuleRequest;
+use Modules\Server\Http\Requests\Undo\UndoConfigModulesRequest;
+use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
 use Modules\Server\Models\Module;
 use Modules\Server\Models\Server;
 
@@ -42,7 +45,7 @@ class ModuleController extends ApiController
       }
   
       return response()->json([
-          json_decode($module->config, true)
+          json_decode($module->current_config, true)
       ]);
   }  
   public function showAllServiseAndModulesInServer ($serverId)
@@ -58,7 +61,7 @@ class ModuleController extends ApiController
 
     return $this->respondSuccess('لیست سرویس های سرور و ماژول های انها', $modulesGroupedByType);
   }
-
+  
     // اپلود فایل کانفیگ
   public function uploadModule(UploadModuleRequest $request)
   {
@@ -163,7 +166,8 @@ class ModuleController extends ApiController
           'name' => $creadtional['name'],
           'type' => $creadtional['type'],
           'server_id' => $creadtional['server_id'],
-          'config' => $jsonContent, 
+          'initial_config' => $jsonContent, 
+          'current_config' => $jsonContent, 
       ]);
 
       return $this->respondCreated('ماژول با موفقیت ساخته شد', [
@@ -187,11 +191,15 @@ class ModuleController extends ApiController
       // $password = $request->input('password');
 
       $module = Module::find($moduleId);
-      $moduleConfig = json_decode($module->config, 1);
+
+      $moduleConfig = json_decode($module->current_config, 1);
 
 
       try {
           DB::beginTransaction();
+
+        $moduleCurrentConfig = $module['current_config'];
+        $module['previous_config'] = $moduleCurrentConfig;
 
         $updateJson = JsonUpdater::updateJsonValue($moduleConfig, $fieldPath, $newValue);
 
@@ -215,7 +223,7 @@ class ModuleController extends ApiController
         //         return response()->json(["Error: مشکلی در روند اجرای برنامه رخ داد" . $e->getMessage()]);
         //   }
 
-        $module->config = $updateJson;
+        $module->current_config = $updateJson;
         $module->save();
 
           DB::commit();
@@ -232,6 +240,30 @@ class ModuleController extends ApiController
 
           return $this->respondInternalError('در روند اجرای برنامه مشکلی پیش امد');
       }
+  }
+  public function undoConfigModule (UndoConfigModulesRequest $request)
+  {
+    $creadtional = $request->validated();
+    
+    $module = Module::find($creadtional['module_id']);
+    $modulePreviousConfig = $module['previous_config'];
+
+    $module['current_config'] = $modulePreviousConfig; 
+    $module->save();
+
+    return response()->json(['success' => 'ture', 'msg' => 'کانفیگ به مقدار قبلی بازگشت']);
+  }
+  public function undoToInitialConfigModule (UndoToInitialConfigModulesRequest $request)
+  {
+    $creadtional = $request->validated();
+    
+    $module = Module::find($creadtional['module_id']);
+    $moduleInitialConfig = $module['initial_config'];
+
+    $module['current_config'] = $moduleInitialConfig; 
+    $module->save();
+
+    return response()->json(['success' => 'ture', 'msg' => 'کانفیگ به مقدار اولیه بازگشت']);
   }
 
 }

@@ -29,3 +29,5 @@ Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('upload-module', 
 Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('create-module', [ModuleController::class, 'createModule']);
 Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('update-config-module', [ModuleController::class, 'updateConfigModule']);
 
+Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('undo-module-config', [ModuleController::class, 'undoConfigModule']);
+Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('undo-to-initial-config-modules', [ModuleController::class, 'undoToInitialConfigModule']);
