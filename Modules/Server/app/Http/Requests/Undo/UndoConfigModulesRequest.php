@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Server\Http\Requests\Modules;
+namespace Modules\Server\Http\Requests\Undo;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ShowAllModulesRequest extends FormRequest
+class UndoConfigModulesRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -12,8 +12,7 @@ class ShowAllModulesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'server_id' => ['required', 'exists:servers,id', 'integer'],
-            'type' => ['required', 'exists:modules,type']
+            'module_id' => ['required', 'exists:modules,id', 'integer'],
         ];
     }
 

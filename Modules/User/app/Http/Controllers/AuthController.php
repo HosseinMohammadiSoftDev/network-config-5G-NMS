@@ -52,7 +52,19 @@ class AuthController extends ApiController
                 ])
             ->log('کار با نام کاربری و پسورد وارد شد'); 
 
-        return $this->respondSuccess('کاربر ورود پیدا کرد', ['user' => $user, 'token' => $token]);
+        return $this->respondSuccess('کاربر ورود پیدا کرد', [
+            'user' => [
+                'id' => $user->id,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'auth_name' => $user->auth_name,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
+                'roles' => $user->getRoleNames(),
+                'permissions' => $user->getAllPermissions()->pluck('name'),
+            ],
+            'token' => $token,
+        ]);
     } 
     public function logout(Request $request)
     {

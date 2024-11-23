@@ -20,7 +20,9 @@ class Module extends Model
         'name',
         'type',
         'server_id',
-        'config'
+        'initial_config',
+        'previous_config',
+        'current_config'
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -29,5 +31,10 @@ class Module extends Model
             ->logAll()
             ->logOnlyDirty()
             ->useLogName('role');
+    }
+
+    public function server()
+    {
+        return $this->belongsTo(Server::class);
     }
 }

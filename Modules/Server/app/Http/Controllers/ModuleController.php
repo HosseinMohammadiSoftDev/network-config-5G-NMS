@@ -5,6 +5,8 @@ namespace Modules\Server\Http\Controllers;
 use App\Http\Controllers\Contract\ApiController;
 use App\Http\Controllers\Controller;
 use Exception;
+use PharIo\Version\UnsupportedVersionConstraintException;
+use function Laravel\Prompts\select;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,11 +19,13 @@ use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
 use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
 use Modules\Server\Http\Requests\Server\UploadModuleRequest;
+use Modules\Server\Http\Requests\Undo\UndoConfigModulesRequest;
+use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
 use Modules\Server\Models\Module;
+use Modules\Server\Models\Server;
+
 use Spyc;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-
-use function Laravel\Prompts\select;
 
 class ModuleController extends ApiController
 {
@@ -41,21 +45,23 @@ class ModuleController extends ApiController
       }
   
       return response()->json([
-          json_decode($module->config, true)
+          json_decode($module->current_config, true)
       ]);
   }  
-  public function showAllModules (ShowAllModulesRequest $request )
+  public function showAllServiseAndModulesInServer ($serverId)
   {
-      $credentials = $request->validated();
+    $server = Server::with(['modules' => function ($query) {
+      $query->select('id', 'server_id', 'name', 'type');
+    }])->find($serverId);
+    
+      if(!$server)
+        return response()->json(['msg' => 'شناسه نامعتبر است'], 404);  
 
-      $modules = Module::where('server_id', $credentials['server_id'])
-                      ->where('type', $credentials['type'])
-                      ->select('name')
-                      ->get();
+    $modulesGroupedByType = $server->modules->groupBy('type');
 
-      return $this->respondSuccess('لیست ماژول های سرور شما', $modules);
+    return $this->respondSuccess('لیست سرویس های سرور و ماژول های انها', $modulesGroupedByType);
   }
-
+  
     // اپلود فایل کانفیگ
   public function uploadModule(UploadModuleRequest $request)
   {
@@ -130,38 +136,45 @@ class ModuleController extends ApiController
   {
       $creadtional = $request->validated();
       
-      $host = $request->input('host');
-      $username = $request->input('username');
-      $password = $request->input('password');
-
+      // $host = $request->input('host');
+      // $username = $request->input('username');
+      // $password = $request->input('password');
 
       $jsonContent = $this->uploadModuleFile($request->file('config_file'));
       
       if (is_array($jsonContent) || is_object($jsonContent)) 
           return $jsonContent;
       
-      $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $creadtional['name'];
+      // $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $creadtional['name'];
 
-      try {
-             SshHelper::runSshCommand($host, $username, $password, $command);
-      } catch (Exception $e) {
+      // try {
+      //        SshHelper::runSshCommand($host, $username, $password, $command);
+      // } catch (Exception $e) {
 
-        Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
-          'route' => request()->fullUrl(),
-          'method' => 'createModule',
-          'error' => $e->getMessage(),
-          'user_id' => Auth::id(),
-        ]);
+      //   Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
+      //     'route' => request()->fullUrl(),
+      //     'method' => 'createModule',
+      //     'error' => $e->getMessage(),
+      //     'user_id' => Auth::id(),
+      //   ]);
 
-          return response()->json(["Error: " . $e->getMessage()]);
-      }
+      //     return response()->json(["Error: " . $e->getMessage()]);
+      // }
     
     
     $module = Module::create([
           'name' => $creadtional['name'],
           'type' => $creadtional['type'],
           'server_id' => $creadtional['server_id'],
-          'config' => $jsonContent, 
+          'initial_config' => $jsonContent, 
+          'current_config' => $jsonContent, 
+      ]);
+
+      Log::channel('daily')->info('ماژول جدید ساخته شده',[
+        'route' => request()->fullUrl(),
+        'method' => 'createModule',
+        'user' => Auth::id(),
+        'module_id'=> $module['id']
       ]);
 
       return $this->respondCreated('ماژول با موفقیت ساخته شد', [
@@ -170,51 +183,69 @@ class ModuleController extends ApiController
         'server_id' => $module['server_id'],
       ]);
   }
+
   
   public function updateConfigModule (UpdateConfigModulerequest $request)
   {
       $request->validated();
 
       $moduleId = $request->input('module_id');
-      $fieldPath = $request->input('field');
-      $newValue = $request->input('value');
-
+      $data = $request->input('data', []);
+      
           // coonection server
-      $host = $request->input('host');
-      $username = $request->input('username');
-      $password = $request->input('password');
+      // $host = $request->input('host');
+      // $username = $request->input('username');
+      // $password = $request->input('password');
 
       $module = Module::find($moduleId);
-      $moduleConfig = json_decode($module->config, 1);
+
+      $moduleConfig = json_decode($module->current_config, 1);
 
 
       try {
           DB::beginTransaction();
 
-        $updateJson = JsonUpdater::updateJsonValue($moduleConfig, $fieldPath, $newValue);
+        $moduleCurrentConfig = $module['current_config'];
+        $module['previous_config'] = $moduleCurrentConfig;
+
+        foreach ($data as $key => $value) 
+        {
+          $updateJson = JsonUpdater::updateJsonValue($moduleConfig, $key, $value);
+          $moduleConfig = $updateJson;
+        }
 
             //change to data type string and push to server 
-        $jsonContent = json_encode($updateJson, JSON_PRETTY_PRINT);
-        $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $module['name'];
+        // $jsonContent = json_encode($updateJson, JSON_PRETTY_PRINT);
+        // $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $module['name'];
 
-          try {
-                SshHelper::runSshCommand($host, $username, $password, $command);
-          } catch (Exception $e) {
-                  Log::channel('daily')->error('مشکلی اتصال به سرور و اجرای کامند پیش امد', [
-                      'route' => request()->fullUrl(),
-                      'method' => '',
-                      'user' => Auth::id(),
-                      'host' => $host,
-                      'userName' => $username,
-                      'password' => $password,
-                      'command' => $command,
-                  ]);
+        //   try {
+        //         SshHelper::runSshCommand($host, $username, $password, $command);
+        //   } catch (Exception $e) {
+        //           Log::channel('daily')->error('مشکلی اتصال به سرور و اجرای کامند پیش امد', [
+        //               'route' => request()->fullUrl(),
+        //               'method' => '',
+        //               'user' => Auth::id(),
+        //               'host' => $host,
+        //               'userName' => $username,
+        //               'password' => $password,
+        //               'command' => $command,
+        //           ]);
 
-                return response()->json(["Error: مشکلی در روند اجرای برنامه رخ داد" . $e->getMessage()]);
-          }
+        //         return response()->json(["Error: مشکلی در روند اجرای برنامه رخ داد" . $e->getMessage()]);
+        //   }
 
-        $module->config = $updateJson;
+        $module->current_config = $updateJson;
         $module->save();
+
+
+        Log::channel('daily')->info('مقادریر کانفیگ تعقییر کرد',[
+          'route' => request()->fullUrl(),
+          'method' => 'updateConfigModule',
+          'user' => Auth::id(),
+          'data' => $data,
+          'module_id'=> $module['id'],
+          'module_name'=> $module['name'],
+        ]);
 
           DB::commit();
         return response()->json($updateJson);
@@ -224,12 +255,38 @@ class ModuleController extends ApiController
             Log::channel('daily')->error('مشکلی در اپدیت کردن کانفیگ ماژول به وجود امد',[
               'route' => request()->fullUrl(),
               'method' => 'updateConfigModule',
-              'user' => Auth::user(),
-              'mofule'=> $module
+              'user' => Auth::id(),
+              'module_id'=> $module['id']
             ]);
 
           return $this->respondInternalError('در روند اجرای برنامه مشکلی پیش امد');
       }
+  }
+
+
+  public function undoConfigModule (UndoConfigModulesRequest $request)
+  {
+    $creadtional = $request->validated();
+    
+    $module = Module::find($creadtional['module_id']);
+    $modulePreviousConfig = $module['previous_config'];
+
+    $module['current_config'] = $modulePreviousConfig; 
+    $module->save();
+
+    return response()->json(['success' => 'ture', 'msg' => 'کانفیگ به مقدار قبلی بازگشت']);
+  }
+  public function undoToInitialConfigModule (UndoToInitialConfigModulesRequest $request)
+  {
+    $creadtional = $request->validated();
+    
+    $module = Module::find($creadtional['module_id']);
+    $moduleInitialConfig = $module['initial_config'];
+
+    $module['current_config'] = $moduleInitialConfig; 
+    $module->save();
+
+    return response()->json(['success' => 'ture', 'msg' => 'کانفیگ به مقدار اولیه بازگشت']);
   }
 
 }
