@@ -9,7 +9,7 @@
     {{-- Styles --}}
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
-    <link href='https://fonts.googleapis.com/css?family=Montserrat:400,700|Source+Sans+Pro:400,600' rel='stylesheet' type='text/css'>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v28.0.0/dist/font-face.css" rel="stylesheet" type="text/css" />
     <style>
         html {
             position: relative;
@@ -133,7 +133,7 @@
 
         .stack-content {
             color: #AE0E0E;
-            font-family: consolas, Menlo, Courier, monospace;
+            font-family: 'Vazir';
             white-space: pre-line;
             font-size: .8rem;
         }
@@ -253,7 +253,8 @@
                 LogViewer - <span class="badge badge-info">version {{ log_viewer()->version() }}</span>
             </p>
             <p class="text-muted pull-right">
-                Created with <i class="fa fa-heart"></i> by ARCANEDEV <sup>&copy;</sup>
+                <p class="text-muted pull-right font-weight-bold fs-6">ساخته شده توسط تیم اناتوا</p>
+                {{-- Created with <i class="fa fa-heart"></i> by ARCANEDEV <sup>&copy;</sup> --}}
             </p>
         </div>
     </footer>

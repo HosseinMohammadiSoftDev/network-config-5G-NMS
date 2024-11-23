@@ -170,6 +170,13 @@ class ModuleController extends ApiController
           'current_config' => $jsonContent, 
       ]);
 
+      Log::channel('daily')->info('ماژول جدید ساخته شده',[
+        'route' => request()->fullUrl(),
+        'method' => 'createModule',
+        'user' => Auth::id(),
+        'module_id'=> $module['id']
+      ]);
+
       return $this->respondCreated('ماژول با موفقیت ساخته شد', [
         'name' => $module['name'],
         'type' => $module['type'],
@@ -230,6 +237,16 @@ class ModuleController extends ApiController
         $module->current_config = $updateJson;
         $module->save();
 
+
+        Log::channel('daily')->info('مقادریر کانفیگ تعقییر کرد',[
+          'route' => request()->fullUrl(),
+          'method' => 'updateConfigModule',
+          'user' => Auth::id(),
+          'data' => $data,
+          'module_id'=> $module['id'],
+          'module_name'=> $module['name'],
+        ]);
+
           DB::commit();
         return response()->json($updateJson);
       } catch (Exception $e) {
@@ -238,8 +255,8 @@ class ModuleController extends ApiController
             Log::channel('daily')->error('مشکلی در اپدیت کردن کانفیگ ماژول به وجود امد',[
               'route' => request()->fullUrl(),
               'method' => 'updateConfigModule',
-              'user' => Auth::user(),
-              'mofule'=> $module
+              'user' => Auth::id(),
+              'module_id'=> $module['id']
             ]);
 
           return $this->respondInternalError('در روند اجرای برنامه مشکلی پیش امد');

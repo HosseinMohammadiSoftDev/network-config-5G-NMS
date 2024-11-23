@@ -36,16 +36,7 @@ class JsonUpdater
             }
         }
 
-        Log::channel('daily')->info('مقدار کانفیگ ماژول تعقییر کرد', [
-            'route' => request()->fullUrl(),
-            'method' => 'updateJsonValue',
-            'user' => Auth::id(),
-            'previous-value' => $currentNode,
-            'new-value' => $value,
-            'path' => $path,
-            'config' => $json
-        ]);
-
+       
         $currentNode = $value;
 
         return $json;

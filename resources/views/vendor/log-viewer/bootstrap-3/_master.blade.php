@@ -9,23 +9,28 @@
     <meta name="author" content="ARCANEDEV">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
-    <link href='https://fonts.googleapis.com/css?family=Montserrat:400,700|Source+Sans+Pro:400,600' rel='stylesheet' type='text/css'>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v28.0.0/dist/font-face.css" rel="stylesheet" type="text/css" />
     <style>
+        
         html {
             position: relative;
             min-height: 100%;
+        }
+
+        ody, .log-viewer {
+            font-family: 'Vazir', sans-serif;
         }
 
         body {
             padding-top: 50px;
             /* Margin bottom by footer height */
             margin-bottom: 50px;
-            font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, sans-serif;
+            font-family: 'Vazir', sans-serif;
             font-weight: 600;
         }
 
         h1, h2, h3 {
-            font-family: 'Montserrat', 'Helvetica Neue', Helvetica, sans-serif;
+            font-family: 'Vazir', sans-serif;
         }
 
         .sub-header {
@@ -108,7 +113,7 @@
         .stack-content {
             padding: 8px;
             color: #AE0E0E;
-            font-family: consolas, Menlo, Courier, monospace;
+            font-family: 'Vazir', sans-serif;
             font-size: 12px;
             font-weight: 400;
             white-space: pre-line;
@@ -322,7 +327,8 @@
                 LogViewer - <span class="label label-info">version {{ log_viewer()->version() }}</span>
             </p>
             <p class="text-muted pull-right">
-                Created with <i class="fa fa-heart"></i> by ARCANEDEV <sup>&copy;</sup>
+                <p class="text-muted pull-right font-weight-bold fs-6">ساخته شده توسط تیم اناتوا</p>
+                {{-- Created with <i class="fa fa-heart"></i> by ARCANEDEV <sup>&copy;</sup> --}}
             </p>
         </div>
     </footer>
