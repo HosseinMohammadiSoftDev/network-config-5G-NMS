@@ -76,6 +76,7 @@ class UserController extends ApiController
                     ->withProperties([
                         'route' => request()->fullUrl(),
                         'method' => 'addMember',
+                        'user' => Auth::user(),
                         'member' => $credentials,
                     ])
                 ->log('ادمین کاربر را به برنامه ااضافه کرد');
@@ -127,7 +128,8 @@ class UserController extends ApiController
                 ->withProperties([
                     'route' => request()->fullUrl(),
                     'method' => 'resetPsswordAndAuthName',
-                    'user' => $user,
+                    'user' => Auth::user(),
+                    'member' => $user,
                     'credentials' => $credentials
                 ])
             ->log('نام  کاربری و پسورد کاربر توسط ادمین با موفقیت به روز رسانی شد');
@@ -186,7 +188,8 @@ class UserController extends ApiController
             ->withProperties([
                 'route' => request()->fullUrl(),
                 'method' => 'deleteAccountMember',
-                'user' => $user,
+                'user' => Auth::user(),
+                'member' => $user,
             ])
         ->log('حساب کاربر با موفقیت توسط ادمین حذف شد');
 
