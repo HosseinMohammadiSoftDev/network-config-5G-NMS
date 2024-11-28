@@ -126,6 +126,7 @@ class UserController extends ApiController
                 ->performedOn($user)
                 ->event('update-pass-auth-name')
                 ->withProperties([
+                    'type-log' => 'app',
                     'route' => request()->fullUrl(),
                     'method' => 'resetPsswordAndAuthName',
                     'user' => Auth::user(),
@@ -186,6 +187,7 @@ class UserController extends ApiController
             ->performedOn($user)
             ->event('delete')
             ->withProperties([
+                'type-log' => 'app',
                 'route' => request()->fullUrl(),
                 'method' => 'deleteAccountMember',
                 'user' => Auth::user(),

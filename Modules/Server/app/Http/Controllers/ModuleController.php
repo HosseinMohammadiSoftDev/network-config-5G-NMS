@@ -312,7 +312,7 @@ class ModuleController extends ApiController
           'data' => $data,
           'module_id'=> $module['id'],
           'module_name'=> $module['name'],
-          'server_name'=> $module['server_name'],
+          'module_type'=> $module['type'],
         ]);
 
 
@@ -328,7 +328,7 @@ class ModuleController extends ApiController
                 'data' => $data,
                 'module_id' => $module['id'],
                 'module_name' => $module['name'],
-                'server_name' => $module['server_name'],
+                'module_type'=> $module['type'],
             ])
         ->log('مقادیر کانفیگ تغییر کرد');
     
@@ -376,8 +376,7 @@ class ModuleController extends ApiController
             'user' => Auth::user(),
             'module_id' => $module['id'],
             'module_name' => $module['name'],
-            'module_type' => $module['type'],
-            'server_name' => $module['server_name'],
+            'module_type'=> $module['type'],
         ])
     ->log('کانفیگ ماژول به مرحله قبلی بازگشت');
 
@@ -390,7 +389,6 @@ class ModuleController extends ApiController
       'module_id' => $module['id'],
       'module_name' => $module['name'],
       'module_type' => $module['type'],
-      'server_name' => $module['server_name'],
     ]);
   
 
@@ -419,7 +417,6 @@ class ModuleController extends ApiController
             'module_id' => $module['id'],
             'module_name' => $module['name'],
             'module_type' => $module['type'],
-            'server_name' => $module['server_name'],
         ])
     ->log('کانفیگ ماژول به حالت اولیه خود بازگشت');
 
@@ -432,7 +429,6 @@ class ModuleController extends ApiController
       'module_id' => $module['id'],
       'module_name' => $module['name'],
       'module_type' => $module['type'],
-      'server_name' => $module['server_name'],
     ]);
   
 

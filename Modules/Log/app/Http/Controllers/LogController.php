@@ -5,6 +5,7 @@ namespace Modules\Log\Http\Controllers;
 use App\Http\Controllers\Contract\ApiController;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Modules\Log\Http\Requests\Log\ShowAllLogsRequest;
 use Modules\User\Services\PaginationService;
 use Spatie\Activitylog\Models\Activity;
 
@@ -16,7 +17,7 @@ class LogController extends ApiController
         $this->paginationService = $paginationService;
     }
 
-    public function showAllLogs (Request $request)
+    public function showAllLogs (ShowAllLogsRequest $request)
     {
         $logsQuery = Activity::query()
         ->when($request->input('search', ''), function ($query, $search) {
@@ -24,7 +25,11 @@ class LogController extends ApiController
                 $query->where('log_name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
             });
+        })
+        ->when($request->input('type-log', ''), function ($query, $code) {
+            return $query->where('properties', 'like', "%\"type-log\":\"{$code}\"%");
         });
+
 
         $logs = $this->paginationService->paginate($logsQuery, $request, ['id', 'log_name', 'description', 'created_at', 'updated_at']);
 
