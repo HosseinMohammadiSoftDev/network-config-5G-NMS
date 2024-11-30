@@ -14,8 +14,8 @@ class CreateModulesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'unique:modules,name', 'string', 'min:3', 'max:255'],
-            'type' => ['required', 'string', 'min:3', 'max:255'],
+            'name' => ['required', 'string', 'min:3', 'max:255'],
+            'type' => ['required', 'string', 'min:2', 'max:255'],
             'server_id' => ['required', 'exists:servers,id', 'numeric'],
             'config_file' => ['required', 'file',  function ($attribute, $value, $fail) {
                 

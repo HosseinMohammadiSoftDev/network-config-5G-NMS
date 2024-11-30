@@ -25,7 +25,7 @@ class AuthController extends ApiController
                 ->causedBy(Auth::user())
                 ->event('login')
                 ->withProperties([
-                    'tag' => 'app',
+                    'type-log' => 'app',
                     'code' => '5',
                     'route' => request()->fullUrl(),
                     'method' => 'login',
@@ -77,6 +77,7 @@ class AuthController extends ApiController
                 ->causedBy(Auth::user())
                 ->event('logout')
                 ->withProperties([
+                    'type-log' => 'app',
                     'route' => request()->fullUrl(),
                     'method' => 'logout',
                     'user' => $user

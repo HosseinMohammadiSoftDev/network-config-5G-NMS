@@ -37,11 +37,25 @@ class ServerController extends ApiController
         $server = Server::create($credentials);
         
         Log::channel('daily')->info('سرور جدید ساخته شد', [
+            'type-log' => 'server', 
             'route' => request()->fullUrl(),
             'method' => 'createServer',
+            'user' => Auth::user(),
             'server' => $server,
-            'user_id' => Auth::id(),
         ]);
+
+
+        activity('create-server')
+            ->causedBy(Auth::user())
+            ->performedOn($server)
+            ->event('create-server')
+            ->withProperties([
+                'route' => request()->fullUrl(),
+                'method' => 'createServer',
+                'server' => $server,
+                'user' => Auth::user(),
+            ])
+        ->log('سرور جدید ساخته شد');
 
         return $this->respondCreated('سرور با موفقیت ساخته شد', $server);
     }

@@ -25,13 +25,6 @@ class Module extends Model
         'current_config'
     ];
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults() 
-            ->logAll()
-            ->logOnlyDirty()
-            ->useLogName('role');
-    }
 
     public function server()
     {

@@ -38,9 +38,23 @@ class ModuleController extends ApiController
             'route' => request()->fullUrl(),
             'method' => 'showConfigModule',
             'module_id' => $moduleId,  
-            'user' => Auth::id()
+            'user' => Auth::user()
           ]);
         
+
+          activity('invalid-module-id')
+            ->causedBy(Auth::user())
+            ->performedOn($moduleId)
+            ->event('show-config-module')
+            ->withProperties([
+                'type-log' => 'server', 
+                'route' => request()->fullUrl(),
+                'method' => 'showConfigModule',
+                'module_id' => $moduleId,
+                'user' => Auth::id(),
+            ])
+          ->log('شناسه ماژول نامعتبر بود');
+
           return response()->json(['msg' => 'ماژول پیدا نشد'], 404);
       }
   
@@ -76,8 +90,21 @@ class ModuleController extends ApiController
           'route' => request()->fullUrl(),
           'method' => 'uploadModule',
           'error' => $e->getMessage(),
-          'user_id' => Auth::id(),
+          'user' => Auth::user(),
         ]);
+
+        activity('yaml-to-json-error')
+          ->causedBy(Auth::user())
+          ->event('upload-module')
+          ->withProperties([
+              'type-log' => 'server', 
+              'route' => request()->fullUrl(),
+              'method' => 'uploadModule',
+              'error' => $e->getMessage(),
+              'user' => Auth::user(),
+          ])
+        ->log('مشکلی در تبدیل فایل یمل به جیسون پیش امد');
+
 
           return response()->json(['msg' => 'مشکلی در تبدیل فایل به جیسون پیش امد: ' . $e->getMessage()], 400);
       }
@@ -96,8 +123,22 @@ class ModuleController extends ApiController
         'route' => request()->fullUrl(),
         'method' => 'uploadModule',
         'module' => $module,
-        'user_id' => Auth::id(),
+        'user' => Auth::user(),
       ]);
+
+      activity('upload-module-config')
+        ->causedBy(Auth::user())
+        ->performedOn($module)
+        ->event('upload-module')
+        ->withProperties([
+            'type-log' => 'server', 
+            'route' => request()->fullUrl(),
+            'method' => 'uploadModule',
+            'module' => $module,
+            'user' => Auth::user(),
+        ])
+      ->log('فایل کانفیگ در ماژول مورد نظر قرار گرفت');
+
 
       return $this->respondSuccess('فایل با موفقت  تبدیل به جیسون شد', []);
   }
@@ -123,6 +164,18 @@ class ModuleController extends ApiController
         'error' => $e->getMessage(),
         'user_id' => Auth::id(),
       ]);
+
+        activity('file-format-to-json-error')
+          ->causedBy(Auth::user())
+          ->event('upload-module-file')
+          ->withProperties([
+              'type-log' => 'server', 
+              'route' => request()->fullUrl(),
+              'method' => 'uploadModuleFile',
+              'error' => $e->getMessage(),
+              'user_id' => Auth::id(),
+          ])
+        ->log('مشکلی در تبدیل فرمت فایل به جیسون پیش امد');
 
         return response()->json(['msg' => 'مشکلی در تبدیل فایل به جیسون پیش امد: ' . $e->getMessage()], 400);
     }
@@ -176,6 +229,20 @@ class ModuleController extends ApiController
         'user' => Auth::id(),
         'module_id'=> $module['id']
       ]);
+
+
+      activity('create-module')
+        ->causedBy(Auth::user())
+        ->performedOn($module)
+        ->event('create-module')
+        ->withProperties([
+            'type-log' => 'server', 
+            'route' => request()->fullUrl(),
+            'method' => 'createModule',
+            'user' => Auth::id(),
+            'module_id' => $module['id'],
+        ])
+      ->log('ماژول جدید ساخته شده');
 
       return $this->respondCreated('ماژول با موفقیت ساخته شد', [
         'name' => $module['name'],
@@ -241,11 +308,30 @@ class ModuleController extends ApiController
         Log::channel('daily')->info('مقادریر کانفیگ تعقییر کرد',[
           'route' => request()->fullUrl(),
           'method' => 'updateConfigModule',
-          'user' => Auth::id(),
+          'user' => Auth::user(),
           'data' => $data,
           'module_id'=> $module['id'],
           'module_name'=> $module['name'],
+          'module_type'=> $module['type'],
         ]);
+
+
+        activity('update-module-config')
+            ->causedBy(Auth::user())
+            ->performedOn($module)
+            ->event('update-config-module')
+            ->withProperties([
+                'type-log' => 'server', 
+                'route' => request()->fullUrl(),
+                'method' => 'updateConfigModule',
+                'user' => Auth::user(),
+                'data' => $data,
+                'module_id' => $module['id'],
+                'module_name' => $module['name'],
+                'module_type'=> $module['type'],
+            ])
+        ->log('مقادیر کانفیگ تغییر کرد');
+    
 
           DB::commit();
         return response()->json($updateJson);
@@ -271,8 +357,41 @@ class ModuleController extends ApiController
     $module = Module::find($creadtional['module_id']);
     $modulePreviousConfig = $module['previous_config'];
 
+    if ($modulePreviousConfig == null) 
+        return response()->json(['msg' => 'ماژول مقدار قبلی ندارد شما نمیتواند ان را به مقدار قبلی باز گردانید']);
+
     $module['current_config'] = $modulePreviousConfig; 
     $module->save();
+
+
+
+    activity('undo-config-module')
+        ->causedBy(Auth::user())
+        ->performedOn($module)
+        ->event('undo-config-module')
+        ->withProperties([
+            'type-log' => 'server', 
+            'route' => request()->fullUrl(),
+            'method' => 'undoConfigModule',
+            'user' => Auth::user(),
+            'module_id' => $module['id'],
+            'module_name' => $module['name'],
+            'module_type'=> $module['type'],
+        ])
+    ->log('کانفیگ ماژول به مرحله قبلی بازگشت');
+
+
+    Log::channel('daily')->info('کانفیگ ماژول به مرحله قبلی بازگشت', [
+      'type-log' => 'server',
+      'route' => request()->fullUrl(),
+      'method' => 'undoConfigModule',
+      'user' => Auth::user(),
+      'module_id' => $module['id'],
+      'module_name' => $module['name'],
+      'module_type' => $module['type'],
+    ]);
+  
+
 
     return response()->json(['success' => 'ture', 'msg' => 'کانفیگ به مقدار قبلی بازگشت']);
   }
@@ -285,6 +404,34 @@ class ModuleController extends ApiController
 
     $module['current_config'] = $moduleInitialConfig; 
     $module->save();
+
+    activity('undo-config-module')
+        ->causedBy(Auth::user())
+        ->performedOn($module)
+        ->event('undo-config-module')
+        ->withProperties([
+            'type-log' => 'server', 
+            'route' => request()->fullUrl(),
+            'method' => 'undoConfigModule',
+            'user' => Auth::user(),
+            'module_id' => $module['id'],
+            'module_name' => $module['name'],
+            'module_type' => $module['type'],
+        ])
+    ->log('کانفیگ ماژول به حالت اولیه خود بازگشت');
+
+
+    Log::channel('daily')->info('کانفیگ ماژول به حالت اولیه خود بازگشت', [
+      'type-log' => 'server',
+      'route' => request()->fullUrl(),
+      'method' => 'undoConfigModule',
+      'user' => Auth::user(),
+      'module_id' => $module['id'],
+      'module_name' => $module['name'],
+      'module_type' => $module['type'],
+    ]);
+  
+
 
     return response()->json(['success' => 'ture', 'msg' => 'کانفیگ به مقدار اولیه بازگشت']);
   }
