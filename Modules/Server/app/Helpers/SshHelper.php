@@ -57,4 +57,40 @@ class SshHelper
 
         return $output;
     }
+
+
+
+    public static function testConnection($host, $username, $password)
+    {
+        $ssh = new SSH2($host);
+
+        if (!$ssh->login($username, $password)) {
+            Log::channel('daily')->error('اطلاعات شما برای ورود به سرور اشتباه است', [
+                'route' => request()->fullUrl(),
+                'method' => 'testConnection',
+                'user' => Auth::user(),
+                'host' => $host,
+                'userName' => $username,
+                'password' => $password,
+            ]);
+
+
+            activity('ssh-connection')
+                ->causedBy(Auth::user())
+                ->event('failed-connection')
+                ->withProperties([
+                    'type-log' => 'server',
+                    'route' => request()->fullUrl(),
+                    'method' => 'testConnection',
+                    'host' => $host,
+                    'userName' => $username,
+                    'password' => $password,
+                ])
+            ->log('اطلاعات شما برای ورود به سرور اشتباه است');
+
+            throw new Exception('اطلاعات شما برای ورود به سرور اشتباه است');
+        }
+
+        return true;
+    }
 }

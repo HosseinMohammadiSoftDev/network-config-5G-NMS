@@ -5,7 +5,7 @@ namespace Modules\Server\Http\Controllers;
 use App\Http\Controllers\Contract\ApiController;
 use App\Http\Controllers\Controller;
 use Exception;
-use PharIo\Version\UnsupportedVersionConstraintException;
+use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
 use function Laravel\Prompts\select;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,14 +23,18 @@ use Modules\Server\Http\Requests\Undo\UndoConfigModulesRequest;
 use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
 use Modules\Server\Models\Module;
 use Modules\Server\Models\Server;
+use PharIo\Version\UnsupportedVersionConstraintException;
 
+use Spatie\Activitylog\Models\Activity;
 use Spyc;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ModuleController extends ApiController
 {
-  public function showConfigModule ($moduleId)
+  public function showConfigModule (ShowConfilgModuleRequest $request, $moduleId)
   {
+    $creadtional = $request->validated();
+
       $module = Module::find($moduleId);
   
       if (!$module) {
@@ -58,9 +62,53 @@ class ModuleController extends ApiController
           return response()->json(['msg' => 'ماژول پیدا نشد'], 404);
       }
   
+
+        // پارامترهای اتصال به سرور
+    $sshHost = $creadtional['host'];
+    $sshUsername = $creadtional['username'];
+    $sshPassword = $creadtional['password'];
+
+    try {
+        SshHelper::testConnection($sshHost, $sshUsername, $sshPassword);
+
+        Log::channel('daily')->info('اتصال به سرور موفقیت آمیز بود', [
+            'route' => request()->fullUrl(),
+            'method' => 'showConfigModule',
+            'user' => Auth::user(),
+            'module' => $module
+        ]);
+
+
+        activity('server-connection')
+          ->causedBy(Auth::user())
+          ->event('successful-connection')
+          ->withProperties([
+              'type-log' => 'server',
+              'route' => request()->fullUrl(),
+              'method' => 'showConfigModule',
+              'user' => Auth::user(),
+              'module' => $module,
+              'host' => $sshHost,
+              'userName' => $sshUsername
+          ])
+        ->log('اتصال به سرور موفقیت آمیز بود');
+
       return response()->json([
           json_decode($module->current_config, true)
       ]);
+
+    } catch (Exception $e) {
+      Log::channel('daily')->error('اتصال به سرور ناموفق بود', [
+        'route' => request()->fullUrl(),
+        'method' => 'showConfigModule',
+        'error' => $e->getMessage(),
+        'user_id' => Auth::id(),
+        'host' => $sshHost,
+        'userName' => $sshUsername
+      ]);
+
+        return response()->json(['msg' => 'اتصال به سرور ناموفق بود: ' . $e->getMessage()], 500);
+    }
   }  
   public function showAllServiseAndModulesInServer ($serverId)
   {
@@ -315,7 +363,7 @@ class ModuleController extends ApiController
           'module_type'=> $module['type'],
         ]);
 
-
+        
         activity('update-module-config')
             ->causedBy(Auth::user())
             ->performedOn($module)

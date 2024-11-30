@@ -23,7 +23,7 @@ Route::fallback(function(){
 Route::middleware(['auth:sanctum', 'role:admin|visitor|expert'])->get('show-all-servers', [ServerController::class, 'showAllServers']);
 Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('create-server', [ServerController::class, 'createServer']);
 
-Route::middleware(['auth:sanctum', 'role:admin|visitor|expert'])->get('show-config-module/{serverID}', [ModuleController::class, 'showConfigModule']);
+Route::middleware(['auth:sanctum', 'role:admin|visitor|expert'])->post('show-config-module/{serverID}', [ModuleController::class, 'showConfigModule']);
 Route::middleware(['auth:sanctum', 'role:admin|visitor|expert'])->get('show-all-servies-and-modules/{serverID}', [ModuleController::class, 'showAllServiseAndModulesInServer']);
 Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('upload-module', [ModuleController::class, 'uploadModule']);
 Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('create-module', [ModuleController::class, 'createModule']);
