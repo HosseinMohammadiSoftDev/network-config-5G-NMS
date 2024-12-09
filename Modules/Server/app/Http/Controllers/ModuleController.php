@@ -2,56 +2,59 @@
 
 namespace Modules\Server\Http\Controllers;
 
-use App\Http\Controllers\Contract\ApiController;
-use App\Http\Controllers\Controller;
+use Spyc;
 use Exception;
-use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
-use function Laravel\Prompts\select;
+use phpseclib3\Net\SSH2;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Modules\Server\Helpers\JsonUpdater;
-use Modules\Server\Helpers\SshHelper;
-use Modules\Server\Http\Requests\Modules\CreateModulesRequest;
-use Modules\Server\Http\Requests\Modules\ShowAllModules;
-use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
-use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
-use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
-use Modules\Server\Http\Requests\Server\UploadModuleRequest;
-use Modules\Server\Http\Requests\Undo\UndoConfigModulesRequest;
-use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
+use Symfony\Component\Yaml\Yaml;
 use Modules\Server\Models\Module;
 use Modules\Server\Models\Server;
-use PharIo\Version\UnsupportedVersionConstraintException;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use function Laravel\Prompts\select;
+use Illuminate\Support\Facades\Auth;
+use Modules\Server\Helpers\SshHelper;
+use Modules\Server\Helpers\JsonUpdater;
 use Spatie\Activitylog\Models\Activity;
-use Spyc;
+use App\Http\Controllers\Contract\ApiController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Modules\Server\Http\Requests\Modules\ShowAllModules;
+use PharIo\Version\UnsupportedVersionConstraintException;
+use Modules\Server\Http\Requests\Server\UploadModuleRequest;
+use Modules\Server\Http\Requests\Modules\CreateModulesRequest;
+use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
+
+use Modules\Server\Http\Requests\Undo\UndoConfigModulesRequest;
+use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
+use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
+use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
+use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
 
 class ModuleController extends ApiController
 {
+        // show Config in database
   public function showConfigModule (ShowConfilgModuleRequest $request, $moduleId)
   {
     $creadtional = $request->validated();
 
       $module = Module::find($moduleId);
-  
+
       if (!$module) {
           Log::channel('daily')->error('شناسه ماژول نامعتبر بود', [
             'route' => request()->fullUrl(),
             'method' => 'showConfigModule',
-            'module_id' => $moduleId,  
+            'module_id' => $moduleId,
             'user' => Auth::user()
           ]);
-        
+
 
           activity('invalid-module-id')
             ->causedBy(Auth::user())
             ->performedOn($moduleId)
             ->event('show-config-module')
             ->withProperties([
-                'type-log' => 'server', 
+                'type-log' => 'server',
                 'route' => request()->fullUrl(),
                 'method' => 'showConfigModule',
                 'module_id' => $moduleId,
@@ -61,7 +64,7 @@ class ModuleController extends ApiController
 
           return response()->json(['msg' => 'ماژول پیدا نشد'], 404);
       }
-  
+
 
         // پارامترهای اتصال به سرور
     $sshHost = $creadtional['host'];
@@ -109,27 +112,49 @@ class ModuleController extends ApiController
 
         return response()->json(['msg' => 'اتصال به سرور ناموفق بود: ' . $e->getMessage()], 500);
     }
-  }  
+  }
   public function showAllServiseAndModulesInServer ($serverId)
   {
     $server = Server::with(['modules' => function ($query) {
       $query->select('id', 'server_id', 'name', 'type');
     }])->find($serverId);
-    
+
       if(!$server)
-        return response()->json(['msg' => 'شناسه نامعتبر است'], 404);  
+        return response()->json(['msg' => 'شناسه نامعتبر است'], 404);
 
     $modulesGroupedByType = $server->modules->groupBy('type');
 
     return $this->respondSuccess('لیست سرویس های سرور و ماژول های انها', $modulesGroupedByType);
   }
-  
-    // اپلود فایل کانفیگ
+
+
+        // convet format
+  private function parseYamlWithSpyc(UploadedFile $file)
+  {
+      $filePath = $file->getPathname();
+      $jsonContent = Spyc::YAMLLoad($filePath);
+
+      return $jsonContent;
+  }
+  private function convertJsonToYaml($jsonContent)
+  {
+      $arrayContent = json_decode($jsonContent, true);
+
+      if (json_last_error() !== JSON_ERROR_NONE)
+      throw new Exception('خطا در تبدیل JSON به آرایه');
+
+      $yamlContent = Yaml::dump($arrayContent, 4, 2, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK);
+      $yamlContent = preg_replace('/^(  - .+?):\s*$/m', "$1:", $yamlContent);
+
+      return $yamlContent;
+  }
+
+        // create New Module And Upload File .Yaml Convert to Json Upload To database
   public function uploadModule(UploadModuleRequest $request)
   {
       $credentials = $request->validated();
       $file = $request->file('config_file');
-  
+
       try {
           $yamlContent = $this->parseYamlWithSpyc($file);
       } catch (Exception $e) {
@@ -145,7 +170,7 @@ class ModuleController extends ApiController
           ->causedBy(Auth::user())
           ->event('upload-module')
           ->withProperties([
-              'type-log' => 'server', 
+              'type-log' => 'server',
               'route' => request()->fullUrl(),
               'method' => 'uploadModule',
               'error' => $e->getMessage(),
@@ -156,17 +181,17 @@ class ModuleController extends ApiController
 
           return response()->json(['msg' => 'مشکلی در تبدیل فایل به جیسون پیش امد: ' . $e->getMessage()], 400);
       }
-  
+
       $jsonContent = json_encode($yamlContent, JSON_PRETTY_PRINT);
-  
+
       $module = Module::find($credentials['module_id']);
-        if (!$module) 
+        if (!$module)
             return response()->json(['msg' => 'شناسه سرویس نانعتبر است'], 404);
-        
-  
+
+
       $module->config = $jsonContent;
       $module->save();
-  
+
       Log::channel('daily')->info('فایل کانفیگ در ماژول مورد نظر قرار گرفت', [
         'route' => request()->fullUrl(),
         'method' => 'uploadModule',
@@ -179,7 +204,7 @@ class ModuleController extends ApiController
         ->performedOn($module)
         ->event('upload-module')
         ->withProperties([
-            'type-log' => 'server', 
+            'type-log' => 'server',
             'route' => request()->fullUrl(),
             'method' => 'uploadModule',
             'module' => $module,
@@ -190,15 +215,6 @@ class ModuleController extends ApiController
 
       return $this->respondSuccess('فایل با موفقت  تبدیل به جیسون شد', []);
   }
-  private function parseYamlWithSpyc(UploadedFile $file)
-  {
-      $filePath = $file->getPathname();
-      $jsonContent = Spyc::YAMLLoad($filePath);
-
-      return $jsonContent;
-  }
-
-
   private function uploadModuleFile ($file)
   {
 
@@ -217,7 +233,7 @@ class ModuleController extends ApiController
           ->causedBy(Auth::user())
           ->event('upload-module-file')
           ->withProperties([
-              'type-log' => 'server', 
+              'type-log' => 'server',
               'route' => request()->fullUrl(),
               'method' => 'uploadModuleFile',
               'error' => $e->getMessage(),
@@ -236,16 +252,16 @@ class ModuleController extends ApiController
   public function createModule (CreateModulesRequest $request)
   {
       $creadtional = $request->validated();
-      
+
       // $host = $request->input('host');
       // $username = $request->input('username');
       // $password = $request->input('password');
 
       $jsonContent = $this->uploadModuleFile($request->file('config_file'));
-      
-      if (is_array($jsonContent) || is_object($jsonContent)) 
+
+      if (is_array($jsonContent) || is_object($jsonContent))
           return $jsonContent;
-      
+
       // $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $creadtional['name'];
 
       // try {
@@ -261,14 +277,14 @@ class ModuleController extends ApiController
 
       //     return response()->json(["Error: " . $e->getMessage()]);
       // }
-    
-    
+
+
     $module = Module::create([
           'name' => $creadtional['name'],
           'type' => $creadtional['type'],
           'server_id' => $creadtional['server_id'],
-          'initial_config' => $jsonContent, 
-          'current_config' => $jsonContent, 
+          'initial_config' => $jsonContent,
+          'current_config' => $jsonContent,
       ]);
 
       Log::channel('daily')->info('ماژول جدید ساخته شده',[
@@ -284,7 +300,7 @@ class ModuleController extends ApiController
         ->performedOn($module)
         ->event('create-module')
         ->withProperties([
-            'type-log' => 'server', 
+            'type-log' => 'server',
             'route' => request()->fullUrl(),
             'method' => 'createModule',
             'user' => Auth::id(),
@@ -299,116 +315,125 @@ class ModuleController extends ApiController
       ]);
   }
 
-  
-  public function updateConfigModule (UpdateConfigModulerequest $request)
-  {
-      $request->validated();
 
-      $moduleId = $request->input('module_id');
-      $data = $request->input('data', []);
-      
-          // coonection server
-      // $host = $request->input('host');
-      // $username = $request->input('username');
-      // $password = $request->input('password');
+        // update Config Module
+    private function sendConfigToServer($host, $username, $password, $path, $moduleName, $yamlContent)
+    {
+        $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $moduleName . '.yaml';
+        SshHelper::runSshCommand($host, $username, $password, $command);
+    }
+    private function updateModuleConfigInDatabase($moduleId, $data)
+    {
+        $module = Module::find($moduleId);
 
-      $module = Module::find($moduleId);
+        if (!$module) {
+            throw new Exception('ماژول مورد نظر پیدا نشد');
+        }
 
-      $moduleConfig = json_decode($module->current_config, 1);
-
-
-      try {
-          DB::beginTransaction();
-
+        $moduleConfig = json_decode($module->current_config, true);
         $moduleCurrentConfig = $module['current_config'];
         $module['previous_config'] = $moduleCurrentConfig;
 
-        foreach ($data as $key => $value) 
-        {
-          $updateJson = JsonUpdater::updateJsonValue($moduleConfig, $key, $value);
-          $moduleConfig = $updateJson;
+        foreach ($data as $key => $value) {
+            $moduleConfig = JsonUpdater::updateJsonValue($moduleConfig, $key, $value);
         }
 
-            //change to data type string and push to server 
-        // $jsonContent = json_encode($updateJson, JSON_PRETTY_PRINT);
-        // $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $module['name'];
-
-        //   try {
-        //         SshHelper::runSshCommand($host, $username, $password, $command);
-        //   } catch (Exception $e) {
-        //           Log::channel('daily')->error('مشکلی اتصال به سرور و اجرای کامند پیش امد', [
-        //               'route' => request()->fullUrl(),
-        //               'method' => '',
-        //               'user' => Auth::id(),
-        //               'host' => $host,
-        //               'userName' => $username,
-        //               'password' => $password,
-        //               'command' => $command,
-        //           ]);
-
-        //         return response()->json(["Error: مشکلی در روند اجرای برنامه رخ داد" . $e->getMessage()]);
-        //   }
-
-        $module->current_config = $updateJson;
+        $module->current_config = json_encode($moduleConfig, JSON_PRETTY_PRINT);
         $module->save();
 
+        return $module;
+    }
+    public function updateConfigModule(UpdateConfigModuleRequest $request)
+    {
+        $request->validated();
 
-        Log::channel('daily')->info('مقادریر کانفیگ تعقییر کرد',[
-          'route' => request()->fullUrl(),
-          'method' => 'updateConfigModule',
-          'user' => Auth::user(),
-          'data' => $data,
-          'module_id'=> $module['id'],
-          'module_name'=> $module['name'],
-          'module_type'=> $module['type'],
-        ]);
+        $moduleId = $request->input('module_id');
+        $data = $request->input('data', []);
 
-        
-        activity('update-module-config')
-            ->causedBy(Auth::user())
-            ->performedOn($module)
-            ->event('update-config-module')
-            ->withProperties([
-                'type-log' => 'server', 
+        $host = $request->input('host');
+        $username = $request->input('username');
+        $password = $request->input('password');
+        $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
+
+        DB::beginTransaction();
+
+        try {
+            $module = $this->updateModuleConfigInDatabase($moduleId, $data);
+
+            $yamlContent = $this->convertJsonToYaml($module->current_config);
+
+            $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent);
+
+            Log::channel('daily')->info('مقادریر کانفیگ تعقییر کرد', [
                 'route' => request()->fullUrl(),
                 'method' => 'updateConfigModule',
                 'user' => Auth::user(),
                 'data' => $data,
                 'module_id' => $module['id'],
                 'module_name' => $module['name'],
-                'module_type'=> $module['type'],
-            ])
-        ->log('مقادیر کانفیگ تغییر کرد');
-    
-
-          DB::commit();
-        return response()->json($updateJson);
-      } catch (Exception $e) {
-          DB::rollBack();
-
-            Log::channel('daily')->error('مشکلی در اپدیت کردن کانفیگ ماژول به وجود امد',[
-              'route' => request()->fullUrl(),
-              'method' => 'updateConfigModule',
-              'user' => Auth::id(),
-              'module_id'=> $module['id']
+                'module_type' => $module['type'],
             ]);
 
-          return $this->respondInternalError('در روند اجرای برنامه مشکلی پیش امد');
-      }
-  }
+            activity('update-module-config')
+                ->causedBy(Auth::user())
+                ->performedOn($module)
+                ->event('update-config-module')
+                ->withProperties([
+                    'type-log' => 'server',
+                    'route' => request()->fullUrl(),
+                    'method' => 'updateConfigModule',
+                    'user' => Auth::user(),
+                    'data' => $data,
+                    'module_id' => $module['id'],
+                    'module_name' => $module['name'],
+                    'module_type' => $module['type'],
+                ])
+                ->log('مقادیر کانفیگ تغییر کرد');
+
+            DB::commit();
+            return response()->json(json_decode($module->current_config, true));
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::channel('daily')->error('مشکلی در اپدیت کردن کانفیگ ماژول به وجود امد', [
+                'route' => request()->fullUrl(),
+                'method' => 'updateConfigModule',
+                'user' => Auth::id(),
+                'module_id' => $moduleId,
+                'error' => $e->getMessage()
+            ]);
+
+            return $this->respondInternalError('در روند اجرای برنامه مشکلی پیش امد');
+        }
+    }
 
 
+        // Undo Config module
   public function undoConfigModule (UndoConfigModulesRequest $request)
   {
     $creadtional = $request->validated();
-    
+
+    $host = $request->input('host');
+    $username = $request->input('username');
+    $password = $request->input('password');
+    $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
+
+
     $module = Module::find($creadtional['module_id']);
     $modulePreviousConfig = $module['previous_config'];
 
-    if ($modulePreviousConfig == null) 
+    if ($modulePreviousConfig == null)
         return response()->json(['msg' => 'ماژول مقدار قبلی ندارد شما نمیتواند ان را به مقدار قبلی باز گردانید']);
 
-    $module['current_config'] = $modulePreviousConfig; 
+
+        // ssh to server format yaml
+    $yamlContent = $this->convertJsonToYaml($modulePreviousConfig);
+
+    $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
+    SshHelper::runSshCommand($host, $username, $password, $command);
+
+
+        // save to datebase format json
+    $module['current_config'] = $modulePreviousConfig;
     $module->save();
 
 
@@ -418,7 +443,7 @@ class ModuleController extends ApiController
         ->performedOn($module)
         ->event('undo-config-module')
         ->withProperties([
-            'type-log' => 'server', 
+            'type-log' => 'server',
             'route' => request()->fullUrl(),
             'method' => 'undoConfigModule',
             'user' => Auth::user(),
@@ -438,7 +463,7 @@ class ModuleController extends ApiController
       'module_name' => $module['name'],
       'module_type' => $module['type'],
     ]);
-  
+
 
 
     return response()->json(['success' => 'ture', 'msg' => 'کانفیگ به مقدار قبلی بازگشت']);
@@ -446,19 +471,34 @@ class ModuleController extends ApiController
   public function undoToInitialConfigModule (UndoToInitialConfigModulesRequest $request)
   {
     $creadtional = $request->validated();
-    
+
+    $host = $request->input('host');
+    $username = $request->input('username');
+    $password = $request->input('password');
+    $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
+
+
     $module = Module::find($creadtional['module_id']);
     $moduleInitialConfig = $module['initial_config'];
 
-    $module['current_config'] = $moduleInitialConfig; 
+
+        // ssh to server format yaml
+    $yamlContent = $this->convertJsonToYaml($moduleInitialConfig);
+
+    $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
+    SshHelper::runSshCommand($host, $username, $password, $command);
+
+        // save to datebase format json
+    $module['current_config'] = $moduleInitialConfig;
     $module->save();
+
 
     activity('undo-config-module')
         ->causedBy(Auth::user())
         ->performedOn($module)
         ->event('undo-config-module')
         ->withProperties([
-            'type-log' => 'server', 
+            'type-log' => 'server',
             'route' => request()->fullUrl(),
             'method' => 'undoConfigModule',
             'user' => Auth::user(),
@@ -478,7 +518,7 @@ class ModuleController extends ApiController
       'module_name' => $module['name'],
       'module_type' => $module['type'],
     ]);
-  
+
 
 
     return response()->json(['success' => 'ture', 'msg' => 'کانفیگ به مقدار اولیه بازگشت']);
