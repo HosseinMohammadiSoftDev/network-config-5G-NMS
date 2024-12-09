@@ -17,7 +17,7 @@ class AuthController extends ApiController
     {
         $credentials = $request->validated();
 
-        $user = User::where('auth_name', $credentials['auth_name'])->first();
+        $user = User::whereRaw('BINARY auth_name = ?', [$credentials['auth_name']])->first();
 
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
             

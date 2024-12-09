@@ -12,7 +12,11 @@ class UndoToInitialConfigModulesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'module_id' => ['required', 'integer', 'exists:modules,id']
+            'module_id' => ['required', 'integer', 'exists:modules,id'],
+            'host' => ['required', 'string', 'regex:/^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/', 'max:15'],
+            'username' => ['required', 'string'],
+            'password' => ['required', 'string'],
+            'path' => ['nullable', 'string']
         ];
     }
 
