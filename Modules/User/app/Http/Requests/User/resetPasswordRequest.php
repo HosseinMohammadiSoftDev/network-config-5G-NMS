@@ -15,7 +15,9 @@ class resetPasswordRequest extends FormRequest
         return [
             'user_id' => ['required', 'integer', 'exists:users,id'],
             'auth_name' => ['nullable', 'string', 'unique:users,auth_name', 'min:3', 'max:60'],
-            'password' => ['nullable', Password::min(8), 'max:40']
+            'password' => ['nullable', Password::min(8), 'max:40', 'confirmed'],
+            'first_name' => ['nullable', 'min:3', 'max:256'],
+            'last_name' => ['nullable', 'min:3', 'max:256']
         ];
     }
 

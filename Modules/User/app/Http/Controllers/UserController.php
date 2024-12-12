@@ -19,7 +19,7 @@ class UserController extends ApiController
         $this->paginationService = $paginationService;
     }
 
-    public function getMe () 
+    public function getMe ()
     {
         $user = User::find(Auth::id());
 
@@ -41,7 +41,7 @@ class UserController extends ApiController
     {
         $usersQuery = User::with('roles:name');
 
-        $users = $this->paginationService->paginate($usersQuery, $request, 
+        $users = $this->paginationService->paginate($usersQuery, $request,
         ['id', 'created_at', 'updated_at']);
 
         return $this->respondSuccess('تمام کاربران برنامه با موفقیت دریافت شدند', $users);
@@ -50,7 +50,7 @@ class UserController extends ApiController
     {
         $usersQuery = User::onlyTrashed()->with('roles:name');
 
-        $users = $this->paginationService->paginate($usersQuery, $request, 
+        $users = $this->paginationService->paginate($usersQuery, $request,
         ['id', 'created_at', 'updated_at']);
 
         return $this->respondSuccess('لیست کاربرانی که شما ان ها را حذف کردید', $users);
@@ -67,7 +67,7 @@ class UserController extends ApiController
             $user = User::create($credentials);
             $role = $credentials['role'] ?? null;
 
-            if ($role) 
+            if ($role)
                 $user->assignRole($role);
 
                 activity('add-member')
@@ -95,29 +95,31 @@ class UserController extends ApiController
                         'method' => 'addMember',
                         'member' => $credentials,
                     ])
-                ->log('ادمین کاربر را به برنامه ااضافه کرد'); 
-            
+                ->log('ادمین کاربر را به برنامه ااضافه کرد');
+
             return $this->respondInternalError('مشکلی در روند برنامه رخ داد');
         }
     }
     public function resetPsswordAndAuthName (resetPasswordRequest $request)
     {
         $credentials = $request->validated();
-        
+
         $user = User::find($credentials['user_id']);
 
-        if ($user->hasRole('admin') && !Auth::user()->hasRole('admin')) 
-            return response()->json(['msg' => 'شما نمیتوانید کاربری که نقش ادمین را دارد را حذف کنید'], 403); 
+        if ($user->hasRole('admin') && !Auth::user()->hasRole('admin'))
+            return response()->json(['msg' => 'شما نمیتوانید نام کاربری و پسورد ادمین را تعقییر دهیم'], 403);
 
-            
+
         try {
-                DB::beginTransaction();    
-            
+                DB::beginTransaction();
+
             $user->update([
                 'auth_name' => $credentials['auth_name'] ?? $user['auth_name'],
                 'password' => $credentials['password'] ?? $user['password'],
+                'first_name' => $credentials['first_name'] ?? $user['first_name'],
+                'last_name' => $credentials['last_name'] ?? $user['last_name'],
             ]);
-    
+
                 // کاربر را logout میکنیم
             $user->tokens()->delete();
 
@@ -165,23 +167,23 @@ class UserController extends ApiController
             ->log('در تعویض نام کاربری و پسورد کاربر توسط ادمین مشکلی به وجود امد');
 
             return $this->respondInternalError('مشکلی در به روز راسانی نام کاربری و پسورد پیش امده');
-        }          
+        }
     }
     public function deleteAccountMember ($userId)
     {
         $user = User::find($userId);
-            if (!$user) 
+            if (!$user)
                 return response()->json(['msg' => 'شناسه کاربر درست نیست'], 404);
 
-        if ($user->hasRole('admin')) 
+        if ($user->hasRole('admin'))
             return response()->json(['msg' => 'شما نمیتوانید کاربری که نقش ادمین را دارد را حذف کنید'], 403);
-        
+
 
         $user->delete();
 
         $user->tokens()->delete();
 
-        
+
         activity('delete-account')
             ->causedBy(Auth::user())
             ->performedOn($user)
@@ -198,5 +200,5 @@ class UserController extends ApiController
         return $this->respondSuccess('اکانت کاربر با موفقیت حذف شد', $user);
     }
 
-  
+
 }
