@@ -120,7 +120,12 @@ class UserController extends ApiController
                 'last_name' => $credentials['last_name'] ?? $user['last_name'],
             ]);
 
-                // کاربر را logout میکنیم
+                // edit role user
+            if (isset($credentials['role']))
+                $user->syncRoles([$credentials['role']]);
+
+
+                // logout user
             $user->tokens()->delete();
 
             activity('reset-pass-and-auth-name')

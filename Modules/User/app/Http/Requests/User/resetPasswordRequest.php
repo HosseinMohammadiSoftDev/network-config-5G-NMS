@@ -2,8 +2,9 @@
 
 namespace Modules\User\Http\Requests\User;
 
-use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Foundation\Http\FormRequest;
 
 class resetPasswordRequest extends FormRequest
 {
@@ -14,8 +15,16 @@ class resetPasswordRequest extends FormRequest
     {
         return [
             'user_id' => ['required', 'integer', 'exists:users,id'],
-            'auth_name' => ['nullable', 'string', 'unique:users,auth_name', 'min:3', 'max:60'],
+
+            'auth_name' => ['nullable',
+            'string',
+            // 'unique:users,auth_name',
+            Rule::unique('users', 'auth_name')->ignore($this->user_id, 'id'),
+            'min:3',
+            'max:60'],
+
             'password' => ['nullable', Password::min(8), 'max:40', 'confirmed'],
+            'role' => ['nullable', 'string', 'in:expert,visitor'],
             'first_name' => ['nullable', 'min:3', 'max:256'],
             'last_name' => ['nullable', 'min:3', 'max:256']
         ];
