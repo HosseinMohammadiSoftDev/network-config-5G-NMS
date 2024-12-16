@@ -23,10 +23,14 @@ class Server extends Model
         'config'
     ];
 
-  
+    public function getIsDownAttribute($value)
+    {
+        return $value ? 'خاموش' : 'روشن';
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults() 
+        return LogOptions::defaults()
             ->logAll()
             ->logOnlyDirty()
             ->useLogName('server');
