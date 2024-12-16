@@ -11,7 +11,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Module extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -25,13 +25,13 @@ class Module extends Model
         'current_config'
     ];
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults() 
-        ->logOnlyDirty()
-        ->useLogName('module')
-        ->logOnly(['id', 'name', 'type', 'server_id', 'created_at', 'updated_at']);
-    }
+    // public function getActivitylogOptions(): LogOptions
+    // {
+    //     return LogOptions::defaults()
+    //     ->logOnlyDirty()
+    //     ->useLogName('module')
+    //     ->logOnly(['id', 'name', 'type', 'server_id', 'created_at', 'updated_at']);
+    // }
 
     public function server()
     {
