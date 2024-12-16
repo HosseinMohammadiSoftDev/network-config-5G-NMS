@@ -40,6 +40,7 @@ class ModuleController extends ApiController
     $creadtional = $request->validated();
 
       $module = Module::find($moduleId);
+      $server = Server::find($module['server_id']);
 
       if (!$module) {
           Log::channel('daily')->error('شناسه ماژول نامعتبر بود', [
@@ -68,7 +69,7 @@ class ModuleController extends ApiController
 
 
         // پارامترهای اتصال به سرور
-    $sshHost = $creadtional['host'];
+    $sshHost = $server['ip'];
     $sshUsername = $creadtional['username'];
     $sshPassword = $creadtional['password'];
 
@@ -348,10 +349,12 @@ class ModuleController extends ApiController
     {
         $request->validated();
 
-        $moduleId = $request->input('module_id');
+        $module = Module::find($request['module_id']);
+        $server = Server::find($module['server_id']);
+
         $data = $request->input('data', []);
 
-        $host = $request->input('host');
+        $host = $server['ip'];
         $username = $request->input('username');
         $password = $request->input('password');
         $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
@@ -377,7 +380,6 @@ class ModuleController extends ApiController
 
             activity('update-module-config')
                 ->causedBy(Auth::user())
-                ->performedOn($module)
                 ->event('update-config-module')
                 ->withProperties([
                     'type-log' => 'server',
@@ -413,7 +415,10 @@ class ModuleController extends ApiController
   {
     $creadtional = $request->validated();
 
-    $host = $request->input('host');
+    $module = Module::find($creadtional['module_id']);
+    $server = Server::find($module['server_id']);
+
+    $host = $server['ip'];
     $username = $request->input('username');
     $password = $request->input('password');
     $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
@@ -473,7 +478,10 @@ class ModuleController extends ApiController
   {
     $creadtional = $request->validated();
 
-    $host = $request->input('host');
+    $module = Module::find($creadtional['module_id']);
+    $server = Server::find($module['server_id']);
+
+    $host = $server['ip'];
     $username = $request->input('username');
     $password = $request->input('password');
     $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';

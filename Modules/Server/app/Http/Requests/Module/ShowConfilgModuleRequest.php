@@ -12,7 +12,6 @@ class ShowConfilgModuleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'host' => ['required', 'string'],
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
