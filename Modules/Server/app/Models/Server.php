@@ -11,7 +11,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Server extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -23,14 +23,14 @@ class Server extends Model
         'config'
     ];
 
-  
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults() 
-            ->logAll()
-            ->logOnlyDirty()
-            ->useLogName('server');
-    }
+
+    // public function getActivitylogOptions(): LogOptions
+    // {
+    //     return LogOptions::defaults()
+    //         ->logAll()
+    //         ->logOnlyDirty()
+    //         ->useLogName('server');
+    // }
 
     public function modules()
     {

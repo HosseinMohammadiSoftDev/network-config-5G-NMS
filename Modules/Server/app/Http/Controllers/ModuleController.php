@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use function Laravel\Prompts\select;
 use Illuminate\Support\Facades\Auth;
 use Modules\Server\Helpers\SshHelper;
+use Illuminate\Support\Facades\Storage;
 use Modules\Server\Helpers\JsonUpdater;
 use Spatie\Activitylog\Models\Activity;
 use App\Http\Controllers\Contract\ApiController;
@@ -23,8 +24,8 @@ use Modules\Server\Http\Requests\Modules\ShowAllModules;
 use PharIo\Version\UnsupportedVersionConstraintException;
 use Modules\Server\Http\Requests\Server\UploadModuleRequest;
 use Modules\Server\Http\Requests\Modules\CreateModulesRequest;
-use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
 
+use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
 use Modules\Server\Http\Requests\Undo\UndoConfigModulesRequest;
 use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
 use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
@@ -39,6 +40,10 @@ class ModuleController extends ApiController
     $creadtional = $request->validated();
 
       $module = Module::find($moduleId);
+        if (!$module)
+            return response()->json(['msg' => 'شناسه ماژول نامعتبر است'], 404);
+
+      $server = Server::find($module['server_id']);
 
       if (!$module) {
           Log::channel('daily')->error('شناسه ماژول نامعتبر بود', [
@@ -67,9 +72,14 @@ class ModuleController extends ApiController
 
 
         // پارامترهای اتصال به سرور
-    $sshHost = $creadtional['host'];
+    $sshHost = $server['ip'];
     $sshUsername = $creadtional['username'];
     $sshPassword = $creadtional['password'];
+
+        // is stop server
+    if ($server['is_down'] == 1)
+      return response()->json(['msg' => 'سرور خاموش است'], 403);
+
 
     try {
         SshHelper::testConnection($sshHost, $sshUsername, $sshPassword);
@@ -253,30 +263,30 @@ class ModuleController extends ApiController
   {
       $creadtional = $request->validated();
 
-      // $host = $request->input('host');
-      // $username = $request->input('username');
-      // $password = $request->input('password');
+      $host = $request->input('host');
+      $username = $request->input('username');
+      $password = $request->input('password');
 
       $jsonContent = $this->uploadModuleFile($request->file('config_file'));
 
       if (is_array($jsonContent) || is_object($jsonContent))
           return $jsonContent;
 
-      // $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $creadtional['name'];
+      $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $creadtional['name'];
 
-      // try {
-      //        SshHelper::runSshCommand($host, $username, $password, $command);
-      // } catch (Exception $e) {
+      try {
+             SshHelper::runSshCommand($host, $username, $password, $command);
+      } catch (Exception $e) {
 
-      //   Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
-      //     'route' => request()->fullUrl(),
-      //     'method' => 'createModule',
-      //     'error' => $e->getMessage(),
-      //     'user_id' => Auth::id(),
-      //   ]);
+        Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
+          'route' => request()->fullUrl(),
+          'method' => 'createModule',
+          'error' => $e->getMessage(),
+          'user_id' => Auth::id(),
+        ]);
 
-      //     return response()->json(["Error: " . $e->getMessage()]);
-      // }
+          return response()->json(["Error: " . $e->getMessage()]);
+      }
 
 
     $module = Module::create([
@@ -317,8 +327,13 @@ class ModuleController extends ApiController
 
 
         // update Config Module
-    private function sendConfigToServer($host, $username, $password, $path, $moduleName, $yamlContent)
+    private function sendConfigToServer($host, $username, $password, $path, $moduleName, $yamlContent, $server)
     {
+        // is down server
+            if ($server['is_down'] == 1)
+                throw new Exception('سرور خاموش است');
+
+
         $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $moduleName . '.yaml';
         SshHelper::runSshCommand($host, $username, $password, $command);
     }
@@ -347,22 +362,25 @@ class ModuleController extends ApiController
     {
         $request->validated();
 
-        $moduleId = $request->input('module_id');
+        $module = Module::find($request['module_id']);
+        $server = Server::find($module['server_id']);
+
         $data = $request->input('data', []);
 
-        $host = $request->input('host');
+        $host = $server['ip'];
         $username = $request->input('username');
         $password = $request->input('password');
         $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
 
         DB::beginTransaction();
 
-        try {
-            $module = $this->updateModuleConfigInDatabase($moduleId, $data);
+
+            $module = $this->updateModuleConfigInDatabase($module['id'], $data);
 
             $yamlContent = $this->convertJsonToYaml($module->current_config);
 
-            $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent);
+            $this->sendConfigToServer($host, $username, $password, $path,
+                                         $module['name'], $yamlContent, $server);
 
             Log::channel('daily')->info('مقادریر کانفیگ تعقییر کرد', [
                 'route' => request()->fullUrl(),
@@ -376,7 +394,6 @@ class ModuleController extends ApiController
 
             activity('update-module-config')
                 ->causedBy(Auth::user())
-                ->performedOn($module)
                 ->event('update-config-module')
                 ->withProperties([
                     'type-log' => 'server',
@@ -392,18 +409,7 @@ class ModuleController extends ApiController
 
             DB::commit();
             return response()->json(json_decode($module->current_config, true));
-        } catch (Exception $e) {
-            DB::rollBack();
-            Log::channel('daily')->error('مشکلی در اپدیت کردن کانفیگ ماژول به وجود امد', [
-                'route' => request()->fullUrl(),
-                'method' => 'updateConfigModule',
-                'user' => Auth::id(),
-                'module_id' => $moduleId,
-                'error' => $e->getMessage()
-            ]);
 
-            return $this->respondInternalError('در روند اجرای برنامه مشکلی پیش امد');
-        }
     }
 
 
@@ -412,7 +418,10 @@ class ModuleController extends ApiController
   {
     $creadtional = $request->validated();
 
-    $host = $request->input('host');
+    $module = Module::find($creadtional['module_id']);
+    $server = Server::find($module['server_id']);
+
+    $host = $server['ip'];
     $username = $request->input('username');
     $password = $request->input('password');
     $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
@@ -472,7 +481,10 @@ class ModuleController extends ApiController
   {
     $creadtional = $request->validated();
 
-    $host = $request->input('host');
+    $module = Module::find($creadtional['module_id']);
+    $server = Server::find($module['server_id']);
+
+    $host = $server['ip'];
     $username = $request->input('username');
     $password = $request->input('password');
     $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';

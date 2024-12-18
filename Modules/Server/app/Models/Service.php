@@ -11,23 +11,23 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Service extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory;
 
     /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        'name', 
+        'name',
         'server_id',
         'config'
     ];
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults() 
-            ->logAll()
-            ->logOnlyDirty()
-            ->useLogName('service');
-    }
+    // public function getActivitylogOptions(): LogOptions
+    // {
+    //     return LogOptions::defaults()
+    //         ->logAll()
+    //         ->logOnlyDirty()
+    //         ->useLogName('service');
+    // }
 
 }

@@ -22,6 +22,7 @@ Route::fallback(function(){
 
 Route::middleware(['auth:sanctum', 'role:admin|visitor|expert'])->get('show-all-servers', [ServerController::class, 'showAllServers']);
 Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('create-server', [ServerController::class, 'createServer']);
+Route::middleware(['auth:sanctum', 'role:admin|expert'])->put('edit-server', [ServerController::class, 'editServer']);
 
 Route::middleware(['auth:sanctum', 'role:admin|visitor|expert'])->post('show-config-module/{serverID}', [ModuleController::class, 'showConfigModule']);
 Route::middleware(['auth:sanctum', 'role:admin|visitor|expert'])->get('show-all-servies-and-modules/{serverID}', [ModuleController::class, 'showAllServiseAndModulesInServer']);
@@ -31,3 +32,8 @@ Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('update-config-mo
 
 Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('undo-module-config', [ModuleController::class, 'undoConfigModule']);
 Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('undo-to-initial-config-modules', [ModuleController::class, 'undoToInitialConfigModule']);
+
+        // power on | off server
+Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('server-stop', [ServerController::class, 'serverStop']);
+Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('server-start', [ServerController::class, 'ServerStart']);
+Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('server-status', [ServerController::class, 'serverStatus']);

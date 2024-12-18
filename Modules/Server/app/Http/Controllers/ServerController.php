@@ -7,7 +7,10 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Modules\Server\Helpers\SshHelper;
 use Modules\Server\Http\Requests\Server\CreateServerRequest;
+use Modules\Server\Http\Requests\Server\EditServerReqest;
+use Modules\Server\Http\Requests\Server\StartStopComandReqest;
 use Modules\Server\Http\Requests\Server\UploadModuleRequest;
 use Modules\Server\Models\Server;
 use Modules\User\Services\PaginationService;
@@ -16,7 +19,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 
 class ServerController extends ApiController
-{   
+{
     protected $paginationService;
     public function __construct(PaginationService $paginationService)
     {
@@ -33,11 +36,11 @@ class ServerController extends ApiController
     public function createServer (CreateServerRequest $request)
     {
         $credentials = $request->validated();
-        
+
         $server = Server::create($credentials);
-        
+
         Log::channel('daily')->info('سرور جدید ساخته شد', [
-            'type-log' => 'server', 
+            'type-log' => 'server',
             'route' => request()->fullUrl(),
             'method' => 'createServer',
             'user' => Auth::user(),
@@ -50,6 +53,7 @@ class ServerController extends ApiController
             ->performedOn($server)
             ->event('create-server')
             ->withProperties([
+                'type-log' => 'server',
                 'route' => request()->fullUrl(),
                 'method' => 'createServer',
                 'server' => $server,
@@ -59,4 +63,136 @@ class ServerController extends ApiController
 
         return $this->respondCreated('سرور با موفقیت ساخته شد', $server);
     }
+    public function editServer (EditServerReqest $request)
+    {
+        $credentials = $request->validated();
+
+        $server = Server::find($credentials['server_id']);
+
+        $server->update($credentials);
+
+        Log::channel('daily')->info('سرور بهروزرسانی شد', [
+            'type-log' => 'server',
+            'route' => request()->fullUrl(),
+            'method' => 'editServer',
+            'user' => Auth::user(),
+            'server' => $server,
+        ]);
+
+
+        activity('edit-server')
+            ->causedBy(Auth::user())
+            ->performedOn($server)
+            ->event('create-server')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'method' => 'editServer',
+                'server' => $server,
+                'user' => Auth::user(),
+            ])
+        ->log('سرور بهروزرسانی شد');
+
+        return $this->respondSuccess('سرور بهروزرسانی شد', $server);
+    }
+
+
+
+    public function serverStart (StartStopComandReqest $request)
+    {
+        $credentials = $request->validated();
+
+        $server = Server::find($credentials['server_id']);
+
+        if ($server['is_down'] == 1)
+            return response()->json(['سرور خاموش میباشد ', 422]);
+
+
+        $server->update(['is_down' => 1]);
+        $server->save();
+
+
+
+        Log::channel('daily')->info('سرور خاموش شد', [
+            'type-log' => 'server',
+            'route' => request()->fullUrl(),
+            'method' => 'serverStart',
+            'user' => Auth::user(),
+            'server' => $server,
+        ]);
+
+
+        activity('server-stop')
+            ->causedBy(Auth::user())
+            ->performedOn($server)
+            ->event('change-status-server')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'method' => 'serverStart',
+                'server' => $server,
+                'user' => Auth::user(),
+            ])
+        ->log('سرور خاموش شد');
+
+
+
+        return $this->respondSuccess(' سرور باموفقیت خاموش شد', $server);
+    }
+    public function serverStop (StartStopComandReqest $request)
+    {
+        $credentials = $request->validated();
+
+        $server = Server::find($credentials['server_id']);
+
+        if ($server['is_down'] == 0)
+            return response()->json(['سرور روشن میباشد ', 422]);
+
+
+        $server->update(['is_down' => 0]);
+        $server->save();
+
+
+
+
+        Log::channel('daily')->info('سرور روشن شد', [
+            'type-log' => 'server',
+            'route' => request()->fullUrl(),
+            'method' => 'serverStart',
+            'user' => Auth::user(),
+            'server' => $server,
+        ]);
+
+
+        activity('server-start')
+            ->causedBy(Auth::user())
+            ->performedOn($server)
+            ->event('change-server-status')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'method' => 'serverStart',
+                'server' => $server,
+                'user' => Auth::user(),
+            ])
+        ->log('سرور روشن شد');
+
+
+        return $this->respondSuccess(' سرور باموفقیت روشن شد', $server);
+    }
+    public function serverStatus (StartStopComandReqest $request)
+    {
+        $credentials = $request->validated();
+
+        $server = Server::find($credentials['server_id']);
+            if (!$server)
+                return response()->json(['شناسه سرور معتبر نیست', 404]);
+
+
+        $status = $server['is_down'] ? 'خاموش' : 'روشن';
+
+        return response()->json([$status]);
+    }
+
 }
+

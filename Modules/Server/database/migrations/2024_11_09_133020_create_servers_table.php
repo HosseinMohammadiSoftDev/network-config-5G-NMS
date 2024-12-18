@@ -13,11 +13,10 @@ return new class extends Migration
     {
         Schema::create('servers', function (Blueprint $table) {
             $table->id();
-            
+
             $table->string('name')->unique();
             $table->string('ip')->unique();
             $table->boolean('is_down')->default(false);
-            $table->json('config')->nullable();
 
             $table->timestamps();
         });

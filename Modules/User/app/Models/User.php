@@ -15,7 +15,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, HasApiTokens, SoftDeletes, LogsActivity;
+    use HasFactory, Notifiable, HasRoles, HasApiTokens, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -33,14 +33,14 @@ class User extends Authenticatable
     protected $guard_name = 'web'; // گارد وب
 
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults() 
-            ->logAll()
-            ->logOnlyDirty()
-            ->useLogName('User');
-    }
-    
+    // public function getActivitylogOptions(): LogOptions
+    // {
+    //     return LogOptions::defaults()
+    //         ->logAll()
+    //         ->logOnlyDirty()
+    //         ->useLogName('User');
+    // }
+
     protected $hidden = [
         'password',
         'remember_token',
