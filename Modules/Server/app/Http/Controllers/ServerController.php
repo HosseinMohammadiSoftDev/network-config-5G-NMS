@@ -111,6 +111,32 @@ class ServerController extends ApiController
         $server->update(['is_down' => 1]);
         $server->save();
 
+
+
+        Log::channel('daily')->info('سرور خاموش شد', [
+            'type-log' => 'server',
+            'route' => request()->fullUrl(),
+            'method' => 'serverStart',
+            'user' => Auth::user(),
+            'server' => $server,
+        ]);
+
+
+        activity('server-stop')
+            ->causedBy(Auth::user())
+            ->performedOn($server)
+            ->event('change-status-server')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'method' => 'serverStart',
+                'server' => $server,
+                'user' => Auth::user(),
+            ])
+        ->log('سرور خاموش شد');
+
+
+
         return $this->respondSuccess(' سرور باموفقیت خاموش شد', $server);
     }
     public function serverStop (StartStopComandReqest $request)
@@ -126,15 +152,46 @@ class ServerController extends ApiController
         $server->update(['is_down' => 0]);
         $server->save();
 
+
+
+
+        Log::channel('daily')->info('سرور روشن شد', [
+            'type-log' => 'server',
+            'route' => request()->fullUrl(),
+            'method' => 'serverStart',
+            'user' => Auth::user(),
+            'server' => $server,
+        ]);
+
+
+        activity('server-start')
+            ->causedBy(Auth::user())
+            ->performedOn($server)
+            ->event('change-server-status')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'method' => 'serverStart',
+                'server' => $server,
+                'user' => Auth::user(),
+            ])
+        ->log('سرور روشن شد');
+
+
         return $this->respondSuccess(' سرور باموفقیت روشن شد', $server);
     }
-    public function serverStatus ($serverId)
+    public function serverStatus (StartStopComandReqest $request)
     {
-        $server = Server::find($serverId);
+        $credentials = $request->validated();
+
+        $server = Server::find($credentials['server_id']);
             if (!$server)
                 return response()->json(['شناسه سرور معتبر نیست', 404]);
 
-        return response()->json([$server['is_down']]);
+
+        $status = $server['is_down'] ? 'خاموش' : 'روشن';
+
+        return response()->json([$status]);
     }
 
 }

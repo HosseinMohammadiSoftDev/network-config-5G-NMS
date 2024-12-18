@@ -23,10 +23,6 @@ class Server extends Model
         'config'
     ];
 
-    public function getIsDownAttribute($value)
-    {
-        return $value ? 'خاموش' : 'روشن';
-    }
 
     // public function getActivitylogOptions(): LogOptions
     // {

@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Modules\User\Services;
 
@@ -15,7 +15,7 @@ class PaginationService
         $paginate = $request->input('paginate', 10);
         $paginate = min($paginate, $this->maxPaginate);
 
-        if (!in_array('id', $sortableColumns)) 
+        if (!in_array('id', $sortableColumns))
             $sortableColumns[] = 'id';
 
         $sortColumn = $request->input('sort', 'id');
@@ -29,7 +29,7 @@ class PaginationService
 
         $tableName = $query->getModel()->getTable();
 
-        return $query->orderBy("{$tableName}.{$sortColumn}", $sortDirection)->simplePaginate($paginate);
+        return $query->orderBy("{$tableName}.{$sortColumn}", $sortDirection)->paginate($paginate);
     }
 
     protected function isSortable($column, array $sortableColumns)

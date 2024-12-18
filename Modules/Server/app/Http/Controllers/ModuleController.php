@@ -40,6 +40,9 @@ class ModuleController extends ApiController
     $creadtional = $request->validated();
 
       $module = Module::find($moduleId);
+        if (!$module)
+            return response()->json(['msg' => 'شناسه ماژول نامعتبر است'], 404);
+
       $server = Server::find($module['server_id']);
 
       if (!$module) {
@@ -72,6 +75,11 @@ class ModuleController extends ApiController
     $sshHost = $server['ip'];
     $sshUsername = $creadtional['username'];
     $sshPassword = $creadtional['password'];
+
+        // is stop server
+    if ($server['is_down'] == 1)
+      return response()->json(['msg' => 'سرور خاموش است'], 403);
+
 
     try {
         SshHelper::testConnection($sshHost, $sshUsername, $sshPassword);
@@ -255,30 +263,30 @@ class ModuleController extends ApiController
   {
       $creadtional = $request->validated();
 
-      // $host = $request->input('host');
-      // $username = $request->input('username');
-      // $password = $request->input('password');
+      $host = $request->input('host');
+      $username = $request->input('username');
+      $password = $request->input('password');
 
       $jsonContent = $this->uploadModuleFile($request->file('config_file'));
 
       if (is_array($jsonContent) || is_object($jsonContent))
           return $jsonContent;
 
-      // $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $creadtional['name'];
+      $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $creadtional['name'];
 
-      // try {
-      //        SshHelper::runSshCommand($host, $username, $password, $command);
-      // } catch (Exception $e) {
+      try {
+             SshHelper::runSshCommand($host, $username, $password, $command);
+      } catch (Exception $e) {
 
-      //   Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
-      //     'route' => request()->fullUrl(),
-      //     'method' => 'createModule',
-      //     'error' => $e->getMessage(),
-      //     'user_id' => Auth::id(),
-      //   ]);
+        Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
+          'route' => request()->fullUrl(),
+          'method' => 'createModule',
+          'error' => $e->getMessage(),
+          'user_id' => Auth::id(),
+        ]);
 
-      //     return response()->json(["Error: " . $e->getMessage()]);
-      // }
+          return response()->json(["Error: " . $e->getMessage()]);
+      }
 
 
     $module = Module::create([
@@ -319,8 +327,13 @@ class ModuleController extends ApiController
 
 
         // update Config Module
-    private function sendConfigToServer($host, $username, $password, $path, $moduleName, $yamlContent)
+    private function sendConfigToServer($host, $username, $password, $path, $moduleName, $yamlContent, $server)
     {
+        // is down server
+            if ($server['is_down'] == 1)
+                throw new Exception('سرور خاموش است');
+
+
         $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $moduleName . '.yaml';
         SshHelper::runSshCommand($host, $username, $password, $command);
     }
@@ -361,12 +374,13 @@ class ModuleController extends ApiController
 
         DB::beginTransaction();
 
-        try {
-            $module = $this->updateModuleConfigInDatabase($moduleId, $data);
+
+            $module = $this->updateModuleConfigInDatabase($module['id'], $data);
 
             $yamlContent = $this->convertJsonToYaml($module->current_config);
 
-            $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent);
+            $this->sendConfigToServer($host, $username, $password, $path,
+                                         $module['name'], $yamlContent, $server);
 
             Log::channel('daily')->info('مقادریر کانفیگ تعقییر کرد', [
                 'route' => request()->fullUrl(),
@@ -395,18 +409,7 @@ class ModuleController extends ApiController
 
             DB::commit();
             return response()->json(json_decode($module->current_config, true));
-        } catch (Exception $e) {
-            DB::rollBack();
-            Log::channel('daily')->error('مشکلی در اپدیت کردن کانفیگ ماژول به وجود امد', [
-                'route' => request()->fullUrl(),
-                'method' => 'updateConfigModule',
-                'user' => Auth::id(),
-                'module_id' => $moduleId,
-                'error' => $e->getMessage()
-            ]);
 
-            return $this->respondInternalError('در روند اجرای برنامه مشکلی پیش امد');
-        }
     }
 
 

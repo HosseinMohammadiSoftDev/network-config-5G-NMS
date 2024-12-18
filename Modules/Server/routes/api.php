@@ -36,4 +36,4 @@ Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('undo-to-initial-
         // power on | off server
 Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('server-stop', [ServerController::class, 'serverStop']);
 Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('server-start', [ServerController::class, 'ServerStart']);
-Route::middleware(['auth:sanctum', 'role:admin|expert'])->get('server-status/serverID', [ServerController::class, 'serverStatus']);
+Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('server-status', [ServerController::class, 'serverStatus']);
