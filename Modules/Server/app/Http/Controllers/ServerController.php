@@ -12,6 +12,7 @@ use Modules\Server\Http\Requests\Server\CreateServerRequest;
 use Modules\Server\Http\Requests\Server\EditServerReqest;
 use Modules\Server\Http\Requests\Server\StartStopComandReqest;
 use Modules\Server\Http\Requests\Server\UploadModuleRequest;
+use Modules\Server\Http\Requests\TestConnectionRequest;
 use Modules\Server\Models\Server;
 use Modules\User\Services\PaginationService;
 use Spyc;
@@ -194,5 +195,63 @@ class ServerController extends ApiController
         return response()->json([$status]);
     }
 
+
+    public function testConnection (TestConnectionRequest $request)
+    {
+
+        $creadtional = $request->validated();
+        $server = Server::find($creadtional['server_id']);
+
+
+                // پارامترهای اتصال به سرور
+        $sshHost = $server['ip'];
+        $sshUsername = $creadtional['username'];
+        $sshPassword = $creadtional['password'];
+
+                // is stop server
+        if ($server['is_down'] == 1)
+            return response()->json(['msg' => 'سرور خاموش است'], 403);
+
+
+            try {
+            SshHelper::testConnection($sshHost, $sshUsername, $sshPassword);
+
+            Log::channel('daily')->info('اتصال به سرور موفقیت آمیز بود', [
+            'route' => request()->fullUrl(),
+            'method' => 'showConfigModule',
+            'user' => Auth::user(),
+            'server' => $server
+            ]);
+
+
+            activity('server-connection')
+            ->causedBy(Auth::user())
+            ->event('successful-connection')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'method' => 'showConfigModule',
+                'user' => Auth::user(),
+                'server' => $server,
+                'host' => $sshHost,
+                'userName' => $sshUsername
+            ])
+            ->log('اتصال به سرور موفقیت آمیز بود');
+
+
+
+        } catch (Exception $e) {
+            Log::channel('daily')->error('اتصال به سرور ناموفق بود', [
+                'route' => request()->fullUrl(),
+                'method' => 'showConfigModule',
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id(),
+                'host' => $sshHost,
+                'userName' => $sshUsername
+            ]);
+
+            return response()->json(['msg' => 'اتصال به سرور ناموفق بود: ' . $e->getMessage()], 500);
+        }
+    }
 }
 

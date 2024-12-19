@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Server\Http\Requests\Module;
+namespace Modules\Server\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ShowConfilgModuleRequest extends FormRequest
+class TestConnectionRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -12,6 +12,7 @@ class ShowConfilgModuleRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'server_id' => ['required', 'exists:servers,id', 'integer'],
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
