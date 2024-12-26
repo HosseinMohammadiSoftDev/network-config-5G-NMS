@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use Modules\Server\Helpers\JsonUpdater;
 use Spatie\Activitylog\Models\Activity;
 use App\Http\Controllers\Contract\ApiController;
+use Modules\Server\Http\Requests\deleteModuleRequest;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Modules\Server\Http\Requests\Modules\ShowAllModules;
 use PharIo\Version\UnsupportedVersionConstraintException;
@@ -249,7 +250,11 @@ class ModuleController extends ApiController
         'route' => request()->fullUrl(),
         'method' => 'createModule',
         'user' => Auth::id(),
-        'module_id'=> $module['id']
+        'module' => [
+            'name' => $module['name'],
+            'type' => $module['type'],
+            'server_id' => $module['server_id']
+        ]
       ]);
 
 
@@ -262,7 +267,11 @@ class ModuleController extends ApiController
             'route' => request()->fullUrl(),
             'method' => 'createModule',
             'user' => Auth::id(),
-            'module_id' => $module['id'],
+            'module' => [
+                'name' => $module['name'],
+                'type' => $module['type'],
+                'server_id' => $module['server_id']
+            ]
         ])
       ->log('ماژول جدید ساخته شده');
 
@@ -271,6 +280,44 @@ class ModuleController extends ApiController
         'type' => $module['type'],
         'server_id' => $module['server_id'],
       ]);
+  }
+  public function deleteModule(deleteModuleRequest $request)
+  {
+    $creadtional = $request->validated();
+
+    $module = Module::find($creadtional['module_id']);
+    $module->delete();
+
+    Log::channel('daily')->info('ماژول با موفقیت ساخته شد',[
+        'route' => request()->fullUrl(),
+        'method' => 'deleteModule',
+        'user' => Auth::id(),
+        'module'=> [
+            'name' => $module['name'],
+            'type' => $module['type'],
+            'server_id' => $module['server_id']
+        ]
+      ]);
+
+
+      activity('delete-module')
+        ->causedBy(Auth::user())
+        ->performedOn($module)
+        ->event('create-module')
+        ->withProperties([
+            'type-log' => 'server',
+            'route' => request()->fullUrl(),
+            'method' => 'createModule',
+            'user' => Auth::id(),
+            'module_id' => [
+                'name' => $module['name'],
+                'type' => $module['type'],
+                'server_id' => $module['server_id'],
+            ],
+        ])
+      ->log('ماژول با موفقیت پاک شد');
+
+    return $this->respondSuccess('ماژول باموفقیت پاک شد', []);
   }
 
 

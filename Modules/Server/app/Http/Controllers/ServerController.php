@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Modules\Server\Helpers\SshHelper;
+use Modules\Server\Http\Requests\DeleteServerReqest;
 use Modules\Server\Http\Requests\Server\CreateServerRequest;
 use Modules\Server\Http\Requests\Server\EditServerReqest;
 use Modules\Server\Http\Requests\Server\StartStopComandReqest;
@@ -95,6 +96,37 @@ class ServerController extends ApiController
         ->log('سرور بهروزرسانی شد');
 
         return $this->respondSuccess('سرور بهروزرسانی شد', $server);
+    }
+    public function deleteServer (DeleteServerReqest $request)
+    {
+        $credentials = $request->validated();
+
+        $server = Server::find($credentials['server_id']);
+        $server->delete();
+
+        Log::channel('daily')->info('سرور پاک شد', [
+            'type-log' => 'server',
+            'route' => request()->fullUrl(),
+            'method' => 'deleteServer',
+            'user' => Auth::user(),
+            'server' => $server,
+        ]);
+
+
+        activity('delete-server')
+            ->causedBy(Auth::user())
+            ->performedOn($server)
+            ->event('delete')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'method' => 'deleteServer',
+                'server' => $server,
+                'user' => Auth::user(),
+            ])
+        ->log('سرور پاک شد');
+
+        return $this->respondSuccess('سرور باموفقیت با تمام ماژول هایش پاک شدند', $server);
     }
 
 
