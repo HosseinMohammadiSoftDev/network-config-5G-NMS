@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Server\Http\Requests\Undo;
+namespace Modules\Server\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UndoToInitialConfigModulesRequest extends FormRequest
+class TestConnectionRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -12,10 +12,9 @@ class UndoToInitialConfigModulesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'module_id' => ['required', 'integer', 'exists:modules,id'],
+            'server_id' => ['required', 'exists:servers,id', 'integer'],
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
-            'path' => ['nullable', 'string']
         ];
     }
 

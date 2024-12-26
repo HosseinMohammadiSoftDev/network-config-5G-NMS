@@ -24,26 +24,23 @@ use Modules\Server\Http\Requests\Modules\ShowAllModules;
 use PharIo\Version\UnsupportedVersionConstraintException;
 use Modules\Server\Http\Requests\Server\UploadModuleRequest;
 use Modules\Server\Http\Requests\Modules\CreateModulesRequest;
-
 use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
 use Modules\Server\Http\Requests\Undo\UndoConfigModulesRequest;
 use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
 use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
+use Modules\Server\Http\Requests\Modules\DeleteModuleRequest;
 use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
 
 class ModuleController extends ApiController
 {
         // show Config in database
-  public function showConfigModule (ShowConfilgModuleRequest $request, $moduleId)
+  public function showConfigModule ($moduleId)
   {
-    $creadtional = $request->validated();
-
       $module = Module::find($moduleId);
         if (!$module)
             return response()->json(['msg' => 'شناسه ماژول نامعتبر است'], 404);
 
-      $server = Server::find($module['server_id']);
 
       if (!$module) {
           Log::channel('daily')->error('شناسه ماژول نامعتبر بود', [
@@ -70,58 +67,9 @@ class ModuleController extends ApiController
           return response()->json(['msg' => 'ماژول پیدا نشد'], 404);
       }
 
-
-        // پارامترهای اتصال به سرور
-    $sshHost = $server['ip'];
-    $sshUsername = $creadtional['username'];
-    $sshPassword = $creadtional['password'];
-
-        // is stop server
-    if ($server['is_down'] == 1)
-      return response()->json(['msg' => 'سرور خاموش است'], 403);
-
-
-    try {
-        SshHelper::testConnection($sshHost, $sshUsername, $sshPassword);
-
-        Log::channel('daily')->info('اتصال به سرور موفقیت آمیز بود', [
-            'route' => request()->fullUrl(),
-            'method' => 'showConfigModule',
-            'user' => Auth::user(),
-            'module' => $module
-        ]);
-
-
-        activity('server-connection')
-          ->causedBy(Auth::user())
-          ->event('successful-connection')
-          ->withProperties([
-              'type-log' => 'server',
-              'route' => request()->fullUrl(),
-              'method' => 'showConfigModule',
-              'user' => Auth::user(),
-              'module' => $module,
-              'host' => $sshHost,
-              'userName' => $sshUsername
-          ])
-        ->log('اتصال به سرور موفقیت آمیز بود');
-
       return response()->json([
-          json_decode($module->current_config, true)
+        json_decode($module->current_config, true)
       ]);
-
-    } catch (Exception $e) {
-      Log::channel('daily')->error('اتصال به سرور ناموفق بود', [
-        'route' => request()->fullUrl(),
-        'method' => 'showConfigModule',
-        'error' => $e->getMessage(),
-        'user_id' => Auth::id(),
-        'host' => $sshHost,
-        'userName' => $sshUsername
-      ]);
-
-        return response()->json(['msg' => 'اتصال به سرور ناموفق بود: ' . $e->getMessage()], 500);
-    }
   }
   public function showAllServiseAndModulesInServer ($serverId)
   {
@@ -274,19 +222,19 @@ class ModuleController extends ApiController
 
       $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $creadtional['name'];
 
-      try {
-             SshHelper::runSshCommand($host, $username, $password, $command);
-      } catch (Exception $e) {
+    //   try {
+    //          SshHelper::runSshCommand($host, $username, $password, $command);
+    //   } catch (Exception $e) {
 
-        Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
-          'route' => request()->fullUrl(),
-          'method' => 'createModule',
-          'error' => $e->getMessage(),
-          'user_id' => Auth::id(),
-        ]);
+    //     Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
+    //       'route' => request()->fullUrl(),
+    //       'method' => 'createModule',
+    //       'error' => $e->getMessage(),
+    //       'user_id' => Auth::id(),
+    //     ]);
 
-          return response()->json(["Error: " . $e->getMessage()]);
-      }
+    //       return response()->json(["Error: " . $e->getMessage()]);
+    //   }
 
 
     $module = Module::create([
@@ -301,7 +249,11 @@ class ModuleController extends ApiController
         'route' => request()->fullUrl(),
         'method' => 'createModule',
         'user' => Auth::id(),
-        'module_id'=> $module['id']
+        'module' => [
+            'name' => $module['name'],
+            'type' => $module['type'],
+            'server_id' => $module['server_id']
+        ]
       ]);
 
 
@@ -314,7 +266,11 @@ class ModuleController extends ApiController
             'route' => request()->fullUrl(),
             'method' => 'createModule',
             'user' => Auth::id(),
-            'module_id' => $module['id'],
+            'module' => [
+                'name' => $module['name'],
+                'type' => $module['type'],
+                'server_id' => $module['server_id']
+            ]
         ])
       ->log('ماژول جدید ساخته شده');
 
@@ -323,6 +279,44 @@ class ModuleController extends ApiController
         'type' => $module['type'],
         'server_id' => $module['server_id'],
       ]);
+  }
+  public function deleteModule(deleteModuleRequest $request)
+  {
+    $creadtional = $request->validated();
+
+    $module = Module::find($creadtional['module_id']);
+    $module->delete();
+
+    Log::channel('daily')->info('ماژول با موفقیت ساخته شد',[
+        'route' => request()->fullUrl(),
+        'method' => 'deleteModule',
+        'user' => Auth::id(),
+        'module'=> [
+            'name' => $module['name'],
+            'type' => $module['type'],
+            'server_id' => $module['server_id']
+        ]
+      ]);
+
+
+      activity('delete-module')
+        ->causedBy(Auth::user())
+        ->performedOn($module)
+        ->event('create-module')
+        ->withProperties([
+            'type-log' => 'server',
+            'route' => request()->fullUrl(),
+            'method' => 'createModule',
+            'user' => Auth::id(),
+            'module_id' => [
+                'name' => $module['name'],
+                'type' => $module['type'],
+                'server_id' => $module['server_id'],
+            ],
+        ])
+      ->log('ماژول با موفقیت پاک شد');
+
+    return $this->respondSuccess('ماژول باموفقیت پاک شد', []);
   }
 
 

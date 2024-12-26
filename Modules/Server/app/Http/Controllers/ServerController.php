@@ -8,10 +8,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Modules\Server\Helpers\SshHelper;
+use Modules\Server\Http\Requests\Server\DeleteServerReqest;
 use Modules\Server\Http\Requests\Server\CreateServerRequest;
 use Modules\Server\Http\Requests\Server\EditServerReqest;
 use Modules\Server\Http\Requests\Server\StartStopComandReqest;
 use Modules\Server\Http\Requests\Server\UploadModuleRequest;
+use Modules\Server\Http\Requests\TestConnectionRequest;
 use Modules\Server\Models\Server;
 use Modules\User\Services\PaginationService;
 use Spyc;
@@ -94,6 +96,37 @@ class ServerController extends ApiController
         ->log('سرور بهروزرسانی شد');
 
         return $this->respondSuccess('سرور بهروزرسانی شد', $server);
+    }
+    public function deleteServer (DeleteServerReqest $request)
+    {
+        $credentials = $request->validated();
+
+        $server = Server::find($credentials['server_id']);
+        $server->delete();
+
+        Log::channel('daily')->info('سرور پاک شد', [
+            'type-log' => 'server',
+            'route' => request()->fullUrl(),
+            'method' => 'deleteServer',
+            'user' => Auth::user(),
+            'server' => $server,
+        ]);
+
+
+        activity('delete-server')
+            ->causedBy(Auth::user())
+            ->performedOn($server)
+            ->event('delete')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'method' => 'deleteServer',
+                'server' => $server,
+                'user' => Auth::user(),
+            ])
+        ->log('سرور پاک شد');
+
+        return $this->respondSuccess('سرور باموفقیت با تمام ماژول هایش پاک شدند', $server);
     }
 
 
@@ -194,5 +227,63 @@ class ServerController extends ApiController
         return response()->json([$status]);
     }
 
+
+    public function testConnection (TestConnectionRequest $request)
+    {
+
+        $creadtional = $request->validated();
+        $server = Server::find($creadtional['server_id']);
+
+
+                // پارامترهای اتصال به سرور
+        $sshHost = $server['ip'];
+        $sshUsername = $creadtional['username'];
+        $sshPassword = $creadtional['password'];
+
+                // is stop server
+        if ($server['is_down'] == 1)
+            return response()->json(['msg' => 'سرور خاموش است'], 403);
+
+
+            try {
+            SshHelper::testConnection($sshHost, $sshUsername, $sshPassword);
+
+            Log::channel('daily')->info('اتصال به سرور موفقیت آمیز بود', [
+            'route' => request()->fullUrl(),
+            'method' => 'showConfigModule',
+            'user' => Auth::user(),
+            'server' => $server
+            ]);
+
+
+            activity('server-connection')
+            ->causedBy(Auth::user())
+            ->event('successful-connection')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'method' => 'showConfigModule',
+                'user' => Auth::user(),
+                'server' => $server,
+                'host' => $sshHost,
+                'userName' => $sshUsername
+            ])
+            ->log('اتصال به سرور موفقیت آمیز بود');
+
+            return response()->json(['msg'=> 'connect successful.'], 200);
+
+        } catch (Exception $e) {
+            Log::channel('daily')->error('اتصال به سرور ناموفق بود', [
+                'route' => request()->fullUrl(),
+                'method' => 'showConfigModule',
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id(),
+                'host' => $sshHost,
+                'userName' => $sshUsername
+            ]);
+
+            return response()->json(['msg' => 'اتصال به سرور ناموفق بود: ' . $e->getMessage()], 500);
+        }
+    }
 }
 

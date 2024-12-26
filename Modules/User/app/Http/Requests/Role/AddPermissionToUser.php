@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Server\Http\Requests\Undo;
+namespace Modules\User\Http\Requests\Role;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UndoToInitialConfigModulesRequest extends FormRequest
+class AddPermissionToUser extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -12,10 +12,8 @@ class UndoToInitialConfigModulesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'module_id' => ['required', 'integer', 'exists:modules,id'],
-            'username' => ['required', 'string'],
-            'password' => ['required', 'string'],
-            'path' => ['nullable', 'string']
+            'user_id' => ['required', 'integer', 'exists:users,id'],
+            'permission_name' => ['required', 'string', 'exists:permissions,name']
         ];
     }
 
