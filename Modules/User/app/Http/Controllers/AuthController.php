@@ -20,7 +20,7 @@ class AuthController extends ApiController
         $user = User::whereRaw('BINARY auth_name = ?', [$credentials['auth_name']])->first();
 
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
-            
+
             activity('auth-name-or-passord-wrong')
                 ->causedBy(Auth::user())
                 ->event('login')
@@ -32,7 +32,7 @@ class AuthController extends ApiController
                     'auth-name' => $credentials['auth_name'],
                     'password' => $credentials['password']
                 ])
-            ->log('کاربر زمان ورود ایمیل یا کلمه عبور اشتباه وارد کرده است'); 
+            ->log('کاربر زمان ورود ایمیل یا کلمه عبور اشتباه وارد کرده است');
 
             return response()->json(['msg' => 'نام کاربری یا رمز عبور را اشتباه وارد کردید'], 422);
         }
@@ -50,7 +50,7 @@ class AuthController extends ApiController
                     'user' => $user,
                     'token' => $token,
                 ])
-            ->log('کار با نام کاربری و پسورد وارد شد'); 
+            ->log('کاربر با نام کاربری و پسورد وارد شد');
 
         return $this->respondSuccess('کاربر ورود پیدا کرد', [
             'user' => [
@@ -65,7 +65,7 @@ class AuthController extends ApiController
             ],
             'token' => $token,
         ]);
-    } 
+    }
     public function logout(Request $request)
     {
         try {
@@ -82,9 +82,9 @@ class AuthController extends ApiController
                     'method' => 'logout',
                     'user' => $user
                 ])
-            ->log('کاربر از حساب کاربری خود خارج شد'); 
+            ->log('کاربر از حساب کاربری خود خارج شد');
 
-            return $this->respondSuccess('کاربر از حساب  خود خارج شد', ['user' => $user]);            
+            return $this->respondSuccess('کاربر از حساب  خود خارج شد', ['user' => $user]);
         } catch (\Exception $e) {
 
             activity('logout')
@@ -95,7 +95,7 @@ class AuthController extends ApiController
                     'method' => 'logout',
                     'error' => $e->getMessage()
                 ])
-            ->log('مشکلی در خروج کاربر رخ داد'); 
+            ->log('مشکلی در خروج کاربر رخ داد');
 
             return response()->json(['msg' => 'مشکلی در خروج کاربر به وجود امد']);
         }

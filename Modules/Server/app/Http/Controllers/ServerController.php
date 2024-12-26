@@ -238,7 +238,7 @@ class ServerController extends ApiController
             ])
             ->log('اتصال به سرور موفقیت آمیز بود');
 
-
+            return response()->json(['msg'=> 'connect successful.'], 200);
 
         } catch (Exception $e) {
             Log::channel('daily')->error('اتصال به سرور ناموفق بود', [

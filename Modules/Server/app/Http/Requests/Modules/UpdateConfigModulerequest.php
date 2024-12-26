@@ -15,7 +15,6 @@ class UpdateConfigModulerequest extends FormRequest
             'module_id' => ['required', 'exists:modules,id', 'integer'],
             'data' => ['required', 'array'],
             // 'data.*' => ['required', 'string'],
-            'host' => ['required', 'string'],
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
             'path' => ['nullable', 'string', 'max:255']

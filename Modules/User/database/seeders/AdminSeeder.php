@@ -17,13 +17,34 @@ class AdminSeeder extends Seeder
     {
 
         $permissions = [
-            'user',
-            'server',
-            'log-user',
-            'log-app',
-            'readOnly'
+                // user
+            'user/read',
+            'user/create',
+            'user/update',
+            'user/delete',
+
+                // server
+            'server/read',
+            'server/create',
+            'server/update',
+            'server/delete',
+
+                // module
+            'module/read',
+            'module/create',
+            'module/update',
+            'module/delete',
+
+                // on or off server
+            'server/off',
+
+                // log
+            'log/user',
+            'log/app',
+
+
         ];
-            
+
             foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
@@ -39,22 +60,24 @@ class AdminSeeder extends Seeder
                 'first_name' => 'Admin',
                 'last_name' => 'Admin',
                 'password' => Hash::make('password'),
-            ], 
+            ],
         );
-         
+
         $admin->assignRole($adminRole);
 
 
             // visitor
         $visitorRole = Role::firstOrCreate(['name' => 'visitor']);
-        $permissions = Permission::whereIn('name', ['Reader', 'log-app'])->get();
+        $permissions = Permission::whereIn('name', ['server/read', 'module/read'])->get();
         $visitorRole->syncPermissions($permissions);
 
             // expert
         $visitorRole = Role::firstOrCreate(['name' => 'expert']);
-        $permissions = Permission::whereIn('name', ['server', 'log-app', 'Reader'])->get();
+        $permissions = Permission::whereIn('name', ['server/read', 'server/create','serve/update',
+                                        'server/delete', 'moduel/read', 'module/create', 'module/update',
+                                        'module/delte', 'server/off', 'log/app'])->get();
         $visitorRole->syncPermissions($permissions);
 
-        
+
     }
 }
