@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Server\Http\Requests;
+namespace Modules\User\Http\Requests\Role;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class DeleteServerReqest extends FormRequest
+class AddPermissionToUser extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -12,7 +12,8 @@ class DeleteServerReqest extends FormRequest
     public function rules(): array
     {
         return [
-            'server_id' => ['required', 'integer', 'exists:servers,id']
+            'user_id' => ['required', 'integer', 'exists:users,id'],
+            'permission_name' => ['required', 'string', 'exists:permissions,name']
         ];
     }
 

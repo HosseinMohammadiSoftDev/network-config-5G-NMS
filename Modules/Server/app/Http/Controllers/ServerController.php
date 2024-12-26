@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Modules\Server\Helpers\SshHelper;
-use Modules\Server\Http\Requests\DeleteServerReqest;
+use Modules\Server\Http\Requests\Server\DeleteServerReqest;
 use Modules\Server\Http\Requests\Server\CreateServerRequest;
 use Modules\Server\Http\Requests\Server\EditServerReqest;
 use Modules\Server\Http\Requests\Server\StartStopComandReqest;

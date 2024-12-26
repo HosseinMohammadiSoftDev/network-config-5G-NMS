@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Server\Http\Requests;
+namespace Modules\Server\Http\Requests\Server;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class deleteModuleRequest extends FormRequest
+class DeleteServerReqest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -12,7 +12,7 @@ class deleteModuleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'module_id' => ['required', 'integer', 'exists:modules,id']
+            'server_id' => ['required', 'integer', 'exists:servers,id']
         ];
     }
 

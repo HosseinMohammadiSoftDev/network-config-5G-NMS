@@ -19,18 +19,17 @@ use Illuminate\Support\Facades\Storage;
 use Modules\Server\Helpers\JsonUpdater;
 use Spatie\Activitylog\Models\Activity;
 use App\Http\Controllers\Contract\ApiController;
-use Modules\Server\Http\Requests\deleteModuleRequest;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Modules\Server\Http\Requests\Modules\ShowAllModules;
 use PharIo\Version\UnsupportedVersionConstraintException;
 use Modules\Server\Http\Requests\Server\UploadModuleRequest;
 use Modules\Server\Http\Requests\Modules\CreateModulesRequest;
-
 use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
 use Modules\Server\Http\Requests\Undo\UndoConfigModulesRequest;
 use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
 use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
+use Modules\Server\Http\Requests\Modules\DeleteModuleRequest;
 use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
 
 class ModuleController extends ApiController
@@ -223,19 +222,19 @@ class ModuleController extends ApiController
 
       $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $creadtional['name'];
 
-      try {
-             SshHelper::runSshCommand($host, $username, $password, $command);
-      } catch (Exception $e) {
+    //   try {
+    //          SshHelper::runSshCommand($host, $username, $password, $command);
+    //   } catch (Exception $e) {
 
-        Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
-          'route' => request()->fullUrl(),
-          'method' => 'createModule',
-          'error' => $e->getMessage(),
-          'user_id' => Auth::id(),
-        ]);
+    //     Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
+    //       'route' => request()->fullUrl(),
+    //       'method' => 'createModule',
+    //       'error' => $e->getMessage(),
+    //       'user_id' => Auth::id(),
+    //     ]);
 
-          return response()->json(["Error: " . $e->getMessage()]);
-      }
+    //       return response()->json(["Error: " . $e->getMessage()]);
+    //   }
 
 
     $module = Module::create([
