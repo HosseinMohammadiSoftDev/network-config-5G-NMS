@@ -30,7 +30,7 @@ class RoleController extends ApiController
             'message' => 'دسترسی با موفقیت به کاربر اضافه شد',
         ]);
     }
-    public function removePermissionFromUser(AddPermissionToUser $request, $userId)
+    public function removePermissionFromUser(AddPermissionToUser $request   )
     {
         $credentials = $request->validated();
 

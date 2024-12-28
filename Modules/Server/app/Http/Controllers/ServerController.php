@@ -2,22 +2,23 @@
 
 namespace Modules\Server\Http\Controllers;
 
-use App\Http\Controllers\Contract\ApiController;
+use Spyc;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Modules\Server\Models\Server;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Modules\Server\Helpers\SshHelper;
+use Modules\User\Services\PaginationService;
+use App\Http\Controllers\Contract\ApiController;
+use Modules\Server\Http\Requests\TestConnectionRequest;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Modules\Server\Http\Requests\Server\EditServerReqest;
 use Modules\Server\Http\Requests\Server\DeleteServerReqest;
 use Modules\Server\Http\Requests\Server\CreateServerRequest;
-use Modules\Server\Http\Requests\Server\EditServerReqest;
-use Modules\Server\Http\Requests\Server\StartStopComandReqest;
 use Modules\Server\Http\Requests\Server\UploadModuleRequest;
-use Modules\Server\Http\Requests\TestConnectionRequest;
-use Modules\Server\Models\Server;
-use Modules\User\Services\PaginationService;
-use Spyc;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Modules\Server\Http\Requests\Server\StartStopComandReqest;
 
 
 class ServerController extends ApiController
@@ -97,12 +98,63 @@ class ServerController extends ApiController
 
         return $this->respondSuccess('سرور بهروزرسانی شد', $server);
     }
+
+
+    public function deleteAllModuleServer ($server, $host,$username, $password, $path)
+    {
+        $moduleNames = $server->modules->pluck('name');
+
+
+
+                // ssh connection
+        $command = 'rm -f' . $path . $module['name'] . '.yaml';
+        SshHelper::runSshCommand($host, $username, $password, $command);
+
+
+        foreach ($moduleNames as $moduleName)
+        {
+            $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
+            SshHelper::runSshCommand($host, $username, $password, $command);
+        }
+
+    }
     public function deleteServer (DeleteServerReqest $request)
     {
         $credentials = $request->validated();
 
         $server = Server::find($credentials['server_id']);
-        $server->delete();
+
+        $host = $server['ip'];
+        $username = $request->input('username');
+        $password = $request->input('password');
+        $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
+
+
+        try {
+                DB::beginTransaction();
+
+                // delete all module server in VPS
+            $this->deleteAllModuleServer($server, $host, $username, $password, $path);
+
+                DB::commit();
+        } catch (Exception $e) {
+                DB::rollBack();
+
+            activity('exption-delete-all-module-server')
+            ->causedBy(Auth::user())
+            ->performedOn($server)
+            ->event('delete')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'method' => 'deleteServer',
+                'server' => $server,
+                'user' => Auth::user(),
+            ])
+            ->log('مشکلی در حذف کردن م');
+        }
+
+
 
         Log::channel('daily')->info('سرور پاک شد', [
             'type-log' => 'server',
@@ -111,7 +163,6 @@ class ServerController extends ApiController
             'user' => Auth::user(),
             'server' => $server,
         ]);
-
 
         activity('delete-server')
             ->causedBy(Auth::user())

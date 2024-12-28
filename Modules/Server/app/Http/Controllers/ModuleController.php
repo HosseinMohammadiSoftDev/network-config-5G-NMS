@@ -173,6 +173,7 @@ class ModuleController extends ApiController
 
       return $this->respondSuccess('فایل با موفقت  تبدیل به جیسون شد', []);
   }
+
   private function uploadModuleFile ($file)
   {
 
@@ -211,30 +212,33 @@ class ModuleController extends ApiController
   {
       $creadtional = $request->validated();
 
-      $host = $request->input('host');
+      $server = Server::find($creadtional['server_id']);
+
+      $host = $server['ip'];
       $username = $request->input('username');
       $password = $request->input('password');
+      $path = '/home/siz-tel/bbdh-2.6.6-noCg/install/etc/bbdh';
 
       $jsonContent = $this->uploadModuleFile($request->file('config_file'));
 
       if (is_array($jsonContent) || is_object($jsonContent))
           return $jsonContent;
 
-      $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $creadtional['name'];
 
-    //   try {
-    //          SshHelper::runSshCommand($host, $username, $password, $command);
-    //   } catch (Exception $e) {
+      try {
+            $command = 'echo "' . addslashes($jsonContent) . '" > ' . $path . $creadtional['name'] . '.yaml';
+        SshHelper::runSshCommand($host, $username, $password, $command);
+      } catch (Exception $e) {
 
-    //     Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
-    //       'route' => request()->fullUrl(),
-    //       'method' => 'createModule',
-    //       'error' => $e->getMessage(),
-    //       'user_id' => Auth::id(),
-    //     ]);
+        Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
+          'route' => request()->fullUrl(),
+          'method' => 'createModule',
+          'error' => $e->getMessage(),
+          'user_id' => Auth::id(),
+        ]);
 
-    //       return response()->json(["Error: " . $e->getMessage()]);
-    //   }
+          return response()->json(["Error: " . $e->getMessage()]);
+      }
 
 
     $module = Module::create([
@@ -248,7 +252,7 @@ class ModuleController extends ApiController
       Log::channel('daily')->info('ماژول جدید ساخته شده',[
         'route' => request()->fullUrl(),
         'method' => 'createModule',
-        'user' => Auth::id(),
+        'user' => Auth::user(),
         'module' => [
             'name' => $module['name'],
             'type' => $module['type'],
@@ -265,7 +269,7 @@ class ModuleController extends ApiController
             'type-log' => 'server',
             'route' => request()->fullUrl(),
             'method' => 'createModule',
-            'user' => Auth::id(),
+            'user' => Auth::user(),
             'module' => [
                 'name' => $module['name'],
                 'type' => $module['type'],
@@ -285,9 +289,22 @@ class ModuleController extends ApiController
     $creadtional = $request->validated();
 
     $module = Module::find($creadtional['module_id']);
+    $server = Server::find($module['server_id']);
+
+    $host = $server['ip'];
+    $username = $request->input('username');
+    $password = $request->input('password');
+    $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
+
+                // ssh connection
+        $command = 'rm -f' . $path . $module['name'] . '.yaml';
+        SshHelper::runSshCommand($host, $username, $password, $command);
+
+
     $module->delete();
 
-    Log::channel('daily')->info('ماژول با موفقیت ساخته شد',[
+
+      Log::channel('daily')->info('ماژول با موفقیت ساخته شد',[
         'route' => request()->fullUrl(),
         'method' => 'deleteModule',
         'user' => Auth::id(),
@@ -296,7 +313,7 @@ class ModuleController extends ApiController
             'type' => $module['type'],
             'server_id' => $module['server_id']
         ]
-      ]);
+       ]);
 
 
       activity('delete-module')
@@ -415,6 +432,10 @@ class ModuleController extends ApiController
     $module = Module::find($creadtional['module_id']);
     $server = Server::find($module['server_id']);
 
+    if ($server['is_down'] == 1)
+        return response()->json(['msg' => 'سرور خاموش است'], 403);
+
+
     $host = $server['ip'];
     $username = $request->input('username');
     $password = $request->input('password');
@@ -477,6 +498,10 @@ class ModuleController extends ApiController
 
     $module = Module::find($creadtional['module_id']);
     $server = Server::find($module['server_id']);
+
+    if ($server['is_down'] == 1)
+        return response()->json(['msg'=> 'سرور خاموش است']);
+
 
     $host = $server['ip'];
     $username = $request->input('username');
