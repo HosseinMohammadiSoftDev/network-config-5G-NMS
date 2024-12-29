@@ -31,11 +31,8 @@ Route::middleware(['auth:sanctum', 'permission:module/read|role:admin|visitor|ex
 Route::middleware(['auth:sanctum', 'role:admin|visitor|expert'])->get('show-all-servies-and-modules/{serverID}', [ModuleController::class, 'showAllServiseAndModulesInServer']);
 Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert'])->post('upload-module', [ModuleController::class, 'uploadModule']);
 Route::middleware(['auth:sanctum', 'permission:module/create|role:admin|expert'])->post('create-module', [ModuleController::class, 'createModule']);
+Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert'])->post('update-config-module', [ModuleController::class, 'updateConfigModule']);
 Route::middleware(['auth:sanctum', 'permission:module/delete|role:admin|expert'])->delete('delete-module', [ModuleController::class, 'deleteModule']);
-
-Route::middleware(['auth:sanctum', 'permission:module/update|server/1|server/2|server/3|server/4|server/5|server/epc|server/5gc|role:admin|expert'])
-        ->post('update-config-module', [ModuleController::class, 'updateConfigModule']);
-
 
 Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert'])->post('undo-module-config', [ModuleController::class, 'undoConfigModule']);
 Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert'])->post('undo-to-initial-config-modules', [ModuleController::class, 'undoToInitialConfigModule']);

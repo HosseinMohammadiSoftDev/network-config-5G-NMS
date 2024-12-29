@@ -5,9 +5,9 @@ namespace Modules\User\Http\Controllers;
 use Illuminate\Http\Request;
 use Modules\User\Models\Role;
 use Modules\User\Models\User;
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Contract\ApiController;
 use Modules\User\Http\Requests\Role\AddPermissionToUser;
+use Modules\User\Models\Permission;
 
 class RoleController extends ApiController
 {
@@ -17,6 +17,16 @@ class RoleController extends ApiController
 
         return $this->respondSuccess('لیست تمام نقش ها با دسترسی', $roles);
     }
+
+
+    public function showAllPermissions ()
+    {
+        $moduleName = Permission::all()->pluck('name');
+
+        return $this->respondSuccess('لیست تمام دسترسی ها', $moduleName);
+    }
+
+
     public function addPermissionToUser(AddPermissionToUser $request)
     {
         $credentials = $request->validated();

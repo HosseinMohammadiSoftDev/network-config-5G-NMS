@@ -151,7 +151,7 @@ class ServerController extends ApiController
                 'server' => $server,
                 'user' => Auth::user(),
             ])
-            ->log('مشکلی در حذف کردن م');
+            ->log('مشکل در حذف کردن همه ماژول های سرور پیش امد');
         }
 
 

@@ -7,6 +7,7 @@ use Exception;
 use phpseclib3\Net\SSH2;
 use Illuminate\Http\Request;
 use Symfony\Component\Yaml\Yaml;
+use Illuminate\Http\JsonResponse;
 use Modules\Server\Models\Module;
 use Modules\Server\Models\Server;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +23,7 @@ use Illuminate\Routing\Controllers\Middleware;
 use App\Http\Controllers\Contract\ApiController;
 use Illuminate\Validation\UnauthorizedException;
 use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Modules\Server\Http\Requests\Modules\ShowAllModules;
@@ -373,7 +375,8 @@ class ModuleController extends ApiController
             }
         }
 
-        throw new UnauthorizedException("شما دسترسی لازم برای استفاده از این ماژول و سرور را ندارید.");
+        throw new HttpResponseException(response()->json(['msg' => 'شما دسترسی لازم برای استفاده از این ماژول و سرور را ندارید.',
+                'yer-permission' => $user->getAllPermissions()->pluck('name')], 403));
     }
     private function sendConfigToServer($host, $username, $password, $path, $moduleName, $yamlContent, $server)
     {
