@@ -18,22 +18,28 @@ use Modules\Server\Helpers\SshHelper;
 use Illuminate\Support\Facades\Storage;
 use Modules\Server\Helpers\JsonUpdater;
 use Spatie\Activitylog\Models\Activity;
+use Illuminate\Routing\Controllers\Middleware;
 use App\Http\Controllers\Contract\ApiController;
+use Illuminate\Validation\UnauthorizedException;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Spatie\Permission\Middleware\PermissionMiddleware;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Modules\Server\Http\Requests\Modules\ShowAllModules;
 use PharIo\Version\UnsupportedVersionConstraintException;
 use Modules\Server\Http\Requests\Server\UploadModuleRequest;
+use Modules\Server\Http\Requests\Modules\DeleteModuleRequest;
 use Modules\Server\Http\Requests\Modules\CreateModulesRequest;
 use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
 use Modules\Server\Http\Requests\Undo\UndoConfigModulesRequest;
 use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
 use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
-use Modules\Server\Http\Requests\Modules\DeleteModuleRequest;
 use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
 
 class ModuleController extends ApiController
 {
+
+
         // show Config in database
   public function showConfigModule ($moduleId)
   {
@@ -338,6 +344,37 @@ class ModuleController extends ApiController
 
 
         // update Config Module
+    public function chackPermissionModule($module, $server)
+    {
+        $user = Auth::user();
+
+        $moduleTypePermissions = [
+            'Epc' => 'server/epc',
+            '5gc' => 'server/5gc',
+        ];
+
+        $serverPermissions = [
+            1 => 'server/1',
+            2 => 'server/2',
+            3 => 'server/3',
+            4 => 'server/4',
+            5 => 'server/5',
+        ];
+
+        $moduleType = $module['type'];
+        $serverId = $server['id'];
+
+        if (isset($moduleTypePermissions[$moduleType]) && isset($serverPermissions[$serverId])) {
+            $hasModuleTypePermission = $user->hasPermissionTo($moduleTypePermissions[$moduleType]);
+            $hasServerPermission = $user->hasPermissionTo($serverPermissions[$serverId]);
+
+            if ($hasModuleTypePermission && $hasServerPermission) {
+                return true;
+            }
+        }
+
+        throw new UnauthorizedException("شما دسترسی لازم برای استفاده از این ماژول و سرور را ندارید.");
+    }
     private function sendConfigToServer($host, $username, $password, $path, $moduleName, $yamlContent, $server)
     {
         // is down server
@@ -383,8 +420,11 @@ class ModuleController extends ApiController
         $password = $request->input('password');
         $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
 
+
         DB::beginTransaction();
 
+                // filter module type in permission server/epc && server/5gc
+            $this->chackPermissionModule($module, $server);
 
             $module = $this->updateModuleConfigInDatabase($module['id'], $data);
 
