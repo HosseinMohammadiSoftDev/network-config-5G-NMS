@@ -7,6 +7,7 @@ use Exception;
 use phpseclib3\Net\SSH2;
 use Illuminate\Http\Request;
 use Symfony\Component\Yaml\Yaml;
+use Illuminate\Http\JsonResponse;
 use Modules\Server\Models\Module;
 use Modules\Server\Models\Server;
 use Illuminate\Support\Facades\DB;
@@ -18,22 +19,29 @@ use Modules\Server\Helpers\SshHelper;
 use Illuminate\Support\Facades\Storage;
 use Modules\Server\Helpers\JsonUpdater;
 use Spatie\Activitylog\Models\Activity;
+use Illuminate\Routing\Controllers\Middleware;
 use App\Http\Controllers\Contract\ApiController;
+use Illuminate\Validation\UnauthorizedException;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Spatie\Permission\Middleware\PermissionMiddleware;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Modules\Server\Http\Requests\Modules\ShowAllModules;
 use PharIo\Version\UnsupportedVersionConstraintException;
 use Modules\Server\Http\Requests\Server\UploadModuleRequest;
+use Modules\Server\Http\Requests\Modules\DeleteModuleRequest;
 use Modules\Server\Http\Requests\Modules\CreateModulesRequest;
 use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
 use Modules\Server\Http\Requests\Undo\UndoConfigModulesRequest;
 use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
 use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
-use Modules\Server\Http\Requests\Modules\DeleteModuleRequest;
 use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
 
 class ModuleController extends ApiController
 {
+
+
         // show Config in database
   public function showConfigModule ($moduleId)
   {
@@ -173,6 +181,7 @@ class ModuleController extends ApiController
 
       return $this->respondSuccess('فایل با موفقت  تبدیل به جیسون شد', []);
   }
+
   private function uploadModuleFile ($file)
   {
 
@@ -211,30 +220,33 @@ class ModuleController extends ApiController
   {
       $creadtional = $request->validated();
 
-      $host = $request->input('host');
+      $server = Server::find($creadtional['server_id']);
+
+      $host = $server['ip'];
       $username = $request->input('username');
       $password = $request->input('password');
+      $path = '/home/siz-tel/bbdh-2.6.6-noCg/install/etc/bbdh';
 
       $jsonContent = $this->uploadModuleFile($request->file('config_file'));
 
       if (is_array($jsonContent) || is_object($jsonContent))
           return $jsonContent;
 
-      $command = 'echo "'. $jsonContent .'" > /home/mohammadi/Desktop/' . $creadtional['name'];
 
-    //   try {
-    //          SshHelper::runSshCommand($host, $username, $password, $command);
-    //   } catch (Exception $e) {
+      try {
+            $command = 'echo "' . addslashes($jsonContent) . '" > ' . $path . $creadtional['name'] . '.yaml';
+        SshHelper::runSshCommand($host, $username, $password, $command);
+      } catch (Exception $e) {
 
-    //     Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
-    //       'route' => request()->fullUrl(),
-    //       'method' => 'createModule',
-    //       'error' => $e->getMessage(),
-    //       'user_id' => Auth::id(),
-    //     ]);
+        Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
+          'route' => request()->fullUrl(),
+          'method' => 'createModule',
+          'error' => $e->getMessage(),
+          'user_id' => Auth::id(),
+        ]);
 
-    //       return response()->json(["Error: " . $e->getMessage()]);
-    //   }
+          return response()->json(["Error: " . $e->getMessage()]);
+      }
 
 
     $module = Module::create([
@@ -248,7 +260,7 @@ class ModuleController extends ApiController
       Log::channel('daily')->info('ماژول جدید ساخته شده',[
         'route' => request()->fullUrl(),
         'method' => 'createModule',
-        'user' => Auth::id(),
+        'user' => Auth::user(),
         'module' => [
             'name' => $module['name'],
             'type' => $module['type'],
@@ -265,7 +277,7 @@ class ModuleController extends ApiController
             'type-log' => 'server',
             'route' => request()->fullUrl(),
             'method' => 'createModule',
-            'user' => Auth::id(),
+            'user' => Auth::user(),
             'module' => [
                 'name' => $module['name'],
                 'type' => $module['type'],
@@ -285,9 +297,22 @@ class ModuleController extends ApiController
     $creadtional = $request->validated();
 
     $module = Module::find($creadtional['module_id']);
+    $server = Server::find($module['server_id']);
+
+    $host = $server['ip'];
+    $username = $request->input('username');
+    $password = $request->input('password');
+    $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
+
+                // ssh connection
+        $command = 'rm -f' . $path . $module['name'] . '.yaml';
+        SshHelper::runSshCommand($host, $username, $password, $command);
+
+
     $module->delete();
 
-    Log::channel('daily')->info('ماژول با موفقیت ساخته شد',[
+
+      Log::channel('daily')->info('ماژول با موفقیت ساخته شد',[
         'route' => request()->fullUrl(),
         'method' => 'deleteModule',
         'user' => Auth::id(),
@@ -296,7 +321,7 @@ class ModuleController extends ApiController
             'type' => $module['type'],
             'server_id' => $module['server_id']
         ]
-      ]);
+       ]);
 
 
       activity('delete-module')
@@ -321,6 +346,38 @@ class ModuleController extends ApiController
 
 
         // update Config Module
+    public function chackPermissionModule($module, $server)
+    {
+        $user = Auth::user();
+
+        $moduleTypePermissions = [
+            'Epc' => 'server/epc',
+            '5gc' => 'server/5gc',
+        ];
+
+        $serverPermissions = [
+            1 => 'server/1',
+            2 => 'server/2',
+            3 => 'server/3',
+            4 => 'server/4',
+            5 => 'server/5',
+        ];
+
+        $moduleType = $module['type'];
+        $serverId = $server['id'];
+
+        if (isset($moduleTypePermissions[$moduleType]) && isset($serverPermissions[$serverId])) {
+            $hasModuleTypePermission = $user->hasPermissionTo($moduleTypePermissions[$moduleType]);
+            $hasServerPermission = $user->hasPermissionTo($serverPermissions[$serverId]);
+
+            if ($hasModuleTypePermission && $hasServerPermission) {
+                return true;
+            }
+        }
+
+        throw new HttpResponseException(response()->json(['msg' => 'شما دسترسی لازم برای استفاده از این ماژول و سرور را ندارید.',
+                'yer-permission' => $user->getAllPermissions()->pluck('name')], 403));
+    }
     private function sendConfigToServer($host, $username, $password, $path, $moduleName, $yamlContent, $server)
     {
         // is down server
@@ -366,8 +423,11 @@ class ModuleController extends ApiController
         $password = $request->input('password');
         $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
 
+
         DB::beginTransaction();
 
+                // filter module type in permission server/epc && server/5gc
+            $this->chackPermissionModule($module, $server);
 
             $module = $this->updateModuleConfigInDatabase($module['id'], $data);
 
@@ -414,6 +474,10 @@ class ModuleController extends ApiController
 
     $module = Module::find($creadtional['module_id']);
     $server = Server::find($module['server_id']);
+
+    if ($server['is_down'] == 1)
+        return response()->json(['msg' => 'سرور خاموش است'], 403);
+
 
     $host = $server['ip'];
     $username = $request->input('username');
@@ -477,6 +541,10 @@ class ModuleController extends ApiController
 
     $module = Module::find($creadtional['module_id']);
     $server = Server::find($module['server_id']);
+
+    if ($server['is_down'] == 1)
+        return response()->json(['msg'=> 'سرور خاموش است']);
+
 
     $host = $server['ip'];
     $username = $request->input('username');

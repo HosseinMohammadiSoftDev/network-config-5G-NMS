@@ -29,6 +29,16 @@ class AdminSeeder extends Seeder
             'server/update',
             'server/delete',
 
+            'server/1',
+            'server/2',
+            'server/3',
+            'server/4',
+            'server/5',
+
+            'server/epc',
+            'server/5gc',
+
+
                 // module
             'module/read',
             'module/create',
@@ -45,6 +55,18 @@ class AdminSeeder extends Seeder
 
         ];
 
+
+        $restrictedPermissions = [
+            'server/1',
+            'server/2',
+            'server/3',
+            'server/4',
+            'server/5',
+            'server/epc',
+            'server/5gc',
+        ];
+
+
             foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
@@ -52,7 +74,14 @@ class AdminSeeder extends Seeder
 
         $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
 
-        $adminRole->syncPermissions(Permission::all());
+        $allPermissions = Permission::all();
+
+         // Filter out restricted permissions
+         $filteredPermissions = $allPermissions->reject(function ($permission) use ($restrictedPermissions) {
+            return in_array($permission->name, $restrictedPermissions);
+        });
+
+        $adminRole->syncPermissions($filteredPermissions);
 
         $admin = User::firstOrCreate(
             ['auth_name' => 'ownerApp'],
@@ -64,6 +93,9 @@ class AdminSeeder extends Seeder
         );
 
         $admin->assignRole($adminRole);
+
+
+
 
 
             // visitor

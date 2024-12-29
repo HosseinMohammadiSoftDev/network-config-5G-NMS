@@ -30,5 +30,6 @@ Route::middleware(['auth:sanctum', 'permission:user/update|role:admin'])->put('r
 Route::middleware(['auth:sanctum', 'permission:user/delete|role:admin'])->delete('delete-member-Account/{UserID}', [UserController::class, 'deleteAccountMember']);
 
 Route::middleware(['auth:sanctum', 'role:admin'])->get('show-all-roles', [RoleController::class, 'showAllRolesPermissions']);
+Route::middleware(['auth:sanctum', 'role:admin|visitor|expert'])->get('show-all-permission', [RoleController::class, 'showAllPermissions']);
 Route::middleware(['auth:sanctum', 'role:admin'])->post('add-permission-to-user', [RoleController::class,'addPermissionToUser']);
 Route::middleware(['auth:sanctum', 'role:admin'])->post('remove-permission-to-user', [RoleController::class,'removePermissionFromUser']);

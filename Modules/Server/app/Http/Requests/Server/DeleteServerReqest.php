@@ -12,7 +12,8 @@ class DeleteServerReqest extends FormRequest
     public function rules(): array
     {
         return [
-            'server_id' => ['required', 'integer', 'exists:servers,id']
+            'server_id' => ['required', 'integer', 'exists:servers,id'],
+            'username' => ['required', 'string', 'max:255'],
         ];
     }
 
