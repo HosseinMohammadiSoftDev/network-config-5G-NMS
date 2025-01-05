@@ -49,8 +49,7 @@ class AdminSeeder extends Seeder
             'server/off',
 
                 // log
-            'log/user',
-            'log/app',
+            'log',
 
 
         ];
@@ -107,7 +106,7 @@ class AdminSeeder extends Seeder
         $visitorRole = Role::firstOrCreate(['name' => 'expert']);
         $permissions = Permission::whereIn('name', ['server/read', 'server/create','serve/update',
                                         'server/delete', 'moduel/read', 'module/create', 'module/update',
-                                        'module/delte', 'server/off', 'log/app'])->get();
+                                        'module/delte', 'server/off'])->get();
         $visitorRole->syncPermissions($permissions);
 
 

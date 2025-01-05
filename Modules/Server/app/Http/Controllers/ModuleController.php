@@ -107,13 +107,32 @@ class ModuleController extends ApiController
       $arrayContent = json_decode($jsonContent, true);
 
       if (json_last_error() !== JSON_ERROR_NONE)
-      throw new Exception('خطا در تبدیل JSON به آرایه');
+     throw new Exception('خطا در تبدیل JSON به آرایه');
 
-      $yamlContent = Yaml::dump($arrayContent, 4, 2, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK);
-      $yamlContent = preg_replace('/^(  - .+?):\s*$/m', "$1:", $yamlContent);
+      $arrayContent = $this->convertNullKeysToComments($arrayContent);
 
+      $yamlContent = Yaml::dump($arrayContent, 4, 2, Yaml::DUMP_OBJECT);
+
+      // $yamlContent = preg_replace('/^(  - .+?):\s*$/m', "$1:", $yamlContent);
+
+      $yamlContent = preg_replace('/[\'\"\/\\\]/', '', $yamlContent);
       return $yamlContent;
   }
+  private function convertNullKeysToComments(array $array)
+  {
+      foreach ($array as $key => $value) {
+          if (is_array($value)) {
+              $array[$key] = $this->convertNullKeysToComments($value);
+          } elseif ($value === null) {
+              $array["# $key"] = null;
+              unset($array[$key]);
+          }
+      }
+
+      return $array;
+  }
+
+
 
         // create New Module And Upload File .Yaml Convert to Json Upload To database
   public function uploadModule(UploadModuleRequest $request)
@@ -233,20 +252,20 @@ class ModuleController extends ApiController
           return $jsonContent;
 
 
-      try {
-            $command = 'echo "' . addslashes($jsonContent) . '" > ' . $path . $creadtional['name'] . '.yaml';
-        SshHelper::runSshCommand($host, $username, $password, $command);
-      } catch (Exception $e) {
+      // try {
+      //       $command = 'echo "' . addslashes($jsonContent) . '" > ' . $path . $creadtional['name'] . '.yaml';
+      //   SshHelper::runSshCommand($host, $username, $password, $command);
+      // } catch (Exception $e) {
 
-        Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
-          'route' => request()->fullUrl(),
-          'method' => 'createModule',
-          'error' => $e->getMessage(),
-          'user_id' => Auth::id(),
-        ]);
+      //   Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
+      //     'route' => request()->fullUrl(),
+      //     'method' => 'createModule',
+      //     'error' => $e->getMessage(),
+      //     'user_id' => Auth::id(),
+      //   ]);
 
-          return response()->json(["Error: " . $e->getMessage()]);
-      }
+      //     return response()->json(["Error: " . $e->getMessage()]);
+      // }
 
 
     $module = Module::create([
@@ -350,6 +369,9 @@ class ModuleController extends ApiController
     {
         $user = Auth::user();
 
+        if ($user->hasRole('admin'))
+            return true;
+
         $moduleTypePermissions = [
             'Epc' => 'server/epc',
             '5gc' => 'server/5gc',
@@ -433,6 +455,8 @@ class ModuleController extends ApiController
 
             $yamlContent = $this->convertJsonToYaml($module->current_config);
 
+            Storage::disk('public')->put('config.yaml', $yamlContent);
+dd('uploadd');
             $this->sendConfigToServer($host, $username, $password, $path,
                                          $module['name'], $yamlContent, $server);
 
