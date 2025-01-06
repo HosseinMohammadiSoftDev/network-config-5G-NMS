@@ -49,34 +49,13 @@ class ModuleController extends ApiController
         if (!$module)
             return response()->json(['msg' => 'شناسه ماژول نامعتبر است'], 404);
 
+                // show servers in module name
+        $serverIdsInModuleName = Module::where('name', $module['name'])->pluck('server_id');
 
-      if (!$module) {
-          Log::channel('daily')->error('شناسه ماژول نامعتبر بود', [
-            'route' => request()->fullUrl(),
-            'method' => 'showConfigModule',
-            'module_id' => $moduleId,
-            'user' => Auth::user()
-          ]);
-
-
-          activity('invalid-module-id')
-            ->causedBy(Auth::user())
-            ->performedOn($moduleId)
-            ->event('show-config-module')
-            ->withProperties([
-                'type-log' => 'server',
-                'route' => request()->fullUrl(),
-                'method' => 'showConfigModule',
-                'module_id' => $moduleId,
-                'user' => Auth::id(),
-            ])
-          ->log('شناسه ماژول نامعتبر بود');
-
-          return response()->json(['msg' => 'ماژول پیدا نشد'], 404);
-      }
 
       return response()->json([
-        json_decode($module->current_config, true)
+        'config' => json_decode($module->current_config, true),
+        'serversIdInModuleName' => $serverIdsInModuleName
       ]);
   }
   public function showAllServiseAndModulesInServer ($serverId)
@@ -400,6 +379,128 @@ class ModuleController extends ApiController
         throw new HttpResponseException(response()->json(['msg' => 'شما دسترسی لازم برای استفاده از این ماژول و سرور را ندارید.',
                 'yer-permission' => $user->getAllPermissions()->pluck('name')], 403));
     }
+    private function logModuleUpdate($module, $data)
+    {
+        Log::channel('daily')->info('مقادیر کانفیگ تغییر کرد', [
+            'route' => request()->fullUrl(),
+            'method' => 'updateConfigModule',
+            'user' => Auth::user(),
+            'data' => $data,
+            'module_id' => $module['id'],
+            'module_name' => $module['name'],
+            'module_type' => $module['type'],
+        ]);
+
+        activity('update-module-config')
+            ->causedBy(Auth::user())
+            ->event('update-config-module')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'method' => 'updateConfigModule',
+                'user' => Auth::user(),
+                'data' => $data,
+                'module_id' => $module['id'],
+                'module_name' => $module['name'],
+                'module_type' => $module['type'],
+            ])
+            ->log('مقادیر کانفیگ تغییر کرد');
+    }
+    private function updateSingleModule ($request)
+    {
+        $module = Module::find($request['module_id']);
+        $server = Server::find($module['server_id']);
+
+        $serverIdsInModuleName = Module::where('name', $module['name'])->pluck('server_id')->toArray();
+
+
+        $data = $request->input('data', []);
+        $host = $server['ip'];
+        $username = $request->input('username');
+        $password = $request->input('password');
+        $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
+
+        DB::beginTransaction();
+
+        try {
+            $this->chackPermissionModule($module, $server);
+
+            $module = $this->updateModuleConfigInDatabase($module['id'], $data);
+
+            $yamlContent = $this->convertJsonToYaml($module->current_config);
+
+            // $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
+
+            $this->logModuleUpdate($module, $data);
+
+            DB::commit();
+
+            return response()->json([
+                'config' => json_decode($module->current_config, true),
+                'serverIdsInModuleName' => $serverIdsInModuleName
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    private function updateMultipleModules($serverIds, $request)
+    {
+        $module = Module::find($request['module_id']);
+        $server = Server::find($module['server_id']);
+        $data = $request->input('data', []);
+
+            // validate
+        $serverIdsInModuleName = Module::where('name', $module['name'])->pluck('server_id')->toArray();
+
+        foreach ($serverIds as $serverId) {
+            if (!in_array($serverId, $serverIdsInModuleName))
+                throw new Exception('در بین شناسه سرور ها شناسه‌ای نامعتبر ارسال شده است');
+        }
+
+
+        $modules = Module::whereIn('server_id', $serverIds)
+                    ->where('name', $module['name'])
+                    ->get();
+
+
+        $firstModule = null;
+        DB::beginTransaction();
+        try {
+            foreach ($modules as $module) {
+                $server = Server::find($module['server_id']);
+
+                $host = $server['ip'];
+                $username = $request->input('username');
+                $password = $request->input('password');
+                $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
+
+                $this->chackPermissionModule($module, $server);
+
+                $updatedModule = $this->updateModuleConfigInDatabase($module['id'], $data);
+
+                if ($firstModule === null)
+                    $firstModule = Module::find($module['id']); // بازیابی مدل به‌روز شده
+
+                $yamlContent = $this->convertJsonToYaml($updatedModule->current_config);
+
+                // $this->sendConfigToServer($host, $username, $password, $path, $updatedModule['name'], $yamlContent, $server);
+
+
+                $this->logModuleUpdate($updatedModule, $data);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'config' => json_decode($firstModule->current_config, true),
+                'serverIdsInModuleName' => $serverIdsInModuleName
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
     private function sendConfigToServer($host, $username, $password, $path, $moduleName, $yamlContent, $server)
     {
         // is down server
@@ -435,59 +536,12 @@ class ModuleController extends ApiController
     {
         $request->validated();
 
-        $module = Module::find($request['module_id']);
-        $server = Server::find($module['server_id']);
+        $serverIds = $request->input('servers', []);
 
-        $data = $request->input('data', []);
-
-        $host = $server['ip'];
-        $username = $request->input('username');
-        $password = $request->input('password');
-        $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
-
-
-        DB::beginTransaction();
-
-                // filter module type in permission server/epc && server/5gc
-            $this->chackPermissionModule($module, $server);
-
-            $module = $this->updateModuleConfigInDatabase($module['id'], $data);
-
-            $yamlContent = $this->convertJsonToYaml($module->current_config);
-
-            Storage::disk('public')->put('config.yaml', $yamlContent);
-dd('uploadd');
-            $this->sendConfigToServer($host, $username, $password, $path,
-                                         $module['name'], $yamlContent, $server);
-
-            Log::channel('daily')->info('مقادریر کانفیگ تعقییر کرد', [
-                'route' => request()->fullUrl(),
-                'method' => 'updateConfigModule',
-                'user' => Auth::user(),
-                'data' => $data,
-                'module_id' => $module['id'],
-                'module_name' => $module['name'],
-                'module_type' => $module['type'],
-            ]);
-
-            activity('update-module-config')
-                ->causedBy(Auth::user())
-                ->event('update-config-module')
-                ->withProperties([
-                    'type-log' => 'server',
-                    'route' => request()->fullUrl(),
-                    'method' => 'updateConfigModule',
-                    'user' => Auth::user(),
-                    'data' => $data,
-                    'module_id' => $module['id'],
-                    'module_name' => $module['name'],
-                    'module_type' => $module['type'],
-                ])
-                ->log('مقادیر کانفیگ تغییر کرد');
-
-            DB::commit();
-            return response()->json(json_decode($module->current_config, true));
-
+        if (!empty($serverIds))
+            return $this->updateMultipleModules($serverIds, $request);
+        else
+            return $this->updateSingleModule($request);
     }
 
 

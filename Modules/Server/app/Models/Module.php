@@ -37,4 +37,9 @@ class Module extends Model
     {
         return $this->belongsTo(Server::class);
     }
+
+    public function servers()
+    {
+        return $this->belongsToMany(Server::class);
+    }
 }
