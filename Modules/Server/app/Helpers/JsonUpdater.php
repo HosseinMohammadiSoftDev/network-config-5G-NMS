@@ -11,7 +11,6 @@ class JsonUpdater
 
     public static function updateJsonValue(array $json, string $path, $value)
     {
-        // dd($json, $path, $value);
         $path = preg_replace('/\[(\d+)\]/', '.$1', $path);
         $keys = explode('.', $path);
         $currentNode = &$json;
@@ -30,11 +29,11 @@ class JsonUpdater
                 return $json;
 
 
-            //         // validation types and keys
-            // if ($index == count($keys) - 1) {
-            //     if ($index < count($keys) - 1)
-            //         throw new \Exception("بعد از این مورد کلید وجود دارد برسی کنید که ایا مسیر را اشتباه وارد نکردید");
-            // }
+                    // validation types and keys
+            if ($index == count($keys) - 1) {
+                if ($index < count($keys) - 1)
+                    throw new \Exception("بعد از این مورد کلید وجود دارد برسی کنید که ایا مسیر را اشتباه وارد نکردید");
+            }
         }
 
 

@@ -540,8 +540,13 @@ class ModuleController extends ApiController
     {
         $module = Module::find($moduleId);
 
-        if (!$module) {
+        if (!$module)
             throw new Exception('ماژول مورد نظر پیدا نشد');
+
+            // example value in data user
+        foreach ($data as $key => $value) {
+            if (is_null($value))
+                $data[$key] = "";
         }
 
         $moduleConfig = json_decode($module->current_config, true);
