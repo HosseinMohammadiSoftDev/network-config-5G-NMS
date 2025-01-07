@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Modules\Server\Helpers;
 
@@ -8,17 +8,18 @@ use Illuminate\Support\Facades\Log;
 
 class JsonUpdater
 {
-   
+
     public static function updateJsonValue(array $json, string $path, $value)
     {
+        // dd($json, $path, $value);
         $path = preg_replace('/\[(\d+)\]/', '.$1', $path);
         $keys = explode('.', $path);
-        $currentNode = &$json; 
-    
+        $currentNode = &$json;
+
         foreach ($keys as $index => $key) {
 
             if (is_numeric($key) && is_array($currentNode)) {
-                if (isset($currentNode[(int)$key])) 
+                if (isset($currentNode[(int)$key]))
                     $currentNode = &$currentNode[(int)$key];
                 else
                     return $json;
@@ -29,14 +30,14 @@ class JsonUpdater
                 return $json;
 
 
-                    // validation types and keys 
-            if ($index == count($keys) - 1) {
-                if ($index < count($keys) - 1) 
-                    throw new \Exception("بعد از این مورد کلید وجود دارد برسی کنید که ایا مسیر را اشتباه وارد نکردید");
-            }
+            //         // validation types and keys
+            // if ($index == count($keys) - 1) {
+            //     if ($index < count($keys) - 1)
+            //         throw new \Exception("بعد از این مورد کلید وجود دارد برسی کنید که ایا مسیر را اشتباه وارد نکردید");
+            // }
         }
 
-       
+
         $currentNode = $value;
 
         return $json;

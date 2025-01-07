@@ -431,7 +431,7 @@ class ModuleController extends ApiController
 
             $yamlContent = $this->convertJsonToYaml($module->current_config);
 
-            $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
+            // $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
 
             $this->logModuleUpdate($module, $data);
 
@@ -502,7 +502,7 @@ class ModuleController extends ApiController
 
                 $yamlContent = $this->convertJsonToYaml($updatedModule->current_config);
 
-                $this->sendConfigToServer($host, $username, $password, $path, $updatedModule['name'], $yamlContent, $server);
+                // $this->sendConfigToServer($host, $username, $password, $path, $updatedModule['name'], $yamlContent, $server);
 
 
                 $this->logModuleUpdate($updatedModule, $data);
@@ -594,49 +594,51 @@ class ModuleController extends ApiController
     if ($modulePreviousConfig == null)
         return response()->json(['msg' => 'ماژول مقدار قبلی ندارد شما نمیتواند ان را به مقدار قبلی باز گردانید']);
 
+    try {
+            // ssh to server format yaml
+            $yamlContent = $this->convertJsonToYaml($modulePreviousConfig);
 
-        // ssh to server format yaml
-    $yamlContent = $this->convertJsonToYaml($modulePreviousConfig);
-
-    $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
-    SshHelper::runSshCommand($host, $username, $password, $command);
-
-
-        // save to datebase format json
-    $module['current_config'] = $modulePreviousConfig;
-    $module->save();
+            // $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
+            // SshHelper::runSshCommand($host, $username, $password, $command);
 
 
+                // save to datebase format json
+            $module['current_config'] = $modulePreviousConfig;
+            $module->save();
 
-    activity('undo-config-module')
-        ->causedBy(Auth::user())
-        ->performedOn($module)
-        ->event('undo-config-module')
-        ->withProperties([
+
+
+            activity('undo-config-module')
+                ->causedBy(Auth::user())
+                ->performedOn($module)
+                ->event('undo-config-module')
+                ->withProperties([
+                    'type-log' => 'server',
+                    'route' => request()->fullUrl(),
+                    'method' => 'undoConfigModule',
+                    'user' => Auth::user(),
+                    'module_id' => $module['id'],
+                    'module_name' => $module['name'],
+                    'module_type'=> $module['type'],
+                ])
+            ->log('کانفیگ ماژول به مرحله قبلی بازگشت');
+
+
+            Log::channel('daily')->info('کانفیگ ماژول به مرحله قبلی بازگشت', [
             'type-log' => 'server',
             'route' => request()->fullUrl(),
             'method' => 'undoConfigModule',
             'user' => Auth::user(),
             'module_id' => $module['id'],
             'module_name' => $module['name'],
-            'module_type'=> $module['type'],
-        ])
-    ->log('کانفیگ ماژول به مرحله قبلی بازگشت');
+            'module_type' => $module['type'],
+            ]);
 
+            return response()->json(['success' => 'ture', 'msg' => 'کانفیگ به مقدار قبلی بازگشت']);
 
-    Log::channel('daily')->info('کانفیگ ماژول به مرحله قبلی بازگشت', [
-      'type-log' => 'server',
-      'route' => request()->fullUrl(),
-      'method' => 'undoConfigModule',
-      'user' => Auth::user(),
-      'module_id' => $module['id'],
-      'module_name' => $module['name'],
-      'module_type' => $module['type'],
-    ]);
-
-
-
-    return response()->json(['success' => 'ture', 'msg' => 'کانفیگ به مقدار قبلی بازگشت']);
+    } catch (\Exception $e) {
+        return response()->json(['Error' => $e->getMessage()]);
+    }
   }
   public function undoToInitialConfigModule (UndoToInitialConfigModulesRequest $request)
   {
@@ -658,47 +660,51 @@ class ModuleController extends ApiController
     $module = Module::find($creadtional['module_id']);
     $moduleInitialConfig = $module['initial_config'];
 
+    try {
+                // ssh to server format yaml
+        $yamlContent = $this->convertJsonToYaml($moduleInitialConfig);
 
-        // ssh to server format yaml
-    $yamlContent = $this->convertJsonToYaml($moduleInitialConfig);
+        // $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
+        // SshHelper::runSshCommand($host, $username, $password, $command);
 
-    $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
-    SshHelper::runSshCommand($host, $username, $password, $command);
-
-        // save to datebase format json
-    $module['current_config'] = $moduleInitialConfig;
-    $module->save();
-
-
-    activity('undo-config-module')
-        ->causedBy(Auth::user())
-        ->performedOn($module)
-        ->event('undo-config-module')
-        ->withProperties([
-            'type-log' => 'server',
-            'route' => request()->fullUrl(),
-            'method' => 'undoConfigModule',
-            'user' => Auth::user(),
-            'module_id' => $module['id'],
-            'module_name' => $module['name'],
-            'module_type' => $module['type'],
-        ])
-    ->log('کانفیگ ماژول به حالت اولیه خود بازگشت');
+            // save to datebase format json
+        $module['current_config'] = $moduleInitialConfig;
+        $module->save();
 
 
-    Log::channel('daily')->info('کانفیگ ماژول به حالت اولیه خود بازگشت', [
-      'type-log' => 'server',
-      'route' => request()->fullUrl(),
-      'method' => 'undoConfigModule',
-      'user' => Auth::user(),
-      'module_id' => $module['id'],
-      'module_name' => $module['name'],
-      'module_type' => $module['type'],
-    ]);
+        activity('undo-config-module')
+            ->causedBy(Auth::user())
+            ->performedOn($module)
+            ->event('undo-config-module')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'method' => 'undoConfigModule',
+                'user' => Auth::user(),
+                'module_id' => $module['id'],
+                'module_name' => $module['name'],
+                'module_type' => $module['type'],
+            ])
+        ->log('کانفیگ ماژول به حالت اولیه خود بازگشت');
+
+
+        Log::channel('daily')->info('کانفیگ ماژول به حالت اولیه خود بازگشت', [
+        'type-log' => 'server',
+        'route' => request()->fullUrl(),
+        'method' => 'undoConfigModule',
+        'user' => Auth::user(),
+        'module_id' => $module['id'],
+        'module_name' => $module['name'],
+        'module_type' => $module['type'],
+        ]);
 
 
 
-    return response()->json(['success' => 'ture', 'msg' => 'کانفیگ به مقدار اولیه بازگشت']);
+        return response()->json(['success' => 'ture', 'msg' => 'کانفیگ به مقدار اولیه بازگشت']);
+    } catch (\Throwable $th) {
+        return response()->json(['error'=> $th->getMessage()]);
+    }
+
   }
 
 }
