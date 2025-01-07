@@ -47,4 +47,33 @@ class JsonUpdater
         return $json;
     }
 
+    public static function deleteConfigInModule (array $json, string $path)
+    {
+        $path = preg_replace('/\[(\d+)\]/', '.$1', $path);
+        $keys = explode('.', $path);
+        $currentNode = &$json;
+
+        foreach ($keys as $index => $key) {
+            if (is_numeric($key) && is_array($currentNode)) {
+                if (isset($currentNode[(int)$key]))
+                    $currentNode = &$currentNode[(int)$key];
+
+                else
+                    throw new \Exception("مسیر وارد شده وجود ندارد: {$path}");
+
+            } elseif (isset($currentNode[$key])) {
+
+                if ($index === count($keys) - 1) {
+                    unset($currentNode[$key]);
+                    return $json;
+                }
+
+                $currentNode = &$currentNode[$key];
+            } else {
+                throw new \Exception("مسیر وارد شده وجود ندارد: {$path}");
+            }
+        }
+
+        return $json;
+    }
 }

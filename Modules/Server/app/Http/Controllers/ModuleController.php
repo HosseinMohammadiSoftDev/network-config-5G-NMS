@@ -24,6 +24,7 @@ use App\Http\Controllers\Contract\ApiController;
 use Illuminate\Validation\UnauthorizedException;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Modules\Server\Http\Requests\Module\DeleteCofigModuleRequest;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Modules\Server\Http\Requests\Modules\ShowAllModules;
@@ -572,6 +573,80 @@ class ModuleController extends ApiController
             return $this->updateMultipleModules($serverIds, $request);
         else
             return $this->updateSingleModule($request);
+    }
+
+
+    private function deleteConfigInDatabase ($moduleId, $pathConfig)
+    {
+        $module = Module::find($moduleId);
+
+        if (!$module)
+            throw new Exception('ماژول مورد نظر پیدا نشد');
+
+
+        $moduleConfig = json_decode($module->current_config, true);
+        $moduleCurrentConfig = $module['current_config'];
+        $module['previous_config'] = $moduleCurrentConfig;
+
+        foreach ($pathConfig as $path) {
+            $moduleConfig = JsonUpdater::deleteConfigInModule($moduleConfig, $path);
+        }
+
+        $module->current_config = json_encode($moduleConfig, JSON_PRETTY_PRINT);
+        $module->save();
+
+        return $module;
+    }
+    public function deleteConfigModule (DeleteCofigModuleRequest $request)
+    {
+        $request = $request->validated();
+
+        $module = Module::find($request['module_id']);
+        $server = Server::find($module['server_id']);
+        $pathConfig = $request['path'];
+
+
+        $host = $server['ip'];
+        $username = $request['username'];
+        $password = $request['password'];
+        $path = $request['path'] ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
+
+        DB::beginTransaction();
+
+        try {
+            $this->chackPermissionModule($module, $server);
+
+            $module = $this->deleteConfigInDatabase($module['id'], $pathConfig);
+
+            $yamlContent = $this->convertJsonToYaml($module->current_config);
+
+            // $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
+
+            DB::commit();
+
+            return response()->json([
+                'config' => json_decode($module->current_config, true),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            $message = $e->getMessage();
+
+            if (str_contains($message, 'ERROR') || str_contains($message, 'FATAL')) {
+                $message = preg_replace('/\e\[[\d;]*m/', '', $message);
+                $message = preg_replace('/\r|\n|\[?.*?h/', '', $message);
+                preg_match_all('/(ERROR|FATAL): ([^\r\n]+)/', $message, $matches);
+
+                if (!empty($matches[0])) {
+                    $filteredMessages = implode("\n", $matches[0]);
+                    return response()->json(['error' => $filteredMessages], 500);
+                }
+
+                return response()->json(['error' => $message], 500);
+            }
+
+            return response()->json(['error' => $message], 500);
+        }
     }
 
 
