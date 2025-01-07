@@ -37,6 +37,8 @@ use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
 use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
 use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
+use PhpParser\Node\Expr\Throw_;
+use PHPUnit\Event\Code\Throwable;
 
 class ModuleController extends ApiController
 {
@@ -429,7 +431,7 @@ class ModuleController extends ApiController
 
             $yamlContent = $this->convertJsonToYaml($module->current_config);
 
-            // $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
+            $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
 
             $this->logModuleUpdate($module, $data);
 
@@ -441,7 +443,23 @@ class ModuleController extends ApiController
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['error' => $e->getMessage()], 500);
+
+            $message = $e->getMessage();
+
+            if (str_contains($message, 'ERROR') || str_contains($message, 'FATAL')) {
+                $message = preg_replace('/\e\[[\d;]*m/', '', $message);
+                $message = preg_replace('/\r|\n|\[?.*?h/', '', $message);
+                preg_match_all('/(ERROR|FATAL): ([^\r\n]+)/', $message, $matches);
+
+                if (!empty($matches[0])) {
+                    $filteredMessages = implode("\n", $matches[0]);
+                    return response()->json(['error' => $filteredMessages], 500);
+                }
+
+                return response()->json(['error' => $message], 500);
+            }
+
+            return response()->json(['error' => $message], 500);
         }
     }
     private function updateMultipleModules($serverIds, $request)
@@ -480,11 +498,11 @@ class ModuleController extends ApiController
                 $updatedModule = $this->updateModuleConfigInDatabase($module['id'], $data);
 
                 if ($firstModule === null)
-                    $firstModule = Module::find($module['id']); // بازیابی مدل به‌روز شده
+                    $firstModule = Module::find($module['id']);
 
                 $yamlContent = $this->convertJsonToYaml($updatedModule->current_config);
 
-                // $this->sendConfigToServer($host, $username, $password, $path, $updatedModule['name'], $yamlContent, $server);
+                $this->sendConfigToServer($host, $username, $password, $path, $updatedModule['name'], $yamlContent, $server);
 
 
                 $this->logModuleUpdate($updatedModule, $data);
@@ -496,8 +514,9 @@ class ModuleController extends ApiController
                 'config' => json_decode($firstModule->current_config, true),
                 'serverIdsInModuleName' => $serverIdsInModuleName
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
+            dd($e);
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -507,9 +526,15 @@ class ModuleController extends ApiController
             if ($server['is_down'] == 1)
                 throw new Exception('سرور خاموش است');
 
+            // update module
+        $commandUpdateFileModule = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $moduleName . '.yaml';
+        SshHelper::runSshCommand($host, $username, $password, $commandUpdateFileModule);
 
-        $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $moduleName . '.yaml';
-        SshHelper::runSshCommand($host, $username, $password, $command);
+            // restart module
+        $pathRestartModule = '/home/siz-tel/bbdh-2.6.6-noCg/install/bin/';
+        $commandRestart = $pathRestartModule . 'bbdh-' . $moduleName . 'd' . ' restart';
+        $output = SshHelper::restartModule($host, $username, $password, $commandRestart);
+            throw new \Exception($output);
     }
     private function updateModuleConfigInDatabase($moduleId, $data)
     {

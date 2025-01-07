@@ -138,7 +138,6 @@ class UserController extends ApiController
                     'method' => 'resetPsswordAndAuthName',
                     'user' => Auth::user(),
                     'member' => $user,
-                    'credentials' => $credentials
                 ])
             ->log('نام  کاربری و پسورد کاربر توسط ادمین با موفقیت به روز رسانی شد');
 

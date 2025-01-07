@@ -40,6 +40,6 @@ class Module extends Model
 
     public function servers()
     {
-        return $this->belongsToMany(Server::class);
+        return $this->belongsToMany(Server::class, 'server_modules', 'module_id', 'server_id');
     }
 }
