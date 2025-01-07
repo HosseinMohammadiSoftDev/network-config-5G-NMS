@@ -16,16 +16,21 @@ class JsonUpdater
         $currentNode = &$json;
 
         foreach ($keys as $index => $key) {
-
+            // dump($keys , $index , $key, '\n');
             if (is_numeric($key) && is_array($currentNode)) {
                 if (isset($currentNode[(int)$key]))
                     $currentNode = &$currentNode[(int)$key];
                 else
                     return $json;
             }
-            elseif (isset($currentNode[$key]))
+            elseif (isset($currentNode[$key])) {
                 $currentNode = &$currentNode[$key];
-            else
+
+            }elseif (!isset($currentNode[$key])) {
+                $currentNode[$key] = [];
+                $currentNode = &$currentNode[$key];
+
+            }else
                 return $json;
 
 
