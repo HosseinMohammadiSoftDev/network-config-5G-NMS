@@ -714,7 +714,11 @@ class ModuleController extends ApiController
             'module_type' => $module['type'],
             ]);
 
-            return response()->json(['success' => 'ture', 'msg' => 'کانفیگ به مقدار قبلی بازگشت']);
+            return response()->json([
+                'success' => 'ture',
+                'msg' => 'کانفیگ به مقدار قبلی بازگشت',
+                'config' => json_decode($module['current_config'], true)
+            ]);
 
     } catch (\Exception $e) {
         return response()->json(['Error' => $e->getMessage()]);
@@ -780,7 +784,11 @@ class ModuleController extends ApiController
 
 
 
-        return response()->json(['success' => 'ture', 'msg' => 'کانفیگ به مقدار اولیه بازگشت']);
+        return response()->json([
+            'success' => 'ture',
+            'msg' => 'کانفیگ به مقدار اولیه بازگشت',
+            'config' => json_decode($module['current_config'], true)
+        ]);
     } catch (\Throwable $th) {
         return response()->json(['error'=> $th->getMessage()]);
     }
