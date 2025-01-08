@@ -305,7 +305,7 @@ class ServerController extends ApiController
             'method' => 'showConfigModule',
             'user' => Auth::user(),
             'server' => $server
-            // ]);
+            ]);
 
 
             activity('server-connection')

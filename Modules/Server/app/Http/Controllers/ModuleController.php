@@ -81,20 +81,30 @@ class ModuleController extends ApiController
 
   public function ShowAllModules (Request $request)
    {
-    $servers = Server::select('id', 'name', 'is_down')
-        ->with(['modules' => function ($query) {
-            $query->select('id', 'server_id', 'name', 'type');
-        }])->get();
+        $modules = Module::all();
 
-        $modulesGroupedByType = $servers->map(function ($server) {
-            return [
-                'server_id' => $server->id,
-                'server_name' => $server->name,
-                'modules' => $server->modules->groupBy('type'),
+        $result = [];
+        $processedModules = [];
+
+        foreach ($modules as $module) {
+            if (in_array($module->name, $processedModules)) {
+                continue;
+            }
+
+            $serverIdsInModuleName = Module::where('name', $module->name)->pluck('server_id')->toArray();
+
+            $result[] = [
+                'module_id' => $module->id,
+                'module_name' => $module->name,
+                'module_type' => $module->type,
+                'module_server_id' => $module->server_id,
+                'server_ids' => $serverIdsInModuleName
             ];
-        });
 
-        return response()->json(['msg' => 'The list of modules was successfully retrieved', 'module' => $modulesGroupedByType]);
+            $processedModules[] = $module->name;
+        }
+
+        return response()->json(['msg' => 'The list of modules was successfully retrieved', 'module' => $result]);
   }
 
 

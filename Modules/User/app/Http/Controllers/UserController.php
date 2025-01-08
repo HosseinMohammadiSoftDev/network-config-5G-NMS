@@ -11,6 +11,8 @@ use Modules\User\Http\Requests\User\resetPasswordRequest;
 use Modules\User\Models\User;
 use Modules\User\Services\PaginationService;
 
+use function PHPSTORM_META\map;
+
 class UserController extends ApiController
 {
      protected $paginationService;
@@ -39,12 +41,24 @@ class UserController extends ApiController
 
     public function showAllUsers (Request $request)
     {
-        $usersQuery = User::with('roles:name');
+        $usersQuery = User::query();
 
         $users = $this->paginationService->paginate($usersQuery, $request,
         ['id', 'created_at', 'updated_at']);
 
-        return $this->respondSuccess('All users of the application were successfully retrieved', $users);
+        $user = $users->map(function ($user) {
+            return [
+                'id' => $user['id'],
+                'auth_name' => $user['auth_name'],
+                'first_name' => $user['first_name'],
+                'last_name' => $user['last_name'],
+                'added_by' => $user['added_by'],
+                'roles' => $user->getRoleNames(),
+                'permissions' => $user->getAllPermissions()->pluck('name'),
+            ];
+        });
+
+        return $this->respondSuccess('All users of the application were successfully retrieved', ['user' => $user]);
     }
     public function getDeletedAccounts (request $request)
     {
