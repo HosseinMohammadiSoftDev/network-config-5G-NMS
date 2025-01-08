@@ -359,8 +359,8 @@ class ModuleController extends ApiController
     $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
 
                 // ssh connection
-        $command = 'rm -f' . $path . $module['name'] . '.yaml';
-        SshHelper::runSshCommand($host, $username, $password, $command);
+        // $command = 'rm -f' . $path . $module['name'] . '.yaml';
+        // SshHelper::runSshCommand($host, $username, $password, $command);
 
 
     $module->delete();

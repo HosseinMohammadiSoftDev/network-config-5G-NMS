@@ -298,14 +298,14 @@ class ServerController extends ApiController
 
 
             try {
-            SshHelper::testConnection($sshHost, $sshUsername, $sshPassword);
+            // SshHelper::testConnection($sshHost, $sshUsername, $sshPassword);
 
             Log::channel('daily')->info('The connection to the server was successful', [
             'route' => request()->fullUrl(),
             'method' => 'showConfigModule',
             'user' => Auth::user(),
             'server' => $server
-            ]);
+            // ]);
 
 
             activity('server-connection')
