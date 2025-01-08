@@ -20,7 +20,7 @@ class PaginationService
 
         $sortColumn = $request->input('sort', 'id');
         if (!$this->isSortable($sortColumn, $sortableColumns)) {
-            response()->json(['msg' => 'مقداری که برای مرتب سازی وارد کردید نامعتبر است'], 400)->send();
+            response()->json(['msg' => 'The value you entered for sorting is invalid'], 400)->send();
             exit;
         }
 

@@ -16,12 +16,13 @@ class CreateModulesRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'min:3', 'max:255'],
             'type' => ['required', 'string', 'min:2', 'max:255'],
-            'server_id' => ['required', 'exists:servers,id', 'numeric'],
+            'server_id' => ['required', 'array'],
+            'server_id.*' => ['required', 'integer', 'exists:servers,id'],
             'config_file' => ['required', 'file',  function ($attribute, $value, $fail) {
 
                 if (!preg_match('/\.(yaml|yml|yaml\.in)$/i', $value->getClientOriginalName()))
 
-                    $fail('فایل باید یکی از فرمت‌های .yaml, .yml, یا .yaml.in باشد.');
+                    $fail('The file must be one of the following formats: .yaml, .yml, or .yaml.in');
 
                     Log::channel('daliy')->error('کاربری قصد اضافه کردن فایل کانفیگی فرمت مقایر دارد را داشت', [
                         'fileName' => $value->getClientOriginalName(),
