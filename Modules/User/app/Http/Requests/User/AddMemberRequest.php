@@ -17,6 +17,7 @@ class AddMemberRequest extends FormRequest
             'last_name' => ['required', 'string', 'max:191', 'min:3'],
             'auth_name' => ['required', 'string', 'unique:users,auth_name', 'min:3', 'max:255'],
             'role' => ['required', 'in:visitor,expert'],
+            'permission_name' => ['nullable', 'string', 'exists:permissions,name'],
             'password' => ['required', Password::min(8), 'confirmed', 'max:60'],
         ];
     }

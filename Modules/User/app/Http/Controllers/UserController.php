@@ -66,9 +66,14 @@ class UserController extends ApiController
                 DB::beginTransaction();
             $user = User::create($credentials);
             $role = $credentials['role'] ?? null;
+            $permissionName = $credentials['permission_name'];
 
             if ($role)
                 $user->assignRole($role);
+
+            if ($permissionName)
+                $user->givePermissionTo($permissionName);
+
 
                 activity('add-member')
                     ->causedBy(Auth::user())
