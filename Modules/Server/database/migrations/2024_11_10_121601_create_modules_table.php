@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('modules', function (Blueprint $table) {
             $table->id();
-            
+
             $table->string('name');
             $table->string('type');
 
             $table->foreignId('server_id')
-                ->constrained()->onDelete('cascade');
+                ->constrained()->onDelete('set null');
 
             $table->json('initial_config')->nullable();
             $table->json('previous_config')->nullable();

@@ -24,6 +24,7 @@ use App\Http\Controllers\Contract\ApiController;
 use Illuminate\Validation\UnauthorizedException;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Modules\Server\Http\Requests\Module\DeleteCofigModuleRequest;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Modules\Server\Http\Requests\Modules\ShowAllModules;
@@ -37,12 +38,16 @@ use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
 use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
 use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
+use Modules\User\Services\PaginationService;
 use PhpParser\Node\Expr\Throw_;
 use PHPUnit\Event\Code\Throwable;
 
 class ModuleController extends ApiController
 {
+    public function __construct(private PaginationService $paginationService)
+    {
 
+    }
 
         // show Config in database
   public function showConfigModule ($moduleId)
@@ -72,6 +77,24 @@ class ModuleController extends ApiController
     $modulesGroupedByType = $server->modules->groupBy('type');
 
     return $this->respondSuccess('لیست سرویس های سرور و ماژول های انها', $modulesGroupedByType);
+  }
+
+  public function ShowAllModules (Request $request)
+   {
+    $servers = Server::select('id', 'name', 'is_down')
+        ->with(['modules' => function ($query) {
+            $query->select('id', 'server_id', 'name', 'type');
+        }])->get();
+
+        $modulesGroupedByType = $servers->map(function ($server) {
+            return [
+                'server_id' => $server->id,
+                'server_name' => $server->name,
+                'modules' => $server->modules->groupBy('type'),
+            ];
+        });
+
+        return response()->json(['msg' => 'لیست ماژول ها باموفقیت دریافت شد', 'module' => $modulesGroupedByType]);
   }
 
 
@@ -431,7 +454,7 @@ class ModuleController extends ApiController
 
             $yamlContent = $this->convertJsonToYaml($module->current_config);
 
-            $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
+            // $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
 
             $this->logModuleUpdate($module, $data);
 
@@ -502,7 +525,7 @@ class ModuleController extends ApiController
 
                 $yamlContent = $this->convertJsonToYaml($updatedModule->current_config);
 
-                $this->sendConfigToServer($host, $username, $password, $path, $updatedModule['name'], $yamlContent, $server);
+                // $this->sendConfigToServer($host, $username, $password, $path, $updatedModule['name'], $yamlContent, $server);
 
 
                 $this->logModuleUpdate($updatedModule, $data);
@@ -540,8 +563,13 @@ class ModuleController extends ApiController
     {
         $module = Module::find($moduleId);
 
-        if (!$module) {
+        if (!$module)
             throw new Exception('ماژول مورد نظر پیدا نشد');
+
+            // example value in data user
+        foreach ($data as $key => $value) {
+            if (is_null($value))
+                $data[$key] = "";
         }
 
         $moduleConfig = json_decode($module->current_config, true);
@@ -570,6 +598,80 @@ class ModuleController extends ApiController
     }
 
 
+    private function deleteConfigInDatabase ($moduleId, $pathConfig)
+    {
+        $module = Module::find($moduleId);
+
+        if (!$module)
+            throw new Exception('ماژول مورد نظر پیدا نشد');
+
+
+        $moduleConfig = json_decode($module->current_config, true);
+        $moduleCurrentConfig = $module['current_config'];
+        $module['previous_config'] = $moduleCurrentConfig;
+
+        foreach ($pathConfig as $path) {
+            $moduleConfig = JsonUpdater::deleteConfigInModule($moduleConfig, $path);
+        }
+
+        $module->current_config = json_encode($moduleConfig, JSON_PRETTY_PRINT);
+        $module->save();
+
+        return $module;
+    }
+    public function deleteConfigModule (DeleteCofigModuleRequest $request)
+    {
+        $request = $request->validated();
+
+        $module = Module::find($request['module_id']);
+        $server = Server::find($module['server_id']);
+        $pathConfig = $request['path'];
+
+
+        $host = $server['ip'];
+        $username = $request['username'];
+        $password = $request['password'];
+        $path = $request['path'] ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
+
+        DB::beginTransaction();
+
+        try {
+            $this->chackPermissionModule($module, $server);
+
+            $module = $this->deleteConfigInDatabase($module['id'], $pathConfig);
+
+            $yamlContent = $this->convertJsonToYaml($module->current_config);
+
+            // $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
+
+            DB::commit();
+
+            return response()->json([
+                'config' => json_decode($module->current_config, true),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            $message = $e->getMessage();
+
+            if (str_contains($message, 'ERROR') || str_contains($message, 'FATAL')) {
+                $message = preg_replace('/\e\[[\d;]*m/', '', $message);
+                $message = preg_replace('/\r|\n|\[?.*?h/', '', $message);
+                preg_match_all('/(ERROR|FATAL): ([^\r\n]+)/', $message, $matches);
+
+                if (!empty($matches[0])) {
+                    $filteredMessages = implode("\n", $matches[0]);
+                    return response()->json(['error' => $filteredMessages], 500);
+                }
+
+                return response()->json(['error' => $message], 500);
+            }
+
+            return response()->json(['error' => $message], 500);
+        }
+    }
+
+
         // Undo Config module
   public function undoConfigModule (UndoConfigModulesRequest $request)
   {
@@ -594,49 +696,55 @@ class ModuleController extends ApiController
     if ($modulePreviousConfig == null)
         return response()->json(['msg' => 'ماژول مقدار قبلی ندارد شما نمیتواند ان را به مقدار قبلی باز گردانید']);
 
+    try {
+            // ssh to server format yaml
+            $yamlContent = $this->convertJsonToYaml($modulePreviousConfig);
 
-        // ssh to server format yaml
-    $yamlContent = $this->convertJsonToYaml($modulePreviousConfig);
-
-    $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
-    SshHelper::runSshCommand($host, $username, $password, $command);
-
-
-        // save to datebase format json
-    $module['current_config'] = $modulePreviousConfig;
-    $module->save();
+            // $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
+            // SshHelper::runSshCommand($host, $username, $password, $command);
 
 
+                // save to datebase format json
+            $module['current_config'] = $modulePreviousConfig;
+            $module->save();
 
-    activity('undo-config-module')
-        ->causedBy(Auth::user())
-        ->performedOn($module)
-        ->event('undo-config-module')
-        ->withProperties([
+
+
+            activity('undo-config-module')
+                ->causedBy(Auth::user())
+                ->performedOn($module)
+                ->event('undo-config-module')
+                ->withProperties([
+                    'type-log' => 'server',
+                    'route' => request()->fullUrl(),
+                    'method' => 'undoConfigModule',
+                    'user' => Auth::user(),
+                    'module_id' => $module['id'],
+                    'module_name' => $module['name'],
+                    'module_type'=> $module['type'],
+                ])
+            ->log('کانفیگ ماژول به مرحله قبلی بازگشت');
+
+
+            Log::channel('daily')->info('کانفیگ ماژول به مرحله قبلی بازگشت', [
             'type-log' => 'server',
             'route' => request()->fullUrl(),
             'method' => 'undoConfigModule',
             'user' => Auth::user(),
             'module_id' => $module['id'],
             'module_name' => $module['name'],
-            'module_type'=> $module['type'],
-        ])
-    ->log('کانفیگ ماژول به مرحله قبلی بازگشت');
+            'module_type' => $module['type'],
+            ]);
 
+            return response()->json([
+                'success' => 'ture',
+                'msg' => 'کانفیگ به مقدار قبلی بازگشت',
+                'config' => json_decode($module['current_config'], true)
+            ]);
 
-    Log::channel('daily')->info('کانفیگ ماژول به مرحله قبلی بازگشت', [
-      'type-log' => 'server',
-      'route' => request()->fullUrl(),
-      'method' => 'undoConfigModule',
-      'user' => Auth::user(),
-      'module_id' => $module['id'],
-      'module_name' => $module['name'],
-      'module_type' => $module['type'],
-    ]);
-
-
-
-    return response()->json(['success' => 'ture', 'msg' => 'کانفیگ به مقدار قبلی بازگشت']);
+    } catch (\Exception $e) {
+        return response()->json(['Error' => $e->getMessage()]);
+    }
   }
   public function undoToInitialConfigModule (UndoToInitialConfigModulesRequest $request)
   {
@@ -658,47 +766,55 @@ class ModuleController extends ApiController
     $module = Module::find($creadtional['module_id']);
     $moduleInitialConfig = $module['initial_config'];
 
+    try {
+                // ssh to server format yaml
+        $yamlContent = $this->convertJsonToYaml($moduleInitialConfig);
 
-        // ssh to server format yaml
-    $yamlContent = $this->convertJsonToYaml($moduleInitialConfig);
+        // $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
+        // SshHelper::runSshCommand($host, $username, $password, $command);
 
-    $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
-    SshHelper::runSshCommand($host, $username, $password, $command);
-
-        // save to datebase format json
-    $module['current_config'] = $moduleInitialConfig;
-    $module->save();
-
-
-    activity('undo-config-module')
-        ->causedBy(Auth::user())
-        ->performedOn($module)
-        ->event('undo-config-module')
-        ->withProperties([
-            'type-log' => 'server',
-            'route' => request()->fullUrl(),
-            'method' => 'undoConfigModule',
-            'user' => Auth::user(),
-            'module_id' => $module['id'],
-            'module_name' => $module['name'],
-            'module_type' => $module['type'],
-        ])
-    ->log('کانفیگ ماژول به حالت اولیه خود بازگشت');
+            // save to datebase format json
+        $module['current_config'] = $moduleInitialConfig;
+        $module->save();
 
 
-    Log::channel('daily')->info('کانفیگ ماژول به حالت اولیه خود بازگشت', [
-      'type-log' => 'server',
-      'route' => request()->fullUrl(),
-      'method' => 'undoConfigModule',
-      'user' => Auth::user(),
-      'module_id' => $module['id'],
-      'module_name' => $module['name'],
-      'module_type' => $module['type'],
-    ]);
+        activity('undo-config-module')
+            ->causedBy(Auth::user())
+            ->performedOn($module)
+            ->event('undo-config-module')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'method' => 'undoConfigModule',
+                'user' => Auth::user(),
+                'module_id' => $module['id'],
+                'module_name' => $module['name'],
+                'module_type' => $module['type'],
+            ])
+        ->log('کانفیگ ماژول به حالت اولیه خود بازگشت');
+
+
+        Log::channel('daily')->info('کانفیگ ماژول به حالت اولیه خود بازگشت', [
+        'type-log' => 'server',
+        'route' => request()->fullUrl(),
+        'method' => 'undoConfigModule',
+        'user' => Auth::user(),
+        'module_id' => $module['id'],
+        'module_name' => $module['name'],
+        'module_type' => $module['type'],
+        ]);
 
 
 
-    return response()->json(['success' => 'ture', 'msg' => 'کانفیگ به مقدار اولیه بازگشت']);
+        return response()->json([
+            'success' => 'ture',
+            'msg' => 'کانفیگ به مقدار اولیه بازگشت',
+            'config' => json_decode($module['current_config'], true)
+        ]);
+    } catch (\Throwable $th) {
+        return response()->json(['error'=> $th->getMessage()]);
+    }
+
   }
 
 }
