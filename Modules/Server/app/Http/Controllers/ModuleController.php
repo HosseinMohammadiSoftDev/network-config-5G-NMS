@@ -38,12 +38,16 @@ use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
 use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
 use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
+use Modules\User\Services\PaginationService;
 use PhpParser\Node\Expr\Throw_;
 use PHPUnit\Event\Code\Throwable;
 
 class ModuleController extends ApiController
 {
+    public function __construct(private PaginationService $paginationService)
+    {
 
+    }
 
         // show Config in database
   public function showConfigModule ($moduleId)
@@ -73,6 +77,24 @@ class ModuleController extends ApiController
     $modulesGroupedByType = $server->modules->groupBy('type');
 
     return $this->respondSuccess('لیست سرویس های سرور و ماژول های انها', $modulesGroupedByType);
+  }
+
+  public function ShowAllModules (Request $request)
+   {
+    $servers = Server::select('id', 'name', 'is_down')
+        ->with(['modules' => function ($query) {
+            $query->select('id', 'server_id', 'name', 'type');
+        }])->get();
+
+        $modulesGroupedByType = $servers->map(function ($server) {
+            return [
+                'server_id' => $server->id,
+                'server_name' => $server->name,
+                'modules' => $server->modules->groupBy('type'),
+            ];
+        });
+
+        return response()->json(['msg' => 'لیست ماژول ها باموفقیت دریافت شد', 'module' => $modulesGroupedByType]);
   }
 
 
