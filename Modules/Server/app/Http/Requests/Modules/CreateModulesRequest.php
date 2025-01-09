@@ -2,9 +2,11 @@
 
 namespace Modules\Server\Http\Requests\Modules;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
+use Attribute;
+use Modules\Server\Models\Module;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Http\FormRequest;
 
 class CreateModulesRequest extends FormRequest
 {
@@ -14,7 +16,22 @@ class CreateModulesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'min:3', 'max:255'],
+            'name' => ['required', 'string', 'min:3', 'max:255', function ($attribute, $value, $fail) {
+                $serverIds = request('server_id');
+                if (!is_array($serverIds))
+                    $serverIds = [$serverIds];
+
+                foreach ($serverIds as $serverId) {
+
+                $modulNameExists = Module::where('name', $value)
+                ->where('server_id', request('server_id'))
+                ->exists();
+
+                if ($modulNameExists)
+                    $fail('module name is not uniqe');
+                }
+
+            }],
             'type' => ['required', 'string', 'min:2', 'max:255'],
             'server_id' => ['required', 'array'],
             'server_id.*' => ['required', 'integer', 'exists:servers,id'],

@@ -2,6 +2,7 @@
 
 namespace Modules\Server\Http\Controllers;
 
+use Modules\Server\Http\Requests\EditModuleRequest;
 use Spyc;
 use Exception;
 use phpseclib3\Net\SSH2;
@@ -344,6 +345,7 @@ class ModuleController extends ApiController
                     'type' => $creadtional['type'],
                     'server_id' => $serverId,
                 ],
+                'server' => $server
             ])
             ->log('A new module has been created');
     }
@@ -356,58 +358,6 @@ class ModuleController extends ApiController
         'created_modules' => $createdModules
       ]);
   }
-  public function deleteModule(deleteModuleRequest $request)
-  {
-    $creadtional = $request->validated();
-
-    $module = Module::find($creadtional['module_id']);
-    $server = Server::find($module['server_id']);
-
-    $host = $server['ip'];
-    $username = $request->input('username');
-    $password = $request->input('password');
-    $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
-
-                // ssh connection
-        // $command = 'rm -f' . $path . $module['name'] . '.yaml';
-        // SshHelper::runSshCommand($host, $username, $password, $command);
-
-
-    $module->delete();
-
-
-      Log::channel('daily')->info('delete module successfully',[
-        'route' => request()->fullUrl(),
-        'method' => 'deleteModule',
-        'user' => Auth::id(),
-        'module'=> [
-            'name' => $module['name'],
-            'type' => $module['type'],
-            'server_id' => $module['server_id']
-        ]
-       ]);
-
-
-      activity('delete-module')
-        ->causedBy(Auth::user())
-        ->performedOn($module)
-        ->event('create-module')
-        ->withProperties([
-            'type-log' => 'server',
-            'route' => request()->fullUrl(),
-            'method' => 'createModule',
-            'user' => Auth::id(),
-            'module_id' => [
-                'name' => $module['name'],
-                'type' => $module['type'],
-                'server_id' => $module['server_id'],
-            ],
-        ])
-      ->log('delete module successfully');
-
-    return $this->respondSuccess('delete module successfully', []);
-  }
-
 
         // update Config Module
     public function chackPermissionModule($module, $server)
@@ -445,7 +395,7 @@ class ModuleController extends ApiController
         throw new HttpResponseException(response()->json(['msg' => 'You do not have the required access to use this module and server.',
                 'yer-permission' => $user->getAllPermissions()->pluck('name')], 403));
     }
-    private function logModuleUpdate($module, $data)
+    private function logModuleUpdate($module, $server, $data)
     {
         Log::channel('daily')->info('The configuration values have been changed', [
             'route' => request()->fullUrl(),
@@ -497,7 +447,7 @@ class ModuleController extends ApiController
 
             // $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
 
-            $this->logModuleUpdate($module, $data);
+            $this->logModuleUpdate($module, $server, $data);
 
             DB::commit();
 
@@ -569,7 +519,7 @@ class ModuleController extends ApiController
                 // $this->sendConfigToServer($host, $username, $password, $path, $updatedModule['name'], $yamlContent, $server);
 
 
-                $this->logModuleUpdate($updatedModule, $data);
+                $this->logModuleUpdate($updatedModule, $server, $data);
             }
 
             DB::commit();
@@ -638,6 +588,7 @@ class ModuleController extends ApiController
     }
 
 
+        // delete config module
     private function deleteConfigInDatabase ($moduleId, $pathConfig)
     {
         $module = Module::find($moduleId);
@@ -710,6 +661,101 @@ class ModuleController extends ApiController
             return response()->json(['error' => $message], 500);
         }
     }
+
+
+        //edit moduel
+    private function updateConfigForDB(Module $module, array $serverIds, $jsonConfig)
+    {
+        foreach ($serverIds as $serverId) {
+            $serverModule = Module::where('server_id', $serverId)->where('name', $module->name)->first();
+
+            if ($serverModule) {
+                $moduleConfig = json_decode($jsonConfig, true);
+
+                $moduleCurrentConfig = $serverModule['current_config'];
+                $serverModule['previous_config'] = $moduleCurrentConfig;
+
+                $serverModule['initial_config'] = json_encode($moduleConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                $serverModule['current_config'] = json_encode($moduleConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+
+                $serverModule->save();
+            }
+        }
+    }
+    private function addModulesToDB(Module $module, array $serverIds)
+    {
+        foreach ($serverIds as $serverId) {
+            $serverModule = Module::firstOrNew([
+                'server_id' => $serverId,
+                'name' => $module->name,
+            ]);
+
+            $serverModule->type = $module->type;
+            $serverModule->initial_config = $module->initial_config;
+            $serverModule->current_config = $module->current_config;
+
+            $serverModule->save();
+        }
+    }
+    private function deleteModuleFromServer(Module $module, $request)
+    {
+        $username = $request->input('username');
+        $password = $request->input('password');
+        $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
+
+        // حذف فایل از سرور (در صورت نیاز)
+        // $command = 'rm -f ' . $path . $module->name . '.yaml';
+        // SshHelper::runSshCommand($server->ip, $username, $password, $command);
+
+        $module->delete();
+        Log::info('Module deleted successfully', ['module' => $module]);
+    }
+    private function deleteModulesDB(array $serverIds, Module $module, $request)
+    {
+        foreach ($serverIds as $serverId) {
+            $serverModule = Module::where('name', $module->name)
+                        ->where('server_id', $serverId)
+                        ->first();
+
+            if ($serverModule)
+                $this->deleteModuleFromServer($serverModule, $request);
+        }
+    }
+    private function syncModuleWithServers(Module $module, array $serverIds, $jsonConfig, $request)
+    {
+        $existingServerIds = Module::where('name', $module['name'])->pluck('server_id')->toArray();
+
+        $serversToDelete = array_diff($existingServerIds, $serverIds);
+        $serversToAdd = array_diff($serverIds, $existingServerIds);
+
+        $this->deleteModulesDB($serversToDelete, $module, $request);
+        $this->addModulesToDB($module, $serversToAdd);
+        $this->updateConfigForDB($module, $serverIds, $jsonConfig);
+    }
+    public function editModule(EditModuleRequest $request)
+    {
+        $validated = $request->validated();
+
+        $module = Module::find($validated['module_id']);
+        $serverIds = $validated['server_ids'] ?? [];
+        $configFile = $request->file('config_file');
+
+        if ($serverIds && $configFile) {
+            $jsonConfig = $this->uploadModuleFile($configFile);
+            $this->syncModuleWithServers($module, $serverIds, $jsonConfig, $request);
+        }
+
+        $module->update([
+            'name' => $validated['name'] ?? $module->name,
+            'type' => $validated['type'] ?? $module->type,
+        ]);
+
+        return response()->json(['message' => 'Module updated successfully'], 200);
+    }
+
+
+
 
 
         // Undo Config module

@@ -35,7 +35,7 @@ Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert']
 Route::middleware(['auth:sanctum', 'permission:module/delete|role:admin|expert'])->delete('delete-module', [ModuleController::class, 'deleteModule']);
 Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert'])->delete('delete-config-module', [ModuleController::class, 'deleteConfigModule']);
 Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert'])->get('show-all-modules', [ModuleController::class, 'showAllModules']);
-
+Route::middleware(['auth:sanctum', 'permission:module/delete|role:admin|expert'])->post('edit-module', [ModuleController::class, 'editModule']);
 
 Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert'])->post('undo-module-config', [ModuleController::class, 'undoConfigModule']);
 Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert'])->post('undo-to-initial-config-modules', [ModuleController::class, 'undoToInitialConfigModule']);
