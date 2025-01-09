@@ -37,7 +37,7 @@ class JsonUpdater
                     // validation types and keys
             if ($index == count($keys) - 1) {
                 if ($index < count($keys) - 1)
-                    throw new \Exception("بعد از این مورد کلید وجود دارد برسی کنید که ایا مسیر را اشتباه وارد نکردید");
+                    throw new \Exception("After this point, the key exists. Please check if you entered the path incorrectly.");
             }
         }
 
@@ -59,7 +59,7 @@ class JsonUpdater
                     $currentNode = &$currentNode[(int)$key];
 
                 else
-                    throw new \Exception("مسیر وارد شده وجود ندارد: {$path}");
+                    throw new \Exception("The entered path does not exist: {$path}");
 
             } elseif (isset($currentNode[$key])) {
 
@@ -70,7 +70,7 @@ class JsonUpdater
 
                 $currentNode = &$currentNode[$key];
             } else {
-                throw new \Exception("مسیر وارد شده وجود ندارد: {$path}");
+                throw new \Exception("The entered path does not exist: {$path}");
             }
         }
 

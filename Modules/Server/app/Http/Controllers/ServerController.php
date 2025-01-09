@@ -33,7 +33,7 @@ class ServerController extends ApiController
     {
         $servers = Server::all();
 
-        return $this->respondSuccess('لیست سرور های شما', $servers);
+        return $this->respondSuccess('Your server list', $servers);
     }
 
     public function createServer (CreateServerRequest $request)
@@ -42,7 +42,7 @@ class ServerController extends ApiController
 
         $server = Server::create($credentials);
 
-        Log::channel('daily')->info('سرور جدید ساخته شد', [
+        Log::channel('daily')->info('A new server has been created', [
             'type-log' => 'server',
             'route' => request()->fullUrl(),
             'method' => 'createServer',
@@ -62,9 +62,10 @@ class ServerController extends ApiController
                 'server' => $server,
                 'user' => Auth::user(),
             ])
-        ->log('سرور جدید ساخته شد');
+        ->log('A new server has been created'
+        );
 
-        return $this->respondCreated('سرور با موفقیت ساخته شد', $server);
+        return $this->respondCreated('A new server has been created', $server);
     }
     public function editServer (EditServerReqest $request)
     {
@@ -74,7 +75,7 @@ class ServerController extends ApiController
 
         $server->update($credentials);
 
-        Log::channel('daily')->info('سرور بهروزرسانی شد', [
+        Log::channel('daily')->info('this server edited', [
             'type-log' => 'server',
             'route' => request()->fullUrl(),
             'method' => 'editServer',
@@ -94,9 +95,9 @@ class ServerController extends ApiController
                 'server' => $server,
                 'user' => Auth::user(),
             ])
-        ->log('سرور بهروزرسانی شد');
+        ->log('this server edited');
 
-        return $this->respondSuccess('سرور بهروزرسانی شد', $server);
+        return $this->respondSuccess('this server updated', $server);
     }
 
 
@@ -134,7 +135,7 @@ class ServerController extends ApiController
                 DB::beginTransaction();
 
                 // delete all module server in VPS
-            $this->deleteAllModuleServer($server, $host, $username, $password, $path);
+            // $this->deleteAllModuleServer($server, $host, $username, $password, $path);
 
                 DB::commit();
         } catch (Exception $e) {
@@ -151,12 +152,12 @@ class ServerController extends ApiController
                 'server' => $server,
                 'user' => Auth::user(),
             ])
-            ->log('مشکل در حذف کردن همه ماژول های سرور پیش امد');
+            ->log('An issue occurred while deleting all server modules');
         }
 
 
 
-        Log::channel('daily')->info('سرور پاک شد', [
+        Log::channel('daily')->info('The server was successfully deleted', [
             'type-log' => 'server',
             'route' => request()->fullUrl(),
             'method' => 'deleteServer',
@@ -175,9 +176,9 @@ class ServerController extends ApiController
                 'server' => $server,
                 'user' => Auth::user(),
             ])
-        ->log('سرور پاک شد');
+        ->log('The server was successfully deleted');
 
-        return $this->respondSuccess('سرور باموفقیت با تمام ماژول هایش پاک شدند', $server);
+        return $this->respondSuccess('The server was successfully deleted', $server);
     }
 
 
@@ -189,7 +190,7 @@ class ServerController extends ApiController
         $server = Server::find($credentials['server_id']);
 
         if ($server['is_down'] == 1)
-            return response()->json(['سرور خاموش میباشد ', 422]);
+            return response()->json(['The server is turned off', 422]);
 
 
         $server->update(['is_down' => 1]);
@@ -197,7 +198,7 @@ class ServerController extends ApiController
 
 
 
-        Log::channel('daily')->info('سرور خاموش شد', [
+        Log::channel('daily')->info('The server has been turned off', [
             'type-log' => 'server',
             'route' => request()->fullUrl(),
             'method' => 'serverStart',
@@ -217,11 +218,11 @@ class ServerController extends ApiController
                 'server' => $server,
                 'user' => Auth::user(),
             ])
-        ->log('سرور خاموش شد');
+        ->log('The server was turned off');
 
 
 
-        return $this->respondSuccess(' سرور باموفقیت خاموش شد', $server);
+        return $this->respondSuccess('The server was turned off', $server);
     }
     public function serverStop (StartStopComandReqest $request)
     {
@@ -230,7 +231,7 @@ class ServerController extends ApiController
         $server = Server::find($credentials['server_id']);
 
         if ($server['is_down'] == 0)
-            return response()->json(['سرور روشن میباشد ', 422]);
+            return response()->json(['The server is turned on', 422]);
 
 
         $server->update(['is_down' => 0]);
@@ -239,7 +240,7 @@ class ServerController extends ApiController
 
 
 
-        Log::channel('daily')->info('سرور روشن شد', [
+        Log::channel('daily')->info('The server has been turned on', [
             'type-log' => 'server',
             'route' => request()->fullUrl(),
             'method' => 'serverStart',
@@ -259,10 +260,10 @@ class ServerController extends ApiController
                 'server' => $server,
                 'user' => Auth::user(),
             ])
-        ->log('سرور روشن شد');
+        ->log('The server has been turned on');
 
 
-        return $this->respondSuccess(' سرور باموفقیت روشن شد', $server);
+        return $this->respondSuccess('The server has been turned on', $server);
     }
     public function serverStatus (StartStopComandReqest $request)
     {
@@ -270,10 +271,10 @@ class ServerController extends ApiController
 
         $server = Server::find($credentials['server_id']);
             if (!$server)
-                return response()->json(['شناسه سرور معتبر نیست', 404]);
+                return response()->json(['The server ID is invalid', 404]);
 
 
-        $status = $server['is_down'] ? 'خاموش' : 'روشن';
+        $status = $server['is_down'] ? 'off' : 'on';
 
         return response()->json([$status]);
     }
@@ -286,20 +287,20 @@ class ServerController extends ApiController
         $server = Server::find($creadtional['server_id']);
 
 
-                // پارامترهای اتصال به سرور
+                // Parameter is connect server
         $sshHost = $server['ip'];
         $sshUsername = $creadtional['username'];
         $sshPassword = $creadtional['password'];
 
                 // is stop server
         if ($server['is_down'] == 1)
-            return response()->json(['msg' => 'سرور خاموش است'], 403);
+            return response()->json(['msg' => 'this off server'], 403);
 
 
             try {
-            SshHelper::testConnection($sshHost, $sshUsername, $sshPassword);
+            // SshHelper::testConnection($sshHost, $sshUsername, $sshPassword);
 
-            Log::channel('daily')->info('اتصال به سرور موفقیت آمیز بود', [
+            Log::channel('daily')->info('The connection to the server was successful', [
             'route' => request()->fullUrl(),
             'method' => 'showConfigModule',
             'user' => Auth::user(),
@@ -319,21 +320,21 @@ class ServerController extends ApiController
                 'host' => $sshHost,
                 'userName' => $sshUsername
             ])
-            ->log('اتصال به سرور موفقیت آمیز بود');
+            ->log('The connection to the server was successful');
 
             return response()->json(['msg'=> 'connect successful.'], 200);
 
         } catch (Exception $e) {
-            Log::channel('daily')->error('اتصال به سرور ناموفق بود', [
+            Log::channel('daily')->error('The connection to the server failed', [
                 'route' => request()->fullUrl(),
                 'method' => 'showConfigModule',
                 'error' => $e->getMessage(),
-                'user_id' => Auth::id(),
+                'user' => Auth::user(),
                 'host' => $sshHost,
                 'userName' => $sshUsername
             ]);
 
-            return response()->json(['msg' => 'اتصال به سرور ناموفق بود: ' . $e->getMessage()], 500);
+            return response()->json(['msg' => 'The connection to the server failed:' . $e->getMessage()], 500);
         }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Modules\Server\Http\Controllers;
 
+use Modules\Server\Http\Requests\EditModuleRequest;
 use Spyc;
 use Exception;
 use phpseclib3\Net\SSH2;
@@ -54,7 +55,7 @@ class ModuleController extends ApiController
   {
       $module = Module::find($moduleId);
         if (!$module)
-            return response()->json(['msg' => 'شناسه ماژول نامعتبر است'], 404);
+            return response()->json(['msg' => 'The module ID is invalid'], 404);
 
                 // show servers in module name
         $serverIdsInModuleName = Module::where('name', $module['name'])->pluck('server_id');
@@ -72,29 +73,39 @@ class ModuleController extends ApiController
     }])->find($serverId);
 
       if(!$server)
-        return response()->json(['msg' => 'شناسه نامعتبر است'], 404);
+        return response()->json(['msg' => 'invalide server id'], 404);
 
     $modulesGroupedByType = $server->modules->groupBy('type');
 
-    return $this->respondSuccess('لیست سرویس های سرور و ماژول های انها', $modulesGroupedByType);
+    return $this->respondSuccess('List of server services and their modules', $modulesGroupedByType);
   }
 
   public function ShowAllModules (Request $request)
    {
-    $servers = Server::select('id', 'name', 'is_down')
-        ->with(['modules' => function ($query) {
-            $query->select('id', 'server_id', 'name', 'type');
-        }])->get();
+        $modules = Module::all();
 
-        $modulesGroupedByType = $servers->map(function ($server) {
-            return [
-                'server_id' => $server->id,
-                'server_name' => $server->name,
-                'modules' => $server->modules->groupBy('type'),
+        $result = [];
+        $processedModules = [];
+
+        foreach ($modules as $module) {
+            if (in_array($module->name, $processedModules)) {
+                continue;
+            }
+
+            $serverIdsInModuleName = Module::where('name', $module->name)->pluck('server_id')->toArray();
+
+            $result[] = [
+                'module_id' => $module->id,
+                'module_name' => $module->name,
+                'module_type' => $module->type,
+                'module_server_id' => $module->server_id,
+                'server_ids' => $serverIdsInModuleName
             ];
-        });
 
-        return response()->json(['msg' => 'لیست ماژول ها باموفقیت دریافت شد', 'module' => $modulesGroupedByType]);
+            $processedModules[] = $module->name;
+        }
+
+        return response()->json(['msg' => 'The list of modules was successfully retrieved', 'module' => $result]);
   }
 
 
@@ -111,7 +122,7 @@ class ModuleController extends ApiController
       $arrayContent = json_decode($jsonContent, true);
 
       if (json_last_error() !== JSON_ERROR_NONE)
-     throw new Exception('خطا در تبدیل JSON به آرایه');
+     throw new Exception('error in convert json to yaml');
 
       $arrayContent = $this->convertNullKeysToComments($arrayContent);
 
@@ -148,7 +159,7 @@ class ModuleController extends ApiController
           $yamlContent = $this->parseYamlWithSpyc($file);
       } catch (Exception $e) {
 
-        Log::channel('daily')->error('مشکلی در تبدیل فایل یمل به جیسون پیش امد', [
+        Log::channel('daily')->error('An issue occurred while converting the YAML file to JSON', [
           'route' => request()->fullUrl(),
           'method' => 'uploadModule',
           'error' => $e->getMessage(),
@@ -165,23 +176,23 @@ class ModuleController extends ApiController
               'error' => $e->getMessage(),
               'user' => Auth::user(),
           ])
-        ->log('مشکلی در تبدیل فایل یمل به جیسون پیش امد');
+        ->log('An issue occurred while converting the YAML file to JSON');
 
 
-          return response()->json(['msg' => 'مشکلی در تبدیل فایل به جیسون پیش امد: ' . $e->getMessage()], 400);
+          return response()->json(['msg' => 'An issue occurred while converting the YAML file to JSON: ' . $e->getMessage()], 400);
       }
 
       $jsonContent = json_encode($yamlContent, JSON_PRETTY_PRINT);
 
       $module = Module::find($credentials['module_id']);
         if (!$module)
-            return response()->json(['msg' => 'شناسه سرویس نانعتبر است'], 404);
+            return response()->json(['msg' => 'server id is invalide'], 404);
 
 
       $module->config = $jsonContent;
       $module->save();
 
-      Log::channel('daily')->info('فایل کانفیگ در ماژول مورد نظر قرار گرفت', [
+      Log::channel('daily')->info('The config file was placed in the specified module', [
         'route' => request()->fullUrl(),
         'method' => 'uploadModule',
         'module' => $module,
@@ -199,10 +210,10 @@ class ModuleController extends ApiController
             'module' => $module,
             'user' => Auth::user(),
         ])
-      ->log('فایل کانفیگ در ماژول مورد نظر قرار گرفت');
+      ->log('The config file has been placed in the specified module');
 
 
-      return $this->respondSuccess('فایل با موفقت  تبدیل به جیسون شد', []);
+      return $this->respondSuccess('The config file has been placed in the specified module', []);
   }
 
   private function uploadModuleFile ($file)
@@ -212,7 +223,7 @@ class ModuleController extends ApiController
       $yamlContent = $this->parseYamlWithSpyc($file);
     } catch (Exception $e) {
 
-      Log::channel('daily')->error('مشکلی در تبدیل فرمت فایل به جیسون پیش امد', [
+      Log::channel('daily')->error('An issue occurred while converting the file format to JSON', [
         'route' => request()->fullUrl(),
         'method' => 'uploadModuleFile',
         'error' => $e->getMessage(),
@@ -229,9 +240,9 @@ class ModuleController extends ApiController
               'error' => $e->getMessage(),
               'user_id' => Auth::id(),
           ])
-        ->log('مشکلی در تبدیل فرمت فایل به جیسون پیش امد');
+        ->log('An issue occurred while converting the file format to JSON');
 
-        return response()->json(['msg' => 'مشکلی در تبدیل فایل به جیسون پیش امد: ' . $e->getMessage()], 400);
+        return response()->json(['msg' => 'An issue occurred while converting the file format to JSON: ' . $e->getMessage()], 400);
     }
 
     $jsonContent = json_encode($yamlContent, JSON_PRETTY_PRINT);
@@ -241,132 +252,112 @@ class ModuleController extends ApiController
   }
   public function createModule (CreateModulesRequest $request)
   {
-      $creadtional = $request->validated();
+    $creadtional = $request->validated();
+    $serverIds = $creadtional['server_id'];
+    $jsonContent = $this->uploadModuleFile($request->file('config_file'));
 
-      $server = Server::find($creadtional['server_id']);
+    if (is_array($jsonContent) || is_object($jsonContent))
+        return $jsonContent;
 
-      $host = $server['ip'];
-      $username = $request->input('username');
-      $password = $request->input('password');
-      $path = '/home/siz-tel/bbdh-2.6.6-noCg/install/etc/bbdh';
+    $failedServers = [];
 
-      $jsonContent = $this->uploadModuleFile($request->file('config_file'));
+    foreach ($serverIds as $serverId) {
+        $server = Server::find($serverId);
 
-      if (is_array($jsonContent) || is_object($jsonContent))
-          return $jsonContent;
+        if (!$server) {
+            $failedServers[] = $serverId;
+            return response()->json(['msg' => 'this server id invalid']);
+        }
 
+        $host = $server['ip'];
+        $username = $request->input('username');
+        $password = $request->input('password');
+        $filePath = '/home/siz-tel/bbdh-2.6.6-noCg/install/etc/bbdh/' . $creadtional['name'] . '.yaml';
 
-      // try {
-      //       $command = 'echo "' . addslashes($jsonContent) . '" > ' . $path . $creadtional['name'] . '.yaml';
-      //   SshHelper::runSshCommand($host, $username, $password, $command);
-      // } catch (Exception $e) {
+        try {
+            // $command = 'echo "' . addslashes($jsonContent) . '" > ' . $filePath;
+            // SshHelper::runSshCommand($host, $username, $password, $command);
+        } catch (Exception $e) {
+            activity('error-create-module')
+            ->causedBy(Auth::user())
+            ->performedOn(Module::latest()->first())
+            ->event('create-module')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'user' => Auth::user(),
+                'method' => 'createModule',
+                'error' => $e->getMessage(),
+                'module' => [
+                    'name' => $creadtional['name'],
+                    'type' => $creadtional['type'],
+                    'server_id' => $serverId,
+                ],
+            ])
+            ->log('مشکلی در ساخت ارسال فایل ماژول به سرور رخ داد');
 
-      //   Log::channel('daily')->error('کاربر نتوانست ماژول را ایجاد کند', [
-      //     'route' => request()->fullUrl(),
-      //     'method' => 'createModule',
-      //     'error' => $e->getMessage(),
-      //     'user_id' => Auth::id(),
-      //   ]);
+            return response()->json(['msg' => ['مشکلی در ارسال فایل به سرور رخ داد']]);
+        }
 
-      //     return response()->json(["Error: " . $e->getMessage()]);
-      // }
+        $module = Module::create([
+            'name' => $creadtional['name'],
+            'type' => $creadtional['type'],
+            'server_id' => $serverId,
+            'initial_config' => $jsonContent,
+            'current_config' => $jsonContent,
+        ]);
 
+        $createdModules[] = [
+            'server' => [
+                'server_id' => $server['id'],
+                'server_name' => $server['name'],
+                'server_ip' => $server['ip']
+            ],
+            'module' => [
+                'module_id' => $module['id'],
+                'module_name' => $module['name'],
+                'module_type' => $module['type']
+            ]
+        ];
 
-    $module = Module::create([
-          'name' => $creadtional['name'],
-          'type' => $creadtional['type'],
-          'server_id' => $creadtional['server_id'],
-          'initial_config' => $jsonContent,
-          'current_config' => $jsonContent,
-      ]);
-
-      Log::channel('daily')->info('ماژول جدید ساخته شده',[
-        'route' => request()->fullUrl(),
-        'method' => 'createModule',
-        'user' => Auth::user(),
-        'module' => [
-            'name' => $module['name'],
-            'type' => $module['type'],
-            'server_id' => $module['server_id']
-        ]
-      ]);
-
-
-      activity('create-module')
-        ->causedBy(Auth::user())
-        ->performedOn($module)
-        ->event('create-module')
-        ->withProperties([
-            'type-log' => 'server',
+        Log::channel('daily')->info('A new module has been created', [
             'route' => request()->fullUrl(),
             'method' => 'createModule',
             'user' => Auth::user(),
             'module' => [
-                'name' => $module['name'],
-                'type' => $module['type'],
-                'server_id' => $module['server_id']
-            ]
-        ])
-      ->log('ماژول جدید ساخته شده');
+                'name' => $creadtional['name'],
+                'type' => $creadtional['type'],
+                'server_id' => $serverId,
+            ],
+        ]);
 
-      return $this->respondCreated('ماژول با موفقیت ساخته شد', [
-        'name' => $module['name'],
-        'type' => $module['type'],
-        'server_id' => $module['server_id'],
+        activity('create-module')
+            ->causedBy(Auth::user())
+            ->performedOn(Module::latest()->first())
+            ->event('create-module')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'user' => Auth::user(),
+                'method' => 'createModule',
+                'module' => [
+                    'name' => $creadtional['name'],
+                    'type' => $creadtional['type'],
+                    'server_id' => $serverId,
+                ],
+                'server' => $server
+            ])
+            ->log('A new module has been created');
+    }
+
+    if (!empty($failedServers))
+        return response()->json(['msg' => 'An issue occurred while adding the module to the server', 'server-faild' => $failedServers]);
+
+
+    return $this->respondCreated('The module was successfully created on the servers',  [
+        'created_modules' => $createdModules
       ]);
   }
-  public function deleteModule(deleteModuleRequest $request)
-  {
-    $creadtional = $request->validated();
-
-    $module = Module::find($creadtional['module_id']);
-    $server = Server::find($module['server_id']);
-
-    $host = $server['ip'];
-    $username = $request->input('username');
-    $password = $request->input('password');
-    $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
-
-                // ssh connection
-        $command = 'rm -f' . $path . $module['name'] . '.yaml';
-        SshHelper::runSshCommand($host, $username, $password, $command);
-
-
-    $module->delete();
-
-
-      Log::channel('daily')->info('ماژول با موفقیت ساخته شد',[
-        'route' => request()->fullUrl(),
-        'method' => 'deleteModule',
-        'user' => Auth::id(),
-        'module'=> [
-            'name' => $module['name'],
-            'type' => $module['type'],
-            'server_id' => $module['server_id']
-        ]
-       ]);
-
-
-      activity('delete-module')
-        ->causedBy(Auth::user())
-        ->performedOn($module)
-        ->event('create-module')
-        ->withProperties([
-            'type-log' => 'server',
-            'route' => request()->fullUrl(),
-            'method' => 'createModule',
-            'user' => Auth::id(),
-            'module_id' => [
-                'name' => $module['name'],
-                'type' => $module['type'],
-                'server_id' => $module['server_id'],
-            ],
-        ])
-      ->log('ماژول با موفقیت پاک شد');
-
-    return $this->respondSuccess('ماژول باموفقیت پاک شد', []);
-  }
-
 
         // update Config Module
     public function chackPermissionModule($module, $server)
@@ -401,12 +392,12 @@ class ModuleController extends ApiController
             }
         }
 
-        throw new HttpResponseException(response()->json(['msg' => 'شما دسترسی لازم برای استفاده از این ماژول و سرور را ندارید.',
+        throw new HttpResponseException(response()->json(['msg' => 'You do not have the required access to use this module and server.',
                 'yer-permission' => $user->getAllPermissions()->pluck('name')], 403));
     }
-    private function logModuleUpdate($module, $data)
+    private function logModuleUpdate($module, $server, $data)
     {
-        Log::channel('daily')->info('مقادیر کانفیگ تغییر کرد', [
+        Log::channel('daily')->info('The configuration values have been changed', [
             'route' => request()->fullUrl(),
             'method' => 'updateConfigModule',
             'user' => Auth::user(),
@@ -429,7 +420,7 @@ class ModuleController extends ApiController
                 'module_name' => $module['name'],
                 'module_type' => $module['type'],
             ])
-            ->log('مقادیر کانفیگ تغییر کرد');
+            ->log('The configuration values have been changed');
     }
     private function updateSingleModule ($request)
     {
@@ -456,7 +447,7 @@ class ModuleController extends ApiController
 
             // $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
 
-            $this->logModuleUpdate($module, $data);
+            $this->logModuleUpdate($module, $server, $data);
 
             DB::commit();
 
@@ -496,7 +487,7 @@ class ModuleController extends ApiController
 
         foreach ($serverIds as $serverId) {
             if (!in_array($serverId, $serverIdsInModuleName))
-                throw new Exception('در بین شناسه سرور ها شناسه‌ای نامعتبر ارسال شده است');
+                throw new Exception('An invalid server ID has been sent among the server IDs');
         }
 
 
@@ -528,7 +519,7 @@ class ModuleController extends ApiController
                 // $this->sendConfigToServer($host, $username, $password, $path, $updatedModule['name'], $yamlContent, $server);
 
 
-                $this->logModuleUpdate($updatedModule, $data);
+                $this->logModuleUpdate($updatedModule, $server, $data);
             }
 
             DB::commit();
@@ -539,7 +530,6 @@ class ModuleController extends ApiController
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
-            dd($e);
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -547,7 +537,7 @@ class ModuleController extends ApiController
     {
         // is down server
             if ($server['is_down'] == 1)
-                throw new Exception('سرور خاموش است');
+                throw new Exception('this server off');
 
             // update module
         $commandUpdateFileModule = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $moduleName . '.yaml';
@@ -564,7 +554,7 @@ class ModuleController extends ApiController
         $module = Module::find($moduleId);
 
         if (!$module)
-            throw new Exception('ماژول مورد نظر پیدا نشد');
+            throw new Exception('module is notfund');
 
             // example value in data user
         foreach ($data as $key => $value) {
@@ -598,12 +588,13 @@ class ModuleController extends ApiController
     }
 
 
+        // delete config module
     private function deleteConfigInDatabase ($moduleId, $pathConfig)
     {
         $module = Module::find($moduleId);
 
         if (!$module)
-            throw new Exception('ماژول مورد نظر پیدا نشد');
+            throw new Exception('module is notfund');
 
 
         $moduleConfig = json_decode($module->current_config, true);
@@ -672,6 +663,101 @@ class ModuleController extends ApiController
     }
 
 
+        //edit moduel
+    private function updateConfigForDB(Module $module, array $serverIds, $jsonConfig)
+    {
+        foreach ($serverIds as $serverId) {
+            $serverModule = Module::where('server_id', $serverId)->where('name', $module->name)->first();
+
+            if ($serverModule) {
+                $moduleConfig = json_decode($jsonConfig, true);
+
+                $moduleCurrentConfig = $serverModule['current_config'];
+                $serverModule['previous_config'] = $moduleCurrentConfig;
+
+                $serverModule['initial_config'] = json_encode($moduleConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                $serverModule['current_config'] = json_encode($moduleConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+
+                $serverModule->save();
+            }
+        }
+    }
+    private function addModulesToDB(Module $module, array $serverIds)
+    {
+        foreach ($serverIds as $serverId) {
+            $serverModule = Module::firstOrNew([
+                'server_id' => $serverId,
+                'name' => $module->name,
+            ]);
+
+            $serverModule->type = $module->type;
+            $serverModule->initial_config = $module->initial_config;
+            $serverModule->current_config = $module->current_config;
+
+            $serverModule->save();
+        }
+    }
+    private function deleteModuleFromServer(Module $module, $request)
+    {
+        $username = $request->input('username');
+        $password = $request->input('password');
+        $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
+
+        // حذف فایل از سرور (در صورت نیاز)
+        // $command = 'rm -f ' . $path . $module->name . '.yaml';
+        // SshHelper::runSshCommand($server->ip, $username, $password, $command);
+
+        $module->delete();
+        Log::info('Module deleted successfully', ['module' => $module]);
+    }
+    private function deleteModulesDB(array $serverIds, Module $module, $request)
+    {
+        foreach ($serverIds as $serverId) {
+            $serverModule = Module::where('name', $module->name)
+                        ->where('server_id', $serverId)
+                        ->first();
+
+            if ($serverModule)
+                $this->deleteModuleFromServer($serverModule, $request);
+        }
+    }
+    private function syncModuleWithServers(Module $module, array $serverIds, $jsonConfig, $request)
+    {
+        $existingServerIds = Module::where('name', $module['name'])->pluck('server_id')->toArray();
+
+        $serversToDelete = array_diff($existingServerIds, $serverIds);
+        $serversToAdd = array_diff($serverIds, $existingServerIds);
+
+        $this->deleteModulesDB($serversToDelete, $module, $request);
+        $this->addModulesToDB($module, $serversToAdd);
+        $this->updateConfigForDB($module, $serverIds, $jsonConfig);
+    }
+    public function editModule(EditModuleRequest $request)
+    {
+        $validated = $request->validated();
+
+        $module = Module::find($validated['module_id']);
+        $serverIds = $validated['server_ids'] ?? [];
+        $configFile = $request->file('config_file');
+
+        if ($serverIds && $configFile) {
+            $jsonConfig = $this->uploadModuleFile($configFile);
+            $this->syncModuleWithServers($module, $serverIds, $jsonConfig, $request);
+        }
+
+        $module->update([
+            'name' => $validated['name'] ?? $module->name,
+            'type' => $validated['type'] ?? $module->type,
+        ]);
+
+        return response()->json(['message' => 'Module updated successfully'], 200);
+    }
+
+
+
+
+
         // Undo Config module
   public function undoConfigModule (UndoConfigModulesRequest $request)
   {
@@ -681,7 +767,7 @@ class ModuleController extends ApiController
     $server = Server::find($module['server_id']);
 
     if ($server['is_down'] == 1)
-        return response()->json(['msg' => 'سرور خاموش است'], 403);
+        return response()->json(['msg' => 'server is off'], 403);
 
 
     $host = $server['ip'];
@@ -694,7 +780,7 @@ class ModuleController extends ApiController
     $modulePreviousConfig = $module['previous_config'];
 
     if ($modulePreviousConfig == null)
-        return response()->json(['msg' => 'ماژول مقدار قبلی ندارد شما نمیتواند ان را به مقدار قبلی باز گردانید']);
+        return response()->json(['msg' => 'The module does not have a previous value, you cannot revert it to the previous value']);
 
     try {
             // ssh to server format yaml
@@ -723,10 +809,10 @@ class ModuleController extends ApiController
                     'module_name' => $module['name'],
                     'module_type'=> $module['type'],
                 ])
-            ->log('کانفیگ ماژول به مرحله قبلی بازگشت');
+            ->log('The module configuration has been reverted to the previous step');
 
 
-            Log::channel('daily')->info('کانفیگ ماژول به مرحله قبلی بازگشت', [
+            Log::channel('daily')->info('The module configuration has been reverted to the previous step', [
             'type-log' => 'server',
             'route' => request()->fullUrl(),
             'method' => 'undoConfigModule',
@@ -738,7 +824,7 @@ class ModuleController extends ApiController
 
             return response()->json([
                 'success' => 'ture',
-                'msg' => 'کانفیگ به مقدار قبلی بازگشت',
+                'msg' => 'The module configuration has been reverted to the previous step',
                 'config' => json_decode($module['current_config'], true)
             ]);
 
@@ -754,7 +840,7 @@ class ModuleController extends ApiController
     $server = Server::find($module['server_id']);
 
     if ($server['is_down'] == 1)
-        return response()->json(['msg'=> 'سرور خاموش است']);
+        return response()->json(['msg'=> 'server is off']);
 
 
     $host = $server['ip'];
@@ -791,10 +877,10 @@ class ModuleController extends ApiController
                 'module_name' => $module['name'],
                 'module_type' => $module['type'],
             ])
-        ->log('کانفیگ ماژول به حالت اولیه خود بازگشت');
+        ->log('The module configuration has been reverted to its initial state');
 
 
-        Log::channel('daily')->info('کانفیگ ماژول به حالت اولیه خود بازگشت', [
+        Log::channel('daily')->info('The module configuration has been reverted to its initial state', [
         'type-log' => 'server',
         'route' => request()->fullUrl(),
         'method' => 'undoConfigModule',
@@ -808,7 +894,7 @@ class ModuleController extends ApiController
 
         return response()->json([
             'success' => 'ture',
-            'msg' => 'کانفیگ به مقدار اولیه بازگشت',
+            'msg' => 'The module configuration has been reverted to its initial state',
             'config' => json_decode($module['current_config'], true)
         ]);
     } catch (\Throwable $th) {

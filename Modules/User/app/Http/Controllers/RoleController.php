@@ -15,7 +15,7 @@ class RoleController extends ApiController
     {
         $roles = Role::with('permissions:name')->get();
 
-        return $this->respondSuccess('لیست تمام نقش ها با دسترسی', $roles);
+        return $this->respondSuccess('List of all roles with access', $roles);
     }
 
 
@@ -23,7 +23,7 @@ class RoleController extends ApiController
     {
         $moduleName = Permission::all()->pluck('name');
 
-        return $this->respondSuccess('لیست تمام دسترسی ها', $moduleName);
+        return $this->respondSuccess('List of all permissions', $moduleName);
     }
 
 
@@ -37,7 +37,7 @@ class RoleController extends ApiController
         $user->givePermissionTo($permissionName);
 
         return response()->json([
-            'message' => 'دسترسی با موفقیت به کاربر اضافه شد',
+            'message' => 'Permission was successfully added to the user'
         ]);
     }
     public function removePermissionFromUser(AddPermissionToUser $request   )
@@ -50,7 +50,7 @@ class RoleController extends ApiController
         $user->revokePermissionTo($permissionName);
 
         return response()->json([
-            'message' => 'دسترسی کاربر با موفقیت حذف شد',
+            'message' =>'The user\'s permission was successfully removed'
         ]);
     }
 }

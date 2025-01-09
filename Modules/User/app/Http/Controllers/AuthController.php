@@ -26,15 +26,15 @@ class AuthController extends ApiController
                 ->event('login')
                 ->withProperties([
                     'type-log' => 'app',
-                    'code' => '5',
                     'route' => request()->fullUrl(),
                     'method' => 'login',
                     'auth-name' => $credentials['auth_name'],
                     'password' => $credentials['password']
                 ])
-            ->log('کاربر زمان ورود ایمیل یا کلمه عبور اشتباه وارد کرده است');
+                ->log('The user entered an incorrect email or password during login.');
 
-            return response()->json(['msg' => 'نام کاربری یا رمز عبور را اشتباه وارد کردید'], 422);
+                return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
+
         }
 
 
@@ -48,11 +48,10 @@ class AuthController extends ApiController
                     'route' => request()->fullUrl(),
                     'method' => 'login',
                     'user' => $user,
-                    'token' => $token,
                 ])
-            ->log('کاربر با نام کاربری و پسورد وارد شد');
+                ->log('The user logged in with the username and password.');
 
-        return $this->respondSuccess('کاربر ورود پیدا کرد', [
+        return $this->respondSuccess('The user has logged in', [
             'user' => [
                 'id' => $user->id,
                 'first_name' => $user->first_name,
@@ -82,9 +81,9 @@ class AuthController extends ApiController
                     'method' => 'logout',
                     'user' => $user
                 ])
-            ->log('کاربر از حساب کاربری خود خارج شد');
+            ->log('The user has logged out of their account');
 
-            return $this->respondSuccess('کاربر از حساب  خود خارج شد', ['user' => $user]);
+            return $this->respondSuccess('The user has logged out of their account', ['user' => $user]);
         } catch (\Exception $e) {
 
             activity('logout')
@@ -95,9 +94,9 @@ class AuthController extends ApiController
                     'method' => 'logout',
                     'error' => $e->getMessage()
                 ])
-            ->log('مشکلی در خروج کاربر رخ داد');
+            ->log('An error occurred while logging out the user');
 
-            return response()->json(['msg' => 'مشکلی در خروج کاربر به وجود امد']);
+            return response()->json(['msg' => 'An error occurred while logging out the user']);
         }
     }
 }
