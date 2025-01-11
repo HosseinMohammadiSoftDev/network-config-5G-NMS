@@ -17,7 +17,7 @@ class SshHelper
 
         if (!$ssh->login($username, $password)) {
 
-            Log::channel('daily')->error('اطلاعات شما برای ورود به سرور اشتباه است', [
+            Log::channel('daily')->error('Your server login credentials are incorrect.', [
                 'route' => request()->fullUrl(),
                 'method' => 'runSshCommand',
                 'user' => Auth::id(),
@@ -38,11 +38,10 @@ class SshHelper
                     'userName' => $username,
                     'password' => $password,
                 ])
-            ->log('اطلاعات شما برای ورود به سرور اشتباه است');
+            ->log('Your server login credentials are incorrect.');
 
-            throw new Exception('اطلاعات شما برای ورود به سرور اشتباه است');
+            throw new Exception('Your server login credentials are incorrect.');
         }
-
             try {
                   // sudo su and command
             $ssh->write("sudo -S su\n");
@@ -76,7 +75,7 @@ class SshHelper
                           'userName' => $username,
                           'password' => $password
                       ])
-                ->log('کامند با موفقیت اجرا شد');
+                ->log('The command was executed successfully.');
 
             } catch (Exception $e) {
 
@@ -105,7 +104,7 @@ class SshHelper
                         'userName' => $username,
                         'password' => $password
                     ])
-                ->log('مشکلی در روند اجرای کامند به وجود امد');
+                ->log('There was an issue during the execution of the command.');
             }
 
         return $output;
@@ -137,9 +136,9 @@ class SshHelper
                     'userName' => $username,
                     'password' => $password,
                 ])
-                ->log('اطلاعات شما برای ورود به سرور اشتباه است');
+                ->log('Your login information for the server is incorrect.');
 
-            throw new Exception('اطلاعات شما برای ورود به سرور اشتباه است');
+            throw new Exception('Your login information for the server is incorrect.');
         }
 
         try {
@@ -175,7 +174,7 @@ class SshHelper
                         'host' => $host,
                         'output' => $output,
                     ])
-                    ->log('خطا در اجرای دستور روی سرور');
+                    ->log('Error in executing the command on the server.');
 
 
                 return $output;
@@ -201,7 +200,7 @@ class SshHelper
                     'host' => $host,
                     'userName' => $username,
                 ])
-                ->log('ماژول با موفقیت ریستارت شد');
+                ->log('The module was successfully restarted.');
 
         } catch (Exception $e) {
             Log::channel('daily')->error('مشکلی در روند ریستارت ماژول به وجود آمد', [
@@ -225,7 +224,7 @@ class SshHelper
                     'host' => $host,
                     'userName' => $username,
                 ])
-                ->log('مشکلی در روند ریستارت ماژول به وجود آمد');
+                ->log('There was an issue in the module restart process.');
         }
 
     }
@@ -257,9 +256,9 @@ class SshHelper
                     'userName' => $username,
                     'password' => $password,
                 ])
-            ->log('اطلاعات شما برای ورود به سرور اشتباه است');
+            ->log('Your server login information is incorrect.');
 
-            throw new Exception('اطلاعات شما برای ورود به سرور اشتباه است');
+            throw new Exception('Your server login information is incorrect.');
         }
 
         return true;

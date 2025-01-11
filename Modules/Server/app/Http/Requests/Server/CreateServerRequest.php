@@ -14,15 +14,18 @@ class CreateServerRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'unique:servers,name', 'min:3', 'max:255'],
             'ip' => ['required', 'unique:servers,ip', 'regex:/^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/'],
+            'zabbix_ip' => ['nullable', 'regex:/^http:\/\/192\.168\.7\.30\/zabbix$/', 'string', 'max:255'],
+            'elk_ip' => ['nullable', 'string', 'regex:/^http:\/\/192\.168\.7\.50:9200\/elk-dashboard$/']
         ];
     }
 
     public function messages()
     {
         return [
-            'ip.required' => 'وارد کردن آدرس IP الزامی است.',
-            'ip.unique' => 'آدرس IP وارد شده قبلا ثبت شده است.',
-            'ip.regex' => 'ip وارد شده معتبر نیست',
+           'ip.required' => 'Entering the IP address is mandatory.',
+           'ip.unique' => 'The entered IP address has already been registered.',
+           'ip.regex' => 'The entered IP address is not valid.',
+
         ];
     }
 

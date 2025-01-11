@@ -15,6 +15,10 @@ return new class extends Migration
             $table->id();
 
             $table->string('name')->unique();
+
+            $table->string('elk_ip');
+            $table->string('zabbix_ip');
+
             $table->string('ip')->unique();
             $table->boolean('is_down')->default(false);
 

@@ -17,7 +17,7 @@ use Modules\Server\Http\Controllers\ServiceController;
 */
 
 Route::fallback(function(){
-    return response()->json(['msg' => 'ادرس درست وارد نشده است']);
+    return response()->json(['msg' => 'The address has been entered incorrectly.']);
 });
                     // server
 Route::middleware(['auth:sanctum', 'permission:server/read|role:admin|visitor|expert'])->get('show-all-servers', [ServerController::class, 'showAllServers']);
@@ -42,5 +42,5 @@ Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert']
 
         // power on | off server
 Route::middleware(['auth:sanctum', 'permission:server/off|role:admin|expert'])->post('server-stop', [ServerController::class, 'serverStop']);
-Route::middleware(['auth:sanctum', 'permission:server/on|role:admin|expert'])->post('server-start', [ServerController::class, 'ServerStart']);
+Route::middleware(['auth:sanctum', 'permission:server/off|role:admin|expert'])->post('server-start', [ServerController::class, 'ServerStart']);
 Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('server-status', [ServerController::class, 'serverStatus']);

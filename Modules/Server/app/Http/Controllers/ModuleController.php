@@ -275,8 +275,8 @@ class ModuleController extends ApiController
         $filePath = '/home/siz-tel/bbdh-2.6.6-noCg/install/etc/bbdh/' . $creadtional['name'] . '.yaml';
 
         try {
-            // $command = 'echo "' . addslashes($jsonContent) . '" > ' . $filePath;
-            // SshHelper::runSshCommand($host, $username, $password, $command);
+            $command = 'echo "' . addslashes($jsonContent) . '" > ' . $filePath;
+            SshHelper::runSshCommand($host, $username, $password, $command);
         } catch (Exception $e) {
             activity('error-create-module')
             ->causedBy(Auth::user())
@@ -294,9 +294,9 @@ class ModuleController extends ApiController
                     'server_id' => $serverId,
                 ],
             ])
-            ->log('مشکلی در ساخت ارسال فایل ماژول به سرور رخ داد');
+            ->log('An issue occurred while sending the file to the server.');
 
-            return response()->json(['msg' => ['مشکلی در ارسال فایل به سرور رخ داد']]);
+            return response()->json(['msg' => ['An issue occurred while sending the file to the server.']]);
         }
 
         $module = Module::create([
@@ -445,7 +445,7 @@ class ModuleController extends ApiController
 
             $yamlContent = $this->convertJsonToYaml($module->current_config);
 
-            // $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
+            $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
 
             $this->logModuleUpdate($module, $server, $data);
 
@@ -516,7 +516,7 @@ class ModuleController extends ApiController
 
                 $yamlContent = $this->convertJsonToYaml($updatedModule->current_config);
 
-                // $this->sendConfigToServer($host, $username, $password, $path, $updatedModule['name'], $yamlContent, $server);
+                $this->sendConfigToServer($host, $username, $password, $path, $updatedModule['name'], $yamlContent, $server);
 
 
                 $this->logModuleUpdate($updatedModule, $server, $data);
@@ -633,7 +633,7 @@ class ModuleController extends ApiController
 
             $yamlContent = $this->convertJsonToYaml($module->current_config);
 
-            // $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
+            $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
 
             DB::commit();
 
@@ -698,15 +698,16 @@ class ModuleController extends ApiController
             $serverModule->save();
         }
     }
-    private function deleteModuleFromServer(Module $module, $request)
+    private function deleteModuleFromServer(Module $module, $request, $serverId)
     {
+        $server = Server::find($serverId);
         $username = $request->input('username');
         $password = $request->input('password');
         $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
 
         // حذف فایل از سرور (در صورت نیاز)
-        // $command = 'rm -f ' . $path . $module->name . '.yaml';
-        // SshHelper::runSshCommand($server->ip, $username, $password, $command);
+        $command = 'rm -f ' . $path . $module->name . '.yaml';
+        SshHelper::runSshCommand($server->ip, $username, $password, $command);
 
         $module->delete();
         Log::info('Module deleted successfully', ['module' => $module]);
@@ -719,7 +720,7 @@ class ModuleController extends ApiController
                         ->first();
 
             if ($serverModule)
-                $this->deleteModuleFromServer($serverModule, $request);
+                $this->deleteModuleFromServer($serverModule, $request, $serverId);
         }
     }
     private function syncModuleWithServers(Module $module, array $serverIds, $jsonConfig, $request)
@@ -786,8 +787,8 @@ class ModuleController extends ApiController
             // ssh to server format yaml
             $yamlContent = $this->convertJsonToYaml($modulePreviousConfig);
 
-            // $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
-            // SshHelper::runSshCommand($host, $username, $password, $command);
+            $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
+            SshHelper::runSshCommand($host, $username, $password, $command);
 
 
                 // save to datebase format json
@@ -856,8 +857,8 @@ class ModuleController extends ApiController
                 // ssh to server format yaml
         $yamlContent = $this->convertJsonToYaml($moduleInitialConfig);
 
-        // $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
-        // SshHelper::runSshCommand($host, $username, $password, $command);
+        $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
+        SshHelper::runSshCommand($host, $username, $password, $command);
 
             // save to datebase format json
         $module['current_config'] = $moduleInitialConfig;

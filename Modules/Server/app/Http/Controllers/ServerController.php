@@ -137,6 +137,9 @@ class ServerController extends ApiController
                 // delete all module server in VPS
             // $this->deleteAllModuleServer($server, $host, $username, $password, $path);
 
+            $server->delete();
+            $server->save();
+
                 DB::commit();
         } catch (Exception $e) {
                 DB::rollBack();
@@ -298,7 +301,7 @@ class ServerController extends ApiController
 
 
             try {
-            // SshHelper::testConnection($sshHost, $sshUsername, $sshPassword);
+            SshHelper::testConnection($sshHost, $sshUsername, $sshPassword);
 
             Log::channel('daily')->info('The connection to the server was successful', [
             'route' => request()->fullUrl(),
