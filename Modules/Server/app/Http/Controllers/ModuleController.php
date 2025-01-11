@@ -26,6 +26,7 @@ use Illuminate\Validation\UnauthorizedException;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Modules\Server\Http\Requests\Module\DeleteCofigModuleRequest;
+use Modules\Server\Http\Requests\Module\ExpertModuleFileIsServerRequset;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Modules\Server\Http\Requests\Modules\ShowAllModules;
@@ -473,7 +474,12 @@ class ModuleController extends ApiController
                 return response()->json(['error' => $message], 500);
             }
 
-            return response()->json(['error' => $message], 500);
+            // return response()->json(['error' => ], 500);
+
+            throw new HttpResponseException(response()->json([
+                'msg' => 'خطای سرور!',
+                'error' => $message,
+            ], 500));
         }
     }
     private function updateMultipleModules($serverIds, $request)
@@ -707,7 +713,7 @@ class ModuleController extends ApiController
 
         // حذف فایل از سرور (در صورت نیاز)
         $command = 'rm -f ' . $path . $module->name . '.yaml';
-        SshHelper::runSshCommand($server->ip, $username, $password, $command);
+        SshHelper::get($server->ip, $username, $password, $command);
 
         $module->delete();
         Log::info('Module deleted successfully', ['module' => $module]);
@@ -753,6 +759,41 @@ class ModuleController extends ApiController
         ]);
 
         return response()->json(['message' => 'Module updated successfully'], 200);
+    }
+
+
+
+        // expert file
+    public function expertModuleFileIsServer (ExpertModuleFileIsServerRequset $request)
+    {
+        $validation = $request->validated();
+        $module = Module::find($validation['module_id']);
+        $server = Server::find($module['server_id']);
+
+        $username = $request->input('username');
+        $password = $request->input('password');
+        $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
+
+        $command = 'cat ' . $path . $module->name . '.yaml' ;
+
+
+        try {
+                // download file
+            $sshHelper = new sshHelper($server['ip'], $username, $password);
+            $output = $sshHelper->getFileContent($command);
+
+                    // هدر های ارسال فایل به عنوان فایل دانلودی برای مرورگر
+            return response($output, 200, [
+                'Content-Type' => 'application/octet-stream',
+                'Content-Disposition' => 'attachment; filename="mme.yaml"',
+                'Content-Length' => strlen($output),
+            ]);
+
+        } catch (Exception $e) {
+
+
+            return response()->json(['message'=> $e->getMessage()],500);
+        }
     }
 
 

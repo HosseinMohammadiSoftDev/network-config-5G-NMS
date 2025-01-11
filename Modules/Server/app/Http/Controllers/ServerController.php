@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Modules\Server\Helpers\SshHelper;
 use Modules\User\Services\PaginationService;
+use phpseclib3\Crypt\EC\Formats\Signature\SSH2;
 use App\Http\Controllers\Contract\ApiController;
 use Modules\Server\Http\Requests\TestConnectionRequest;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -322,7 +323,8 @@ class ServerController extends ApiController
 
 
             try {
-            SshHelper::testConnection($sshHost, $sshUsername, $sshPassword);
+                $sshHelper = new sshHelper($sshHost, $sshUsername, $sshPassword);
+                $sshHelper->testConnection();
 
             Log::channel('daily')->info('The connection to the server was successful', [
             'route' => request()->fullUrl(),

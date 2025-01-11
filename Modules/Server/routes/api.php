@@ -1,8 +1,11 @@
 <?php
 
+use Modules\Server\Models\Module;
+use Modules\Server\Models\Server;
 use Illuminate\Support\Facades\Route;
 use Modules\Server\Http\Controllers\ModuleController;
 use Modules\Server\Http\Controllers\ServerController;
+use Modules\Server\Helpers\SshHelper;
 use Modules\Server\Http\Controllers\ServiceController;
 
 /*
@@ -39,6 +42,8 @@ Route::middleware(['auth:sanctum', 'permission:module/delete|role:admin|expert']
 
 Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert'])->post('undo-module-config', [ModuleController::class, 'undoConfigModule']);
 Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert'])->post('undo-to-initial-config-modules', [ModuleController::class, 'undoToInitialConfigModule']);
+
+Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert'])->post('export-module-file', [ModuleController::class, 'expertModuleFileIsServer']);
 
         // power on | off server
 Route::middleware(['auth:sanctum', 'permission:server/off|role:admin|expert'])->post('server-stop', [ServerController::class, 'serverStop']);
