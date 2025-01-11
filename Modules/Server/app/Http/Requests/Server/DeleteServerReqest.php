@@ -13,7 +13,8 @@ class DeleteServerReqest extends FormRequest
     {
         return [
             'server_id' => ['required', 'integer', 'exists:servers,id'],
-            'username' => ['required', 'string', 'max:255'],
+            'auth_name' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'string', 'min:8', 'max:255']
         ];
     }
 

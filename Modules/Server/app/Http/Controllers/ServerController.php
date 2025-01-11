@@ -5,10 +5,12 @@ namespace Modules\Server\Http\Controllers;
 use Spyc;
 use Exception;
 use Illuminate\Http\Request;
+use Modules\User\Models\User;
 use Modules\Server\Models\Server;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Modules\Server\Helpers\SshHelper;
 use Modules\User\Services\PaginationService;
 use App\Http\Controllers\Contract\ApiController;
@@ -126,7 +128,7 @@ class ServerController extends ApiController
         $server = Server::find($credentials['server_id']);
 
         $host = $server['ip'];
-        $username = $request->input('username');
+        $username = $request->input('auth_name');
         $password = $request->input('password');
         $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
 
@@ -137,8 +139,27 @@ class ServerController extends ApiController
                 // delete all module server in VPS
             // $this->deleteAllModuleServer($server, $host, $username, $password, $path);
 
+                // validate user authName and Password in delete server
+            $user = User::whereRaw('BINARY auth_name = ?', [$credentials['auth_name']])->first();
+            if (!$user || !Hash::check($credentials['password'], $user->password)) {
+
+                activity('auth-name-or-passord-wrong')
+                    ->causedBy(Auth::user())
+                    ->event('login')
+                    ->withProperties([
+                        'type-log' => 'app',
+                        'route' => request()->fullUrl(),
+                        'method' => 'login',
+                        'auth-name' => $credentials['auth_name'],
+                        'password' => $credentials['password']
+                    ])
+                    ->log('The user entered an incorrect email or password during login.');
+
+                    return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
+
+            }
+
             $server->delete();
-            $server->save();
 
                 DB::commit();
         } catch (Exception $e) {
