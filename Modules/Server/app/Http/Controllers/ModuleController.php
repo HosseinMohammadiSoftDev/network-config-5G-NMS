@@ -78,7 +78,13 @@ class ModuleController extends ApiController
 
     $modulesGroupedByType = $server->modules->groupBy('type');
 
-    return $this->respondSuccess('List of server services and their modules', $modulesGroupedByType);
+    $response = [
+        'epc' => $modulesGroupedByType->get('Epc', []),
+        '5gc' => $modulesGroupedByType->get('5gc', []),
+        'allModules' => $server->modules
+    ];
+
+    return $this->respondSuccess('List of server services and their modules', $response);
   }
 
   public function ShowAllModules (Request $request)
@@ -785,12 +791,24 @@ class ModuleController extends ApiController
                     // هدر های ارسال فایل به عنوان فایل دانلودی برای مرورگر
             return response($output, 200, [
                 'Content-Type' => 'application/octet-stream',
-                'Content-Disposition' => 'attachment; filename="mme.yaml"',
+                'Content-Disposition' => "attachment; filename={$module->name}.yaml",
                 'Content-Length' => strlen($output),
             ]);
 
         } catch (Exception $e) {
 
+            activity('not-export-file-error')
+            ->causedBy(Auth::user())
+            ->event('expertModuleFileIsServer')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'method' => 'expertModuleFileIsServer',
+                'user' => Auth::user(),
+                'module' => $module,
+                'command' => $command
+            ])
+            ->log('The configuration values have been changed');
 
             return response()->json(['message'=> $e->getMessage()],500);
         }
@@ -829,7 +847,9 @@ class ModuleController extends ApiController
             $yamlContent = $this->convertJsonToYaml($modulePreviousConfig);
 
             $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
-            SshHelper::runSshCommand($host, $username, $password, $command);
+
+            $sshHelper = new sshHelper($server['ip'], $username, $password);
+            $sshHelper->getFileContent($command);
 
 
                 // save to datebase format json
@@ -899,7 +919,9 @@ class ModuleController extends ApiController
         $yamlContent = $this->convertJsonToYaml($moduleInitialConfig);
 
         $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
-        SshHelper::runSshCommand($host, $username, $password, $command);
+
+        $sshHelper = new sshHelper($server['ip'], $username, $password);
+        $output = $sshHelper->getFileContent($command);
 
             // save to datebase format json
         $module['current_config'] = $moduleInitialConfig;

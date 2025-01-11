@@ -15,8 +15,8 @@ class CreateServerRequest extends FormRequest
             'name' => ['required', 'string', 'unique:servers,name', 'min:3', 'max:255'],
             'ip' => ['required', 'unique:servers,ip', 'regex:/^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/'],
 
-            'zabbix_ip' => ['nullable', 'regex:/^192\.168\.19\.79\/elk$/', 'string', 'max:255'],
-            'elk_ip' => ['nullable', 'string', 'regex:/^192\.168\.19\.79\/elk$/',]
+            'zabbix_ip' => ['nullable', 'regex:/^192\.168\.19\.79\/$/', 'string', 'max:255'],
+            'elk_ip' => ['nullable', 'string', 'regex:/^192\.168\.19\.79\/$/',]
         ];
     }
 
