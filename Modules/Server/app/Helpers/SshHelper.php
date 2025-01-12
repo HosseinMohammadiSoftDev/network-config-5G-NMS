@@ -3,10 +3,11 @@
 namespace Modules\Server\Helpers;
 
 use Exception;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use phpseclib3\Net\SSH2;
+use InvalidArgumentException;
 use PHPUnit\Event\Code\Throwable;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class SshHelper
 {
@@ -68,8 +69,10 @@ class SshHelper
     {
         $output = $this->runCommand($command);
 
-        if (str_contains($output, 'FATAL') || str_contains($output, 'ERROR'))
+        if (str_contains($output, 'FATAL') || str_contains($output, 'ERROR')) {
             $this->logActivity('module-error', 'restartModule', ['command' => $command, 'output' => $output]);
+            throw new InvalidArgumentException($output);
+        }
         else
             $this->logActivity('module-restart', 'restartModule', ['command' => $command]);
 

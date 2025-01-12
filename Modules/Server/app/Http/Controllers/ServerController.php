@@ -323,8 +323,8 @@ class ServerController extends ApiController
 
 
             try {
-                // $sshHelper = new sshHelper($sshHost, $sshUsername, $sshPassword);
-                // $sshHelper->testConnection();
+                $sshHelper = new sshHelper($sshHost, $sshUsername, $sshPassword);
+                $sshHelper->testConnection();
 
             activity('server-connection')
             ->causedBy(Auth::user())
