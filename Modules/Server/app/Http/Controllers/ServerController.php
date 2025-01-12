@@ -323,16 +323,8 @@ class ServerController extends ApiController
 
 
             try {
-                $sshHelper = new sshHelper($sshHost, $sshUsername, $sshPassword);
-                $sshHelper->testConnection();
-
-            Log::channel('daily')->info('The connection to the server was successful', [
-            'route' => request()->fullUrl(),
-            'method' => 'showConfigModule',
-            'user' => Auth::user(),
-            'server' => $server
-            ]);
-
+                // $sshHelper = new sshHelper($sshHost, $sshUsername, $sshPassword);
+                // $sshHelper->testConnection();
 
             activity('server-connection')
             ->causedBy(Auth::user())
@@ -351,15 +343,6 @@ class ServerController extends ApiController
             return response()->json(['msg'=> 'connect successful.'], 200);
 
         } catch (Exception $e) {
-            Log::channel('daily')->error('The connection to the server failed', [
-                'route' => request()->fullUrl(),
-                'method' => 'showConfigModule',
-                'error' => $e->getMessage(),
-                'user' => Auth::user(),
-                'host' => $sshHost,
-                'userName' => $sshUsername
-            ]);
-
             return response()->json(['msg' => 'The connection to the server failed:' . $e->getMessage()], 500);
         }
     }

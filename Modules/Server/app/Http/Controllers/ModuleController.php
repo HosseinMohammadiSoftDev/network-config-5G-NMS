@@ -2,7 +2,6 @@
 
 namespace Modules\Server\Http\Controllers;
 
-use Modules\Server\Http\Requests\EditModuleRequest;
 use Spyc;
 use Exception;
 use phpseclib3\Net\SSH2;
@@ -11,6 +10,7 @@ use Symfony\Component\Yaml\Yaml;
 use Illuminate\Http\JsonResponse;
 use Modules\Server\Models\Module;
 use Modules\Server\Models\Server;
+use PHPUnit\Event\Code\Throwable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
@@ -20,13 +20,13 @@ use Modules\Server\Helpers\SshHelper;
 use Illuminate\Support\Facades\Storage;
 use Modules\Server\Helpers\JsonUpdater;
 use Spatie\Activitylog\Models\Activity;
+use Modules\User\Services\PaginationService;
 use Illuminate\Routing\Controllers\Middleware;
 use App\Http\Controllers\Contract\ApiController;
 use Illuminate\Validation\UnauthorizedException;
 use Illuminate\Routing\Controllers\HasMiddleware;
+use Modules\Server\Http\Requests\EditModuleRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Modules\Server\Http\Requests\Module\DeleteCofigModuleRequest;
-use Modules\Server\Http\Requests\Module\ExpertModuleFileIsServerRequset;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Modules\Server\Http\Requests\Modules\ShowAllModules;
@@ -37,12 +37,11 @@ use Modules\Server\Http\Requests\Modules\CreateModulesRequest;
 use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
 use Modules\Server\Http\Requests\Undo\UndoConfigModulesRequest;
 use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
+use Modules\Server\Http\Requests\Module\DeleteCofigModuleRequest;
 use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
+use Modules\Server\Http\Requests\Module\ExpertModuleFileIsServerRequset;
 use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
-use Modules\User\Services\PaginationService;
-use PhpParser\Node\Expr\Throw_;
-use PHPUnit\Event\Code\Throwable;
 
 class ModuleController extends ApiController
 {
@@ -79,7 +78,7 @@ class ModuleController extends ApiController
     $modulesGroupedByType = $server->modules->groupBy('type');
 
     $response = [
-        'epc' => $modulesGroupedByType->get('Epc', []),
+        'Epc' => $modulesGroupedByType->get('Epc', []),
         '5gc' => $modulesGroupedByType->get('5gc', []),
         'allModules' => $server->modules
     ];
@@ -283,8 +282,12 @@ class ModuleController extends ApiController
 
         try {
             $command = 'echo "' . addslashes($jsonContent) . '" > ' . $filePath;
-            SshHelper::runSshCommand($host, $username, $password, $command);
+
+            // $sshHelper = new sshHelper($server['ip'], $username, $password);
+            // $sshHelper->runCommand($command);
+
         } catch (Exception $e) {
+
             activity('error-create-module')
             ->causedBy(Auth::user())
             ->performedOn(Module::latest()->first())
@@ -452,7 +455,7 @@ class ModuleController extends ApiController
 
             $yamlContent = $this->convertJsonToYaml($module->current_config);
 
-            $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
+            // $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
 
             $this->logModuleUpdate($module, $server, $data);
 
@@ -467,26 +470,40 @@ class ModuleController extends ApiController
 
             $message = $e->getMessage();
 
-            if (str_contains($message, 'ERROR') || str_contains($message, 'FATAL')) {
-                $message = preg_replace('/\e\[[\d;]*m/', '', $message);
-                $message = preg_replace('/\r|\n|\[?.*?h/', '', $message);
-                preg_match_all('/(ERROR|FATAL): ([^\r\n]+)/', $message, $matches);
-
-                if (!empty($matches[0])) {
-                    $filteredMessages = implode("\n", $matches[0]);
-                    return response()->json(['error' => $filteredMessages], 500);
-                }
-
-                return response()->json(['error' => $message], 500);
-            }
-
-            // return response()->json(['error' => ], 500);
-
-            throw new HttpResponseException(response()->json([
-                'msg' => 'خطای سرور!',
-                'error' => $message,
-            ], 500));
+            return response()->json(['error' => $message],500);
         }
+        //  catch(HttpResponseException $e) {
+//             DB::rollBack();
+// dd($e);
+//             if (str_contains($message, 'ERROR') || str_contains($message, 'FATAL')) {
+
+//                 $message = preg_replace('/\e\[[\d;]*m/', '', $message);
+//                 $message = preg_replace('/\r|\n|\[?.*?h/', '', $message);
+//                 preg_match_all('/(ERROR|FATAL): ([^\r\n]+)/', $message, $matches);
+
+//                 if (!empty($matches[0])) {
+//                     $filteredMessages = array_map(function ($msg) {
+//                         return trim($msg);
+//                     }, $matches[0]);
+
+//                     return response()->json([
+//                         'error' => [
+//                             'type' => 'database_error',
+//                             'messages' => $filteredMessages
+//                         ]
+//                     ], 500);
+//                 }
+//             }
+
+
+//             throw new HttpResponseException(response()->json([
+//                 'msg' => 'خطای سرور!',
+//                 'error' => [
+//                     'type' => 'server_error',
+//                     'message' => $message
+//                 ]
+//             ], 500));
+//         }
     }
     private function updateMultipleModules($serverIds, $request)
     {
@@ -528,7 +545,7 @@ class ModuleController extends ApiController
 
                 $yamlContent = $this->convertJsonToYaml($updatedModule->current_config);
 
-                $this->sendConfigToServer($host, $username, $password, $path, $updatedModule['name'], $yamlContent, $server);
+                // $this->sendConfigToServer($host, $username, $password, $path, $updatedModule['name'], $yamlContent, $server);
 
 
                 $this->logModuleUpdate($updatedModule, $server, $data);
@@ -551,15 +568,18 @@ class ModuleController extends ApiController
             if ($server['is_down'] == 1)
                 throw new Exception('this server off');
 
+        $sshHelper = new sshHelper($server['ip'], $username, $password);
+
             // update module
         $commandUpdateFileModule = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $moduleName . '.yaml';
-        SshHelper::runSshCommand($host, $username, $password, $commandUpdateFileModule);
+        $sshHelper->runCommand($commandUpdateFileModule );
 
             // restart module
         $pathRestartModule = '/home/siz-tel/bbdh-2.6.6-noCg/install/bin/';
         $commandRestart = $pathRestartModule . 'bbdh-' . $moduleName . 'd' . ' restart';
-        $output = SshHelper::restartModule($host, $username, $password, $commandRestart);
-            throw new \Exception($output);
+        $output = $sshHelper->restartModule($commandRestart );
+
+        throw new (response()->json(['error' => $output], 500));
     }
     private function updateModuleConfigInDatabase($moduleId, $data)
     {
@@ -645,7 +665,7 @@ class ModuleController extends ApiController
 
             $yamlContent = $this->convertJsonToYaml($module->current_config);
 
-            $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
+            // $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
 
             DB::commit();
 
@@ -676,6 +696,9 @@ class ModuleController extends ApiController
 
 
         //edit moduel
+        // log
+        // send to server
+
     private function updateConfigForDB(Module $module, array $serverIds, $jsonConfig)
     {
         foreach ($serverIds as $serverId) {
@@ -719,7 +742,8 @@ class ModuleController extends ApiController
 
         // حذف فایل از سرور (در صورت نیاز)
         $command = 'rm -f ' . $path . $module->name . '.yaml';
-        SshHelper::get($server->ip, $username, $password, $command);
+        // $sshHelper = new sshHelper($server['ip'], $username, $password);
+        // $sshHelper->getFileContent($command );
 
         $module->delete();
         Log::info('Module deleted successfully', ['module' => $module]);
@@ -848,8 +872,8 @@ class ModuleController extends ApiController
 
             $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
 
-            $sshHelper = new sshHelper($server['ip'], $username, $password);
-            $sshHelper->getFileContent($command);
+            // $sshHelper = new sshHelper($server['ip'], $username, $password);
+            // $sshHelper->runCommand($command);
 
 
                 // save to datebase format json
@@ -920,8 +944,8 @@ class ModuleController extends ApiController
 
         $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
 
-        $sshHelper = new sshHelper($server['ip'], $username, $password);
-        $output = $sshHelper->getFileContent($command);
+        // $sshHelper = new sshHelper($server['ip'], $username, $password);
+        // $output = $sshHelper->runCommand($command);
 
             // save to datebase format json
         $module['current_config'] = $moduleInitialConfig;
