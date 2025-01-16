@@ -312,18 +312,13 @@ class ServerController extends ApiController
         $server = Server::find($creadtional['server_id']);
 
 
-                // Parameter is connect server
-        $sshHost = $server['ip'];
-        $sshUsername = $creadtional['username'];
-        $sshPassword = $creadtional['password'];
-
                 // is stop server
         if ($server['is_down'] == 1)
             return response()->json(['msg' => 'this off server'], 403);
 
 
             try {
-                $sshHelper = new sshHelper($sshHost, $sshUsername, $sshPassword);
+                $sshHelper = new sshHelper($server, $creadtional['username'], $creadtional['password']);
                 $sshHelper->testConnection();
 
             activity('server-connection')

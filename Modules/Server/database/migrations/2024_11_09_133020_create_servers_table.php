@@ -16,8 +16,8 @@ return new class extends Migration
 
             $table->string('name')->unique();
 
-            $table->string('elk_ip');
-            $table->string('zabbix_ip');
+            $table->string('elk_ip')->nullable();
+            $table->string('zabbix_ip')->nullable();
 
             $table->string('ip')->unique();
             $table->boolean('is_down')->default(false);

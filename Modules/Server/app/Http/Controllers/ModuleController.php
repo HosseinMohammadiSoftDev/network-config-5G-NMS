@@ -44,6 +44,7 @@ use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
 use Modules\Server\Http\Requests\Module\ExpertModuleFileIsServerRequset;
 use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
+use PhpParser\Node\Expr\Cast\Object_;
 
 class ModuleController extends ApiController
 {
@@ -262,7 +263,10 @@ class ModuleController extends ApiController
   {
     $creadtional = $request->validated();
     $serverIds = $creadtional['server_id'];
+
     $jsonContent = $this->uploadModuleFile($request->file('config_file'));
+    $yamlContent = $this->convertJsonToYaml($jsonContent);
+
 
     if (is_array($jsonContent) || is_object($jsonContent))
         return $jsonContent;
@@ -282,8 +286,9 @@ class ModuleController extends ApiController
         $password = $request->input('password');
         $filePath = '/home/siz-tel/bbdh-2.6.6-noCg/install/etc/bbdh/' . $creadtional['name'] . '.yaml';
 
+
         try {
-            $command = 'echo "' . addslashes($jsonContent) . '" > ' . $filePath;
+            $command = 'echo "' . addslashes($yamlContent) . '" > ' . $filePath;
 
             $sshHelper = new sshHelper($server['ip'], $username, $password);
             $sshHelper->runCommand($command);
@@ -292,7 +297,6 @@ class ModuleController extends ApiController
 
             activity('error-create-module')
             ->causedBy(Auth::user())
-            ->performedOn(Module::latest()->first())
             ->event('create-module')
             ->withProperties([
                 'type-log' => 'server',
@@ -308,7 +312,7 @@ class ModuleController extends ApiController
             ])
             ->log('An issue occurred while sending the file to the server.');
 
-            return response()->json(['msg' => ['An issue occurred while sending the file to the server.']]);
+            return response()->json(['msg' => ['error' => $e->getMessage()]]);
         }
 
         $module = Module::create([
@@ -331,17 +335,6 @@ class ModuleController extends ApiController
                 'module_type' => $module['type']
             ]
         ];
-
-        Log::channel('daily')->info('A new module has been created', [
-            'route' => request()->fullUrl(),
-            'method' => 'createModule',
-            'user' => Auth::user(),
-            'module' => [
-                'name' => $creadtional['name'],
-                'type' => $creadtional['type'],
-                'server_id' => $serverId,
-            ],
-        ]);
 
         activity('create-module')
             ->causedBy(Auth::user())
@@ -370,6 +363,7 @@ class ModuleController extends ApiController
         'created_modules' => $createdModules
       ]);
   }
+
 
         // update Config Module
     public function chackPermissionModule($module, $server)
@@ -457,8 +451,8 @@ class ModuleController extends ApiController
             $module = $this->updateModuleConfigInDatabase($module['id'], $data);
 
             $yamlContent = $this->convertJsonToYaml($module->current_config);
-dd($yamlContent);
-            // $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
+
+            $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
 
             $this->logModuleUpdate($module, $server, $data);
 
@@ -567,11 +561,13 @@ dd($yamlContent);
         // is down server
             if ($server['is_down'] == 1)
                 throw new Exception('this server off');
+        if (!$path)
+            $path = 'bbdh-2.6.6-noCg/install/etc/bbdh/';
 
-        $sshHelper = new sshHelper($server['ip'], $username, $password);
+        $sshHelper = new sshHelper($server, $username, $password);
 
             // update module
-        $commandUpdateFileModule = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $moduleName . '.yaml';
+        $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $path . $moduleName . '.yaml';
         $sshHelper->runCommand($commandUpdateFileModule );
 
             // restart module
@@ -625,7 +621,7 @@ dd($yamlContent);
         $module = Module::find($moduleId);
 
         if (!$module)
-            throw new Exception('module is notfund');
+            throw new Exception('module is not fuond');
 
 
         $moduleConfig = json_decode($module->current_config, true);
@@ -647,7 +643,7 @@ dd($yamlContent);
 
         $module = Module::find($request['module_id']);
         $server = Server::find($module['server_id']);
-        $pathConfig = $request['path'];
+        $pathConfig = $request['path_config'];
 
 
         $host = $server['ip'];
@@ -692,14 +688,20 @@ dd($yamlContent);
             return response()->json(['error' => $message], 500);
         }
     }
-    private function updateConfigForDB(Module $module, array $serverIds, $jsonConfig)
+
+
+
+        // edit config module
+    private function updateConfigForDB(Module $module, array $serverIds, $jsonConfig, Request $request)
     {
             // if is null $serverIds
-        $server = Server::find($module['server_id']);
-        $serverIds['0'] = [$server['id']];
-
+        if (!$serverIds) {
+            $server = Server::find($module['server_id']);
+            $serverIds['0'] = [$server['id']];
+        }
 
         foreach ($serverIds as $serverId) {
+            $server = Server::find($serverId);
             $serverModule = Module::where('server_id', $serverId)->where('name', $module->name)->first();
 
             if ($serverModule) {
@@ -712,13 +714,19 @@ dd($yamlContent);
                 $serverModule['current_config'] = json_encode($moduleConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
 
+                $yamlContent = $this->convertJsonToYaml($serverModule['current_config']);
+
+                $this->sendConfigToServer(null, $request['username'], $request['password'],
+                    null, $serverModule['name'], $yamlContent, $server);
+
                 $serverModule->save();
             }
         }
     }
-    private function addModulesToDB(Module $module, array $serverIds)
+    private function addModules(Module $module, array $serverIds, Request $request)
     {
         foreach ($serverIds as $serverId) {
+            $server = Server::find($serverId);
             $serverModule = Module::firstOrNew([
                 'server_id' => $serverId,
                 'name' => $module->name,
@@ -728,41 +736,48 @@ dd($yamlContent);
             $serverModule->initial_config = $module->initial_config;
             $serverModule->current_config = $module->current_config;
 
+
+            $yamlContent = $this->convertJsonToYaml($serverModule['current_config']);
+            $this->sendConfigToServer($serverModule['ip'], $request['username'], $request['password'],
+                null, $serverModule['name'], $yamlContent, $server);
+
             $serverModule->save();
         }
     }
-    private function deleteModulesDBAndServer(array $serverIds, Module $module, $request)
+    private function deleteModules(array $serverIds, Module $module, $request)
     {
         foreach ($serverIds as $serverId) {
             $serverModule = Module::where('name', $module->name)
-                        ->where('server_id', $serverId)
+                        ->where('server_id',    $serverId)
                         ->first();
+
                 // ssh server
-            if ($serverModule)
-            {
+            if ($serverModule) {
                 $server = Server::find($serverId);
-                $username = $request->input('username');
-                $password = $request->input('password');
                 $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
 
-                $command = 'rm -f ' . $path . $module->name . '.yaml';
-                $sshHelper = new sshHelper($server['ip'], $username, $password);
-                $sshHelper->getFileContent($command );
+                $this->sendConfigToServer($server['ip' ], $request['username'], $request['password'],
+                    $path, $serverModule['name'], null, $server);
 
-                $module->delete();
+                $serverModule->delete();
             }
         }
     }
-    private function syncModuleWithServers(Module $module, array $serverIds, $jsonConfig, $request)
+    private function syncModuleWithServers(Module $module, array $serverIds, $request)
     {
         $existingServerIds = Module::where('name', $module['name'])->pluck('server_id')->toArray();
 
         $serversToDelete = array_diff($existingServerIds, $serverIds);
         $serversToAdd = array_diff($serverIds, $existingServerIds);
 
-        $this->deleteModulesDBAndServer($serversToDelete, $module, $request);
-        $this->addModulesToDB($module, $serversToAdd);
-        $this->updateConfigForDB($module, $serverIds, $jsonConfig);
+        try {
+
+            $this->deleteModules($serversToDelete, $module, $request);
+            $this->addModules($module, $serversToAdd, $request);
+
+        } catch (\Exception $e) {
+            throw new HttpResponseException(response()->json(['error' => $e->getMessage()], 500));
+        }
     }
     public function editModule(EditModuleRequest $request)
     {
@@ -772,16 +787,20 @@ dd($yamlContent);
         $serverIds = $validated['server_ids'] ?? [];
         $configFile = $request->file('config_file');
 
-        if ($serverIds && $configFile) {
-            $jsonConfig = $this->uploadModuleFile($configFile);
-            $this->syncModuleWithServers($module, $serverIds, $jsonConfig, $request);
-        }
+        if ($serverIds) {
 
-        if (!$serverIds && $configFile)
-        {
-            $jsonConfig = $this->uploadModuleFile($configFile);
-            $this->updateConfigForDB($module, $serverIds, $jsonConfig);
-        }
+            $this->syncModuleWithServers($module, $serverIds, $request);
+
+                    // update file
+                if ($configFile) {
+                    $jsonConfig = $this->uploadModuleFile($configFile);
+                    $this->updateConfigForDB($module, $serverIds, $jsonConfig, $request);
+                }
+
+        } else
+            $this->syncModuleWithServers($module, $serverIds, $request);
+
+
 
         $module->update([
             'name' => $validated['name'] ?? $module->name,
@@ -790,6 +809,7 @@ dd($yamlContent);
 
         return response()->json(['message' => 'Module updated successfully'], 200);
     }
+
 
 
 
@@ -809,7 +829,7 @@ dd($yamlContent);
 
         try {
                 // download file
-            $sshHelper = new sshHelper($server['ip'], $username, $password);
+            $sshHelper = new sshHelper($server, $username, $password);
             $output = $sshHelper->getFileContent($command);
 
                     // هدر های ارسال فایل به عنوان فایل دانلودی برای مرورگر
@@ -871,7 +891,7 @@ dd($yamlContent);
 
             $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
 
-            $sshHelper = new sshHelper($server['ip'], $username, $password);
+            $sshHelper = new sshHelper($server, $username, $password);
             $sshHelper->runCommand($command);
 
 
@@ -942,7 +962,7 @@ dd($yamlContent);
 
         $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
 
-        $sshHelper = new sshHelper($server['ip'], $username, $password);
+        $sshHelper = new sshHelper($server, $username, $password);
         $sshHelper->runCommand($command);
 
             // save to datebase format json

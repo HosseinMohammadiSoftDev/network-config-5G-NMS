@@ -11,18 +11,11 @@ use Illuminate\Support\Facades\Auth;
 
 class SshHelper
 {
-    protected $host;
-    protected $username;
-    protected $password;
     protected $ssh;
 
-    public function __construct($host, $username, $password)
+    public function __construct(private $server, private $username, private $password)
     {
-        $this->host = $host;
-        $this->username = $username;
-        $this->password = $password;
-
-        $this->ssh = new SSH2($host);
+        $this->ssh = new SSH2($server['ip']);
 
         if (!$this->ssh->login($username, $password)) {
             $this->logActivity('failed-connection-server', 'constructor');
@@ -41,8 +34,9 @@ class SshHelper
                 'route' => request()->fullUrl(),
                 'method' => $method,
                 'user' => Auth::user(),
-                'host' => $this->host,
+                'host' => $this->server['ip'],
                 'username' => $this->username,
+                'server' => $this->server
             ], $extra))
             ->log($event);
     }
@@ -57,11 +51,11 @@ class SshHelper
             $this->ssh->write("$command\n");
             $output = $this->ssh->read('[prompt]');
 
-            $this->logActivity('run-command', 'runCommand', ['command' => $command]);
+            $this->logActivity('run-command', 'runCommand');
 
             return $output;
         } catch (Exception $e) {
-            $this->logActivity('failed-command', 'runCommand', ['command' => $command]);
+            $this->logActivity('failed-command', 'runCommand', ['Error' => $e, ]);
             throw $e;
         }
     }
@@ -74,7 +68,7 @@ class SshHelper
             throw new InvalidArgumentException($output);
         }
         else
-            $this->logActivity('module-restart', 'restartModule', ['command' => $command]);
+            $this->logActivity('module-restart', 'restartModule');
 
 
         return $output;

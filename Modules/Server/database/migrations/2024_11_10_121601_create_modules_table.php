@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('type');
 
             $table->foreignId('server_id')
-                ->constrained()->onDelete('set null');
+                ->constrained()->onDelete('cascade');
 
             $table->json('initial_config')->nullable();
             $table->json('previous_config')->nullable();
