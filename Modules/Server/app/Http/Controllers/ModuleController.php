@@ -452,7 +452,7 @@ class ModuleController extends ApiController
 
             $yamlContent = $this->convertJsonToYaml($module->current_config);
 
-            $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
+            // $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
 
             $this->logModuleUpdate($module, $server, $data);
 
@@ -891,8 +891,8 @@ class ModuleController extends ApiController
 
             $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
 
-            $sshHelper = new sshHelper($server, $username, $password);
-            $sshHelper->runCommand($command);
+            // $sshHelper = new sshHelper($server, $username, $password);
+            // $sshHelper->runCommand($command);
 
 
                 // save to datebase format json
@@ -962,8 +962,8 @@ class ModuleController extends ApiController
 
         $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
 
-        $sshHelper = new sshHelper($server, $username, $password);
-        $sshHelper->runCommand($command);
+        // $sshHelper = new sshHelper($server, $username, $password);
+        // $sshHelper->runCommand($command);
 
             // save to datebase format json
         $module['current_config'] = $moduleInitialConfig;
