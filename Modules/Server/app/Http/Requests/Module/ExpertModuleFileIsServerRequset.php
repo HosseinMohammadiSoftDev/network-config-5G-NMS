@@ -16,7 +16,6 @@ class ExpertModuleFileIsServerRequset extends FormRequest
 
             'username' => ['required', 'string', 'min:1', 'max:255'],
             'password' => ['required', 'string', 'min:1', 'max:255'],
-            'path' => ['nullable', 'string', 'min:1', 'max:255']
         ];
     }
 

@@ -318,6 +318,7 @@ class ServerController extends ApiController
 
 
             try {
+
                 $sshHelper = new sshHelper($server, $creadtional['username'], $creadtional['password']);
                 $sshHelper->testConnection();
 

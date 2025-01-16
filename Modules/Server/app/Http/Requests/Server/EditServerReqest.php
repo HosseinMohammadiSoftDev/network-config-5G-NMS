@@ -29,6 +29,9 @@ class EditServerReqest extends FormRequest
                 'regex:/^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/'
             ],
 
+            'path_config' => ['nullable', 'string',  'min:1', 'max:1024'],
+            'path_run_config' => ['nullable', 'string',  'min:1', 'max:1024'],
+
             'zabbix_ip' => ['nullable' , 'string', 'max:255'],
             'elk_ip' => ['nullable', 'string',]
         ];

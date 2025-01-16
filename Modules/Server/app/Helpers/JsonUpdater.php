@@ -14,7 +14,7 @@ class JsonUpdater
         $path = preg_replace('/\[(\d+)\]/', '.$1', $path);
         $keys = explode('.', $path);
         $currentNode = &$json;
-// dd($json, $path, $value, $currentNode);
+
         foreach ($keys as $index => $key) {
 
             if (!is_array($currentNode))

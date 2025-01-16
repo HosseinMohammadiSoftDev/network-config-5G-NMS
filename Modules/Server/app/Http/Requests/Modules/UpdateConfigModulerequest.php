@@ -20,7 +20,6 @@ class UpdateConfigModulerequest extends FormRequest
             // 'data.*' => ['required', 'string'],
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
-            'path' => ['nullable', 'string', 'max:255']
         ];
     }
 

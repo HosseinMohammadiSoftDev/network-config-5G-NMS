@@ -281,17 +281,11 @@ class ModuleController extends ApiController
             return response()->json(['msg' => 'this server id invalid']);
         }
 
-        $host = $server['ip'];
-        $username = $request->input('username');
-        $password = $request->input('password');
-        $filePath = '/home/siz-tel/bbdh-2.6.6-noCg/install/etc/bbdh/' . $creadtional['name'] . '.yaml';
-
 
         try {
-            $command = 'echo "' . addslashes($yamlContent) . '" > ' . $filePath;
 
-            $sshHelper = new sshHelper($server['ip'], $username, $password);
-            $sshHelper->runCommand($command);
+            $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
+                $creadtional['name'], $yamlContent, $server);
 
         } catch (Exception $e) {
 
@@ -435,13 +429,8 @@ class ModuleController extends ApiController
         $server = Server::find($module['server_id']);
 
         $serverIdsInModuleName = Module::where('name', $module['name'])->pluck('server_id')->toArray();
-
-
         $data = $request->input('data', []);
-        $host = $server['ip'];
-        $username = $request->input('username');
-        $password = $request->input('password');
-        $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
+
 
         DB::beginTransaction();
 
@@ -452,7 +441,8 @@ class ModuleController extends ApiController
 
             $yamlContent = $this->convertJsonToYaml($module->current_config);
 
-            // $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
+            $this->sendConfigToServer($request['username'], $request['password'],
+                         $module['name'], $yamlContent, $server);
 
             $this->logModuleUpdate($module, $server, $data);
 
@@ -525,11 +515,6 @@ class ModuleController extends ApiController
             foreach ($modules as $module) {
                 $server = Server::find($module['server_id']);
 
-                $host = $server['ip'];
-                $username = $request->input('username');
-                $password = $request->input('password');
-                $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
-
                 $this->chackPermissionModule($module, $server);
 
                 $updatedModule = $this->updateModuleConfigInDatabase($module['id'], $data);
@@ -539,7 +524,8 @@ class ModuleController extends ApiController
 
                 $yamlContent = $this->convertJsonToYaml($updatedModule->current_config);
 
-                $this->sendConfigToServer($host, $username, $password, $path, $updatedModule['name'], $yamlContent, $server);
+                $this->sendConfigToServer( $request['username'], $request['password'],
+                     $updatedModule['name'], $yamlContent, $server);
 
 
                 $this->logModuleUpdate($updatedModule, $server, $data);
@@ -556,23 +542,23 @@ class ModuleController extends ApiController
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-    private function sendConfigToServer($host, $username, $password, $path, $moduleName, $yamlContent, $server)
+    private function sendConfigToServer($username, $password, $moduleName, $yamlContent, $server)
     {
         // is down server
             if ($server['is_down'] == 1)
                 throw new Exception('this server off');
-        if (!$path)
-            $path = 'bbdh-2.6.6-noCg/install/etc/bbdh/';
+
+        if (!$server['path_config'])
+            throw new Exception('You did not specify a configuration address');
 
         $sshHelper = new sshHelper($server, $username, $password);
 
             // update module
-        $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $path . $moduleName . '.yaml';
+        $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $server['path_config'] . $moduleName . '.yaml';
         $sshHelper->runCommand($commandUpdateFileModule );
 
             // restart module
-        $pathRestartModule = '/home/siz-tel/bbdh-2.6.6-noCg/install/bin/';
-        $commandRestart = $pathRestartModule . 'bbdh-' . $moduleName . 'd' . ' restart';
+        $commandRestart = $server['path_run_config'] . 'bbdh-' . $moduleName . 'd' . ' restart';
         // $output = $sshHelper->restartModule($commandRestart );
 
     }
@@ -646,11 +632,6 @@ class ModuleController extends ApiController
         $pathConfig = $request['path_config'];
 
 
-        $host = $server['ip'];
-        $username = $request['username'];
-        $password = $request['password'];
-        $path = $request['path'] ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
-
         DB::beginTransaction();
 
         try {
@@ -660,7 +641,8 @@ class ModuleController extends ApiController
 
             $yamlContent = $this->convertJsonToYaml($module->current_config);
 
-            $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
+            $this->sendConfigToServer( $request['username'], $request['password'],
+                     $module['name'], $yamlContent, $server);
 
             DB::commit();
 
@@ -716,8 +698,8 @@ class ModuleController extends ApiController
 
                 $yamlContent = $this->convertJsonToYaml($serverModule['current_config']);
 
-                $this->sendConfigToServer(null, $request['username'], $request['password'],
-                    null, $serverModule['name'], $yamlContent, $server);
+                $this->sendConfigToServer( $request['username'], $request['password'],
+                    $serverModule['name'], $yamlContent, $server);
 
                 $serverModule->save();
             }
@@ -738,8 +720,8 @@ class ModuleController extends ApiController
 
 
             $yamlContent = $this->convertJsonToYaml($serverModule['current_config']);
-            $this->sendConfigToServer($serverModule['ip'], $request['username'], $request['password'],
-                null, $serverModule['name'], $yamlContent, $server);
+            $this->sendConfigToServer( $request['username'], $request['password'],
+                 $serverModule['name'], $yamlContent, $server);
 
             $serverModule->save();
         }
@@ -756,8 +738,8 @@ class ModuleController extends ApiController
                 $server = Server::find($serverId);
                 $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
 
-                $this->sendConfigToServer($server['ip' ], $request['username'], $request['password'],
-                    $path, $serverModule['name'], null, $server);
+                $this->sendConfigToServer( $request['username'], $request['password'],
+                     $serverModule['name'], null, $server);
 
                 $serverModule->delete();
             }
@@ -820,16 +802,12 @@ class ModuleController extends ApiController
         $module = Module::find($validation['module_id']);
         $server = Server::find($module['server_id']);
 
-        $username = $request->input('username');
-        $password = $request->input('password');
-        $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
-
-        $command = 'cat ' . $path . $module->name . '.yaml' ;
+        $command = 'cat ' . $server['path_config'] . $module['name'] . '.yaml' ;
 
 
         try {
                 // download file
-            $sshHelper = new sshHelper($server, $username, $password);
+            $sshHelper = new sshHelper($server, $validation['username'], $validation['password']);
             $output = $sshHelper->getFileContent($command);
 
                     // هدر های ارسال فایل به عنوان فایل دانلودی برای مرورگر
@@ -874,11 +852,6 @@ class ModuleController extends ApiController
         return response()->json(['msg' => 'server is off'], 403);
 
 
-    $username = $request->input('username');
-    $password = $request->input('password');
-    $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
-
-
     $module = Module::find($creadtional['module_id']);
     $modulePreviousConfig = $module['previous_config'];
 
@@ -888,11 +861,8 @@ class ModuleController extends ApiController
     try {
             // ssh to server format yaml
             $yamlContent = $this->convertJsonToYaml($modulePreviousConfig);
-
-            $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
-
-            // $sshHelper = new sshHelper($server, $username, $password);
-            // $sshHelper->runCommand($command);
+            $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
+                 $module['name'], $yamlContent, $server);
 
 
                 // save to datebase format json
@@ -948,24 +918,17 @@ class ModuleController extends ApiController
         return response()->json(['msg'=> 'server is off']);
 
 
-    $username = $request->input('username');
-    $password = $request->input('password');
-    $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
-
-
     $module = Module::find($creadtional['module_id']);
     $moduleInitialConfig = $module['initial_config'];
 
     try {
                 // ssh to server format yaml
         $yamlContent = $this->convertJsonToYaml($moduleInitialConfig);
+        $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
+            $module['name'], $yamlContent, $server);
 
-        $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
 
-        // $sshHelper = new sshHelper($server, $username, $password);
-        // $sshHelper->runCommand($command);
-
-            // save to datebase format json
+        // save to datebase format json
         $module['current_config'] = $moduleInitialConfig;
         $module->save();
 

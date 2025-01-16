@@ -15,7 +15,6 @@ class UndoToInitialConfigModulesRequest extends FormRequest
             'module_id' => ['required', 'integer', 'exists:modules,id'],
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
-            'path' => ['nullable', 'string']
         ];
     }
 

@@ -21,6 +21,8 @@ class Server extends Model
         'ip',
         'zabbix_ip',
         'elk_ip',
+        'path_config',
+        'path_run_config',
         'is_down',
         'config'
     ];
