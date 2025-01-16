@@ -16,7 +16,8 @@ class EditModuleRequest extends FormRequest
         return [
             'module_id' => ['required', 'integer', 'exists:modules,id'],
             'name' => ['nullable', 'string', 'min:2', 'max:255'],
-            'type' => ['nullable', 'string', 'in:5gc,Epc'],
+            'type' => ['nullable', 'string'],
+            // 'type.*' => ['required', 'in:5gc,Epc',],
             'server_ids' => ['nullable', 'array'],
             'server_ids.*' => ['required', 'integer', 'exists:servers,id'],
             'config_file' => ['nullable', 'file',  function ($attribute, $value, $fail) {

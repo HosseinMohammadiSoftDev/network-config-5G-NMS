@@ -537,9 +537,42 @@ class ModuleController extends ApiController
                 'config' => json_decode($firstModule->current_config, true),
                 'serverIdsInModuleName' => $serverIdsInModuleName
             ]);
-        } catch (\Throwable $e) {
+
+        } catch (InvalidArgumentException $e) {
+                DB::rollBack();
+
+                $message = $e->getMessage();
+                $message = preg_replace('/\x1b\[[0-9;]*m/', '', $message); // حذف کدهای ANSI
+                $message = preg_replace('/\r?\n.*?\[root@localhost.*?$/', '', $message); // حذف اطلاعات اضافی مربوط به خط فرمان
+
+                preg_match_all('/\b(FATAL|ERROR):\s.*?(?=\s\(.*?\)|$)/m', $message, $matches);
+
+                $formattedMessages = $matches[0] ?? [];
+
+                $separatedMessages = [];
+                foreach ($formattedMessages as $index => $msg) {
+                    $separatedMessages["Error-" . ($index + 1)] = $msg;
+                }
+
+            throw new HttpResponseException(response()->json([
+                'msg' => 'server error!',
+                'error' => [
+                    'type' => 'restart-service-error',
+                    'message' => $separatedMessages
+                ]
+            ], 500));
+        } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['error' => $e->getMessage()], 500);
+
+            $message = $e->getMessage();
+
+            throw new HttpResponseException(response()->json([
+                'msg' => 'خطای سرور!',
+                'error' => [
+                    'type' => 'server-error',
+                    'message' => $message
+                ]
+            ], 500));
         }
     }
     private function sendConfigToServer($username, $password, $moduleName, $yamlContent, $server)
@@ -549,13 +582,18 @@ class ModuleController extends ApiController
                 throw new Exception('this server off');
 
         if (!$server['path_config'])
-            throw new Exception('You did not specify a configuration address');
+            throw new Exception('You did not specify a configuration address config');
 
-        $sshHelper = new sshHelper($server, $username, $password);
+
+        if (!$server['path_run_config'])
+            throw new Exception('You did not specify a configuration address run config');
+
+
+        // $sshHelper = new sshHelper($server, $username, $password);
 
             // update module
         $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $server['path_config'] . $moduleName . '.yaml';
-        $sshHelper->runCommand($commandUpdateFileModule );
+        // $sshHelper->runCommand($commandUpdateFileModule );
 
             // restart module
         $commandRestart = $server['path_run_config'] . 'bbdh-' . $moduleName . 'd' . ' restart';
@@ -784,9 +822,11 @@ class ModuleController extends ApiController
 
 
 
+        $types = array_map('trim', explode(',', $validated['type']));
+
         $module->update([
             'name' => $validated['name'] ?? $module->name,
-            'type' => $validated['type'] ?? $module->type,
+            'type' => json_encode($types) ?? $module->type,
         ]);
 
         return response()->json(['message' => 'Module updated successfully'], 200);
