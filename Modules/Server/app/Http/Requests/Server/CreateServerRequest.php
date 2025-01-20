@@ -19,8 +19,8 @@ class CreateServerRequest extends FormRequest
             'path_run_config' => ['nullable', 'string',  'min:1', 'max:1024'],
 
 
-            'zabbix_ip' => ['nullable', 'regex:/^192\.168\.19\.79\/$/', 'string', 'max:255'],
-            'elk_ip' => ['nullable', 'string', 'regex:/^192\.168\.19\.79\/$/',]
+            'zabbix_ip' => ['nullable', 'string', 'max:255'],
+            'elk_ip' => ['nullable', 'string', 'max:255']
         ];
     }
 

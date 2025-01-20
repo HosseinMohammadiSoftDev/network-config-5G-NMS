@@ -33,7 +33,7 @@ class EditModuleRequest extends FormRequest
                 },
             ],
             'username' => ['required', 'string', 'min:1', 'max:255'],
-            'password' => ['required', 'string', 'max:1', 'max:255']
+            'password' => ['required', 'string', 'min:1', 'max:255']
         ];
     }
 

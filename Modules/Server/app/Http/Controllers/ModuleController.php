@@ -822,14 +822,21 @@ class ModuleController extends ApiController
 
 
 
-        $types = array_map('trim', explode(',', $validated['type']));
+        $types = implode(',', array_map('trim', explode(',', $validated['type'] ?? $module['type'])));
 
         $module->update([
             'name' => $validated['name'] ?? $module->name,
-            'type' => json_encode($types) ?? $module->type,
+            'type' => $types,
         ]);
 
-        return response()->json(['message' => 'Module updated successfully'], 200);
+        return response()->json([
+            'message' => 'Module updated successfully',
+            'module' => [
+                'module_name' => $module['name'],
+                'module_type' => $module['type'],
+                'module_server' => Module::where('name', $module->name)->pluck('server_id')->toArray(),
+            ]
+        ], 200);
     }
 
 
