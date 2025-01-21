@@ -17,13 +17,6 @@ return new class extends Migration
             $table->string('name');
             $table->string('type');
 
-            $table->foreignId('server_id')
-                ->constrained()->onDelete('cascade');
-
-            $table->json('initial_config')->nullable();
-            $table->json('previous_config')->nullable();
-            $table->json('current_config')->nullable();
-
             $table->timestamps();
         });
     }

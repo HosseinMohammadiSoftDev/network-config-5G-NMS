@@ -13,6 +13,7 @@ class DeleteCofigModuleRequest extends FormRequest
     {
         return [
             'module_id' => ['required', 'integer', 'exists:modules,id'],
+            'server_id' => ['required', 'integer', 'exists:servers,id'],
             'path_config' => ['required', 'array'],
             'path_config.*' => ['required', 'string'],
 

@@ -17,7 +17,8 @@ class EditModuleRequest extends FormRequest
             'module_id' => ['required', 'integer', 'exists:modules,id'],
             'name' => ['nullable', 'string', 'min:2', 'max:255'],
             'type' => ['nullable', 'string'],
-            // 'type.*' => ['required', 'in:5gc,Epc',],
+            'server_id'=> ['required', 'integer','exists:servers,id'],
+
             'server_ids' => ['nullable', 'array'],
             'server_ids.*' => ['required', 'integer', 'exists:servers,id'],
             'config_file' => ['nullable', 'file',  function ($attribute, $value, $fail) {
@@ -25,11 +26,6 @@ class EditModuleRequest extends FormRequest
                 if (!preg_match('/\.(yaml|yml|yaml\.in)$/i', $value->getClientOriginalName()))
 
                     $fail('The file must be one of the following formats: .yaml, .yml, or .yaml.in');
-
-                    Log::channel('daliy')->error('کاربری قصد اضافه کردن فایل کانفیگی فرمت مقایر دارد را داشت', [
-                        'fileName' => $value->getClientOriginalName(),
-                        'user' => Auth::user()
-                    ]);
                 },
             ],
             'username' => ['required', 'string', 'min:1', 'max:255'],

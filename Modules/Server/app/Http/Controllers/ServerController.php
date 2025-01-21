@@ -208,7 +208,7 @@ class ServerController extends ApiController
 
 
 
-    public function serverStart (StartStopComandReqest $request)
+    public function serverStop (StartStopComandReqest $request)
     {
         $credentials = $request->validated();
 
@@ -249,7 +249,7 @@ class ServerController extends ApiController
 
         return $this->respondSuccess('The server was turned off', $server);
     }
-    public function serverStop (StartStopComandReqest $request)
+    public function serverStart (StartStopComandReqest $request)
     {
         $credentials = $request->validated();
 

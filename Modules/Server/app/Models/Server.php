@@ -36,8 +36,17 @@ class Server extends Model
     //         ->useLogName('server');
     // }
 
-    public function modules()
+
+        // oen to many
+    // public function modules()
+    // {
+    //     return $this->hasMany(Module::class);
+    // }
+
+    public function modules ()
     {
-        return $this->hasMany(Module::class);
+        return $this->belongsToMany(Module::class)
+        ->withPivot('initial_config', 'previous_config', 'current_config');
     }
+
 }
