@@ -30,7 +30,7 @@ Route::middleware(['auth:sanctum', 'permission:server/delete|role:admin|expert']
 Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('test-connection', [ServerController::class, 'testConnection']);
 
                     // module
-Route::middleware(['auth:sanctum', 'permission:module/read|role:admin|visitor|expert'])->get('show-config-module/{serverID}', [ModuleController::class, 'showConfigModule']);
+Route::middleware(['auth:sanctum', 'permission:module/read|role:admin|visitor|expert'])->get('show-config-module/{serverID}/{ModuleID}', [ModuleController::class, 'showConfigModule']);
 Route::middleware(['auth:sanctum', 'role:admin|visitor|expert'])->get('show-all-servies-and-modules/{serverID}', [ModuleController::class, 'showAllServiseAndModulesInServer']);
 Route::middleware(['auth:sanctum', 'permission:module/create|role:admin|expert'])->post('create-module', [ModuleController::class, 'createModule']);
 Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert'])->post('update-config-module', [ModuleController::class, 'updateConfigModule']);

@@ -54,11 +54,15 @@ class ModuleController extends ApiController
     }
 
         // show Config in database
-  public function showConfigModule ($moduleId)
+  public function showConfigModule ($serverId, $moduleId)
   {
-      $module = Module::find($moduleId);
+        $module = Module::where('id', $moduleId)->whereHas('servers', function ($query) use ($serverId) {
+            $query->where('server_id', $serverId);
+        })->first();
+
         if (!$module)
-            return response()->json(['msg' => 'The module ID is invalid'], 404);
+            throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.']));
+
 
 
         $serverIdsInModuleName = $module->servers->pluck('id');
