@@ -7,6 +7,8 @@ use Modules\Server\Http\Controllers\ModuleController;
 use Modules\Server\Http\Controllers\ServerController;
 use Modules\Server\Helpers\SshHelper;
 use Modules\Server\Http\Controllers\ServiceController;
+use Modules\Server\Http\Controllers\SystemSettingsController;
+use Modules\Server\Models\SystemSettings;
 
 /*
  *--------------------------------------------------------------------------
@@ -48,6 +50,11 @@ Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert']
 Route::middleware(['auth:sanctum', 'permission:server/off|role:admin|expert'])->post('server-stop', [ServerController::class, 'serverStop']);
 Route::middleware(['auth:sanctum', 'permission:server/off|role:admin|expert'])->post('server-start', [ServerController::class, 'ServerStart']);
 Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('server-status', [ServerController::class, 'serverStatus']);
+
+
+Route::middleware(['auth:sanctum', 'role:admin|expert'])->get('show-address', [SystemSettingsController::class, 'showAllAddress']);
+Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('add-address', [SystemSettingsController::class,'addAddress']);
+
 
 
 Route::get('download-file', function () {
