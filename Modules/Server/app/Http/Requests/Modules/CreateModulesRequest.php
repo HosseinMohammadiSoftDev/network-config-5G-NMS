@@ -24,7 +24,7 @@ class CreateModulesRequest extends FormRequest
                 foreach ($serverIds as $serverId) {
 
                 $modulNameExists = Module::where('name', $value)
-                ->where('server_id', request('server_id'))
+                ->where('server_id', $serverId)
                 ->exists();
 
                 if ($modulNameExists)

@@ -2,15 +2,17 @@
 
 namespace Modules\Server\Http\Controllers;
 
-use Modules\Server\Http\Requests\EditModuleRequest;
 use Spyc;
 use Exception;
+use RuntimeException;
 use phpseclib3\Net\SSH2;
 use Illuminate\Http\Request;
+use InvalidArgumentException;
 use Symfony\Component\Yaml\Yaml;
 use Illuminate\Http\JsonResponse;
 use Modules\Server\Models\Module;
 use Modules\Server\Models\Server;
+use PHPUnit\Event\Code\Throwable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
@@ -20,12 +22,13 @@ use Modules\Server\Helpers\SshHelper;
 use Illuminate\Support\Facades\Storage;
 use Modules\Server\Helpers\JsonUpdater;
 use Spatie\Activitylog\Models\Activity;
+use Modules\User\Services\PaginationService;
 use Illuminate\Routing\Controllers\Middleware;
 use App\Http\Controllers\Contract\ApiController;
 use Illuminate\Validation\UnauthorizedException;
 use Illuminate\Routing\Controllers\HasMiddleware;
+use Modules\Server\Http\Requests\EditModuleRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Modules\Server\Http\Requests\Module\DeleteCofigModuleRequest;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Modules\Server\Http\Requests\Modules\ShowAllModules;
@@ -36,12 +39,12 @@ use Modules\Server\Http\Requests\Modules\CreateModulesRequest;
 use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
 use Modules\Server\Http\Requests\Undo\UndoConfigModulesRequest;
 use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
+use Modules\Server\Http\Requests\Module\DeleteCofigModuleRequest;
 use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
+use Modules\Server\Http\Requests\Module\ExpertModuleFileIsServerRequset;
 use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
-use Modules\User\Services\PaginationService;
-use PhpParser\Node\Expr\Throw_;
-use PHPUnit\Event\Code\Throwable;
+use PhpParser\Node\Expr\Cast\Object_;
 
 class ModuleController extends ApiController
 {
@@ -77,7 +80,13 @@ class ModuleController extends ApiController
 
     $modulesGroupedByType = $server->modules->groupBy('type');
 
-    return $this->respondSuccess('List of server services and their modules', $modulesGroupedByType);
+    $response = [
+        'Epc' => $modulesGroupedByType->get('Epc', []),
+        '5gc' => $modulesGroupedByType->get('5gc', []),
+        'allModules' => $server->modules
+    ];
+
+    return $this->respondSuccess('List of server services and their modules', $response);
   }
 
   public function ShowAllModules (Request $request)
@@ -128,7 +137,7 @@ class ModuleController extends ApiController
 
       $yamlContent = Yaml::dump($arrayContent, 4, 2, Yaml::DUMP_OBJECT);
 
-      // $yamlContent = preg_replace('/^(  - .+?):\s*$/m', "$1:", $yamlContent);
+      $yamlContent = preg_replace('/^(  - .+?):\s*$/m', "$1:", $yamlContent);
 
       $yamlContent = preg_replace('/[\'\"\/\\\]/', '', $yamlContent);
       return $yamlContent;
@@ -138,7 +147,7 @@ class ModuleController extends ApiController
       foreach ($array as $key => $value) {
           if (is_array($value)) {
               $array[$key] = $this->convertNullKeysToComments($value);
-          } elseif ($value === null) {
+          } elseif ($value === null || $value === "" || $value === '') {
               $array["# $key"] = null;
               unset($array[$key]);
           }
@@ -254,7 +263,10 @@ class ModuleController extends ApiController
   {
     $creadtional = $request->validated();
     $serverIds = $creadtional['server_id'];
+
     $jsonContent = $this->uploadModuleFile($request->file('config_file'));
+    $yamlContent = $this->convertJsonToYaml($jsonContent);
+
 
     if (is_array($jsonContent) || is_object($jsonContent))
         return $jsonContent;
@@ -269,18 +281,16 @@ class ModuleController extends ApiController
             return response()->json(['msg' => 'this server id invalid']);
         }
 
-        $host = $server['ip'];
-        $username = $request->input('username');
-        $password = $request->input('password');
-        $filePath = '/home/siz-tel/bbdh-2.6.6-noCg/install/etc/bbdh/' . $creadtional['name'] . '.yaml';
 
         try {
-            // $command = 'echo "' . addslashes($jsonContent) . '" > ' . $filePath;
-            // SshHelper::runSshCommand($host, $username, $password, $command);
+
+            $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
+                $creadtional['name'], $yamlContent, $server);
+
         } catch (Exception $e) {
+
             activity('error-create-module')
             ->causedBy(Auth::user())
-            ->performedOn(Module::latest()->first())
             ->event('create-module')
             ->withProperties([
                 'type-log' => 'server',
@@ -294,9 +304,9 @@ class ModuleController extends ApiController
                     'server_id' => $serverId,
                 ],
             ])
-            ->log('مشکلی در ساخت ارسال فایل ماژول به سرور رخ داد');
+            ->log('An issue occurred while sending the file to the server.');
 
-            return response()->json(['msg' => ['مشکلی در ارسال فایل به سرور رخ داد']]);
+            return response()->json(['msg' => ['error' => $e->getMessage()]]);
         }
 
         $module = Module::create([
@@ -319,17 +329,6 @@ class ModuleController extends ApiController
                 'module_type' => $module['type']
             ]
         ];
-
-        Log::channel('daily')->info('A new module has been created', [
-            'route' => request()->fullUrl(),
-            'method' => 'createModule',
-            'user' => Auth::user(),
-            'module' => [
-                'name' => $creadtional['name'],
-                'type' => $creadtional['type'],
-                'server_id' => $serverId,
-            ],
-        ]);
 
         activity('create-module')
             ->causedBy(Auth::user())
@@ -358,6 +357,7 @@ class ModuleController extends ApiController
         'created_modules' => $createdModules
       ]);
   }
+
 
         // update Config Module
     public function chackPermissionModule($module, $server)
@@ -416,6 +416,7 @@ class ModuleController extends ApiController
                 'method' => 'updateConfigModule',
                 'user' => Auth::user(),
                 'data' => $data,
+                'server' => $server,
                 'module_id' => $module['id'],
                 'module_name' => $module['name'],
                 'module_type' => $module['type'],
@@ -428,13 +429,8 @@ class ModuleController extends ApiController
         $server = Server::find($module['server_id']);
 
         $serverIdsInModuleName = Module::where('name', $module['name'])->pluck('server_id')->toArray();
-
-
         $data = $request->input('data', []);
-        $host = $server['ip'];
-        $username = $request->input('username');
-        $password = $request->input('password');
-        $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
+
 
         DB::beginTransaction();
 
@@ -445,7 +441,8 @@ class ModuleController extends ApiController
 
             $yamlContent = $this->convertJsonToYaml($module->current_config);
 
-            // $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
+            $this->sendConfigToServer($request['username'], $request['password'],
+                         $module['name'], $yamlContent, $server);
 
             $this->logModuleUpdate($module, $server, $data);
 
@@ -455,25 +452,41 @@ class ModuleController extends ApiController
                 'config' => json_decode($module->current_config, true),
                 'serverIdsInModuleName' => $serverIdsInModuleName
             ]);
+        } catch (InvalidArgumentException $e) {
+                DB::rollBack();
+
+                $message = $e->getMessage();
+                $message = preg_replace('/\x1b\[[0-9;]*m/', '', $message); // حذف کدهای ANSI
+                $message = preg_replace('/\r?\n.*?\[root@localhost.*?$/', '', $message); // حذف اطلاعات اضافی مربوط به خط فرمان
+
+                preg_match_all('/\b(FATAL|ERROR):\s.*?(?=\s\(.*?\)|$)/m', $message, $matches);
+
+                $formattedMessages = $matches[0] ?? [];
+
+                $separatedMessages = [];
+                foreach ($formattedMessages as $index => $msg) {
+                    $separatedMessages["Error-" . ($index + 1)] = $msg;
+                }
+
+            throw new HttpResponseException(response()->json([
+                'msg' => 'server error!',
+                'error' => [
+                    'type' => 'restart-service-error',
+                    'message' => $separatedMessages
+                ]
+            ], 500));
         } catch (\Exception $e) {
             DB::rollBack();
 
             $message = $e->getMessage();
 
-            if (str_contains($message, 'ERROR') || str_contains($message, 'FATAL')) {
-                $message = preg_replace('/\e\[[\d;]*m/', '', $message);
-                $message = preg_replace('/\r|\n|\[?.*?h/', '', $message);
-                preg_match_all('/(ERROR|FATAL): ([^\r\n]+)/', $message, $matches);
-
-                if (!empty($matches[0])) {
-                    $filteredMessages = implode("\n", $matches[0]);
-                    return response()->json(['error' => $filteredMessages], 500);
-                }
-
-                return response()->json(['error' => $message], 500);
-            }
-
-            return response()->json(['error' => $message], 500);
+            throw new HttpResponseException(response()->json([
+                'msg' => 'خطای سرور!',
+                'error' => [
+                    'type' => 'server-error',
+                    'message' => $message
+                ]
+            ], 500));
         }
     }
     private function updateMultipleModules($serverIds, $request)
@@ -502,11 +515,6 @@ class ModuleController extends ApiController
             foreach ($modules as $module) {
                 $server = Server::find($module['server_id']);
 
-                $host = $server['ip'];
-                $username = $request->input('username');
-                $password = $request->input('password');
-                $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
-
                 $this->chackPermissionModule($module, $server);
 
                 $updatedModule = $this->updateModuleConfigInDatabase($module['id'], $data);
@@ -516,7 +524,8 @@ class ModuleController extends ApiController
 
                 $yamlContent = $this->convertJsonToYaml($updatedModule->current_config);
 
-                // $this->sendConfigToServer($host, $username, $password, $path, $updatedModule['name'], $yamlContent, $server);
+                $this->sendConfigToServer( $request['username'], $request['password'],
+                     $updatedModule['name'], $yamlContent, $server);
 
 
                 $this->logModuleUpdate($updatedModule, $server, $data);
@@ -528,26 +537,68 @@ class ModuleController extends ApiController
                 'config' => json_decode($firstModule->current_config, true),
                 'serverIdsInModuleName' => $serverIdsInModuleName
             ]);
-        } catch (\Throwable $e) {
+
+        } catch (InvalidArgumentException $e) {
+                DB::rollBack();
+
+                $message = $e->getMessage();
+                $message = preg_replace('/\x1b\[[0-9;]*m/', '', $message); // حذف کدهای ANSI
+                $message = preg_replace('/\r?\n.*?\[root@localhost.*?$/', '', $message); // حذف اطلاعات اضافی مربوط به خط فرمان
+
+                preg_match_all('/\b(FATAL|ERROR):\s.*?(?=\s\(.*?\)|$)/m', $message, $matches);
+
+                $formattedMessages = $matches[0] ?? [];
+
+                $separatedMessages = [];
+                foreach ($formattedMessages as $index => $msg) {
+                    $separatedMessages["Error-" . ($index + 1)] = $msg;
+                }
+
+            throw new HttpResponseException(response()->json([
+                'msg' => 'server error!',
+                'error' => [
+                    'type' => 'restart-service-error',
+                    'message' => $separatedMessages
+                ]
+            ], 500));
+        } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['error' => $e->getMessage()], 500);
+
+            $message = $e->getMessage();
+
+            throw new HttpResponseException(response()->json([
+                'msg' => 'خطای سرور!',
+                'error' => [
+                    'type' => 'server-error',
+                    'message' => $message
+                ]
+            ], 500));
         }
     }
-    private function sendConfigToServer($host, $username, $password, $path, $moduleName, $yamlContent, $server)
+    private function sendConfigToServer($username, $password, $moduleName, $yamlContent, $server)
     {
         // is down server
             if ($server['is_down'] == 1)
                 throw new Exception('this server off');
 
+        if (!$server['path_config'])
+            throw new Exception('You did not specify a configuration address config');
+
+
+        if (!$server['path_run_config'])
+            throw new Exception('You did not specify a configuration address run config');
+
+
+        // $sshHelper = new sshHelper($server, $username, $password);
+
             // update module
-        $commandUpdateFileModule = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $moduleName . '.yaml';
-        SshHelper::runSshCommand($host, $username, $password, $commandUpdateFileModule);
+        $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $server['path_config'] . $moduleName . '.yaml';
+        // $sshHelper->runCommand($commandUpdateFileModule );
 
             // restart module
-        $pathRestartModule = '/home/siz-tel/bbdh-2.6.6-noCg/install/bin/';
-        $commandRestart = $pathRestartModule . 'bbdh-' . $moduleName . 'd' . ' restart';
-        $output = SshHelper::restartModule($host, $username, $password, $commandRestart);
-            throw new \Exception($output);
+        $commandRestart = $server['path_run_config'] . 'bbdh-' . $moduleName . 'd' . ' restart';
+        // $output = $sshHelper->restartModule($commandRestart );
+
     }
     private function updateModuleConfigInDatabase($moduleId, $data)
     {
@@ -594,7 +645,7 @@ class ModuleController extends ApiController
         $module = Module::find($moduleId);
 
         if (!$module)
-            throw new Exception('module is notfund');
+            throw new Exception('module is not fuond');
 
 
         $moduleConfig = json_decode($module->current_config, true);
@@ -616,13 +667,8 @@ class ModuleController extends ApiController
 
         $module = Module::find($request['module_id']);
         $server = Server::find($module['server_id']);
-        $pathConfig = $request['path'];
+        $pathConfig = $request['path_config'];
 
-
-        $host = $server['ip'];
-        $username = $request['username'];
-        $password = $request['password'];
-        $path = $request['path'] ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
 
         DB::beginTransaction();
 
@@ -633,7 +679,8 @@ class ModuleController extends ApiController
 
             $yamlContent = $this->convertJsonToYaml($module->current_config);
 
-            // $this->sendConfigToServer($host, $username, $password, $path, $module['name'], $yamlContent, $server);
+            $this->sendConfigToServer( $request['username'], $request['password'],
+                     $module['name'], $yamlContent, $server);
 
             DB::commit();
 
@@ -663,10 +710,18 @@ class ModuleController extends ApiController
     }
 
 
-        //edit moduel
-    private function updateConfigForDB(Module $module, array $serverIds, $jsonConfig)
+
+        // edit config module
+    private function updateConfigForDB(Module $module, array $serverIds, $jsonConfig, Request $request)
     {
+            // if is null $serverIds
+        if (!$serverIds) {
+            $server = Server::find($module['server_id']);
+            $serverIds['0'] = [$server['id']];
+        }
+
         foreach ($serverIds as $serverId) {
+            $server = Server::find($serverId);
             $serverModule = Module::where('server_id', $serverId)->where('name', $module->name)->first();
 
             if ($serverModule) {
@@ -679,13 +734,19 @@ class ModuleController extends ApiController
                 $serverModule['current_config'] = json_encode($moduleConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
 
+                $yamlContent = $this->convertJsonToYaml($serverModule['current_config']);
+
+                $this->sendConfigToServer( $request['username'], $request['password'],
+                    $serverModule['name'], $yamlContent, $server);
+
                 $serverModule->save();
             }
         }
     }
-    private function addModulesToDB(Module $module, array $serverIds)
+    private function addModules(Module $module, array $serverIds, Request $request)
     {
         foreach ($serverIds as $serverId) {
+            $server = Server::find($serverId);
             $serverModule = Module::firstOrNew([
                 'server_id' => $serverId,
                 'name' => $module->name,
@@ -695,43 +756,48 @@ class ModuleController extends ApiController
             $serverModule->initial_config = $module->initial_config;
             $serverModule->current_config = $module->current_config;
 
+
+            $yamlContent = $this->convertJsonToYaml($serverModule['current_config']);
+            $this->sendConfigToServer( $request['username'], $request['password'],
+                 $serverModule['name'], $yamlContent, $server);
+
             $serverModule->save();
         }
     }
-    private function deleteModuleFromServer(Module $module, $request)
-    {
-        $username = $request->input('username');
-        $password = $request->input('password');
-        $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
-
-        // حذف فایل از سرور (در صورت نیاز)
-        // $command = 'rm -f ' . $path . $module->name . '.yaml';
-        // SshHelper::runSshCommand($server->ip, $username, $password, $command);
-
-        $module->delete();
-        Log::info('Module deleted successfully', ['module' => $module]);
-    }
-    private function deleteModulesDB(array $serverIds, Module $module, $request)
+    private function deleteModules(array $serverIds, Module $module, $request)
     {
         foreach ($serverIds as $serverId) {
             $serverModule = Module::where('name', $module->name)
-                        ->where('server_id', $serverId)
+                        ->where('server_id',    $serverId)
                         ->first();
 
-            if ($serverModule)
-                $this->deleteModuleFromServer($serverModule, $request);
+                // ssh server
+            if ($serverModule) {
+                $server = Server::find($serverId);
+                $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
+
+                $this->sendConfigToServer( $request['username'], $request['password'],
+                     $serverModule['name'], null, $server);
+
+                $serverModule->delete();
+            }
         }
     }
-    private function syncModuleWithServers(Module $module, array $serverIds, $jsonConfig, $request)
+    private function syncModuleWithServers(Module $module, array $serverIds, $request)
     {
         $existingServerIds = Module::where('name', $module['name'])->pluck('server_id')->toArray();
 
         $serversToDelete = array_diff($existingServerIds, $serverIds);
         $serversToAdd = array_diff($serverIds, $existingServerIds);
 
-        $this->deleteModulesDB($serversToDelete, $module, $request);
-        $this->addModulesToDB($module, $serversToAdd);
-        $this->updateConfigForDB($module, $serverIds, $jsonConfig);
+        try {
+
+            $this->deleteModules($serversToDelete, $module, $request);
+            $this->addModules($module, $serversToAdd, $request);
+
+        } catch (\Exception $e) {
+            throw new HttpResponseException(response()->json(['error' => $e->getMessage()], 500));
+        }
     }
     public function editModule(EditModuleRequest $request)
     {
@@ -741,17 +807,80 @@ class ModuleController extends ApiController
         $serverIds = $validated['server_ids'] ?? [];
         $configFile = $request->file('config_file');
 
-        if ($serverIds && $configFile) {
-            $jsonConfig = $this->uploadModuleFile($configFile);
-            $this->syncModuleWithServers($module, $serverIds, $jsonConfig, $request);
-        }
+        if ($serverIds) {
+
+            $this->syncModuleWithServers($module, $serverIds, $request);
+
+                    // update file
+                if ($configFile) {
+                    $jsonConfig = $this->uploadModuleFile($configFile);
+                    $this->updateConfigForDB($module, $serverIds, $jsonConfig, $request);
+                }
+
+        } else
+            $this->syncModuleWithServers($module, $serverIds, $request);
+
+
+
+        $types = implode(',', array_map('trim', explode(',', $validated['type'] ?? $module['type'])));
 
         $module->update([
             'name' => $validated['name'] ?? $module->name,
-            'type' => $validated['type'] ?? $module->type,
+            'type' => $types,
         ]);
 
-        return response()->json(['message' => 'Module updated successfully'], 200);
+        return response()->json([
+            'message' => 'Module updated successfully',
+            'module' => [
+                'module_name' => $module['name'],
+                'module_type' => $module['type'],
+                'module_server' => Module::where('name', $module->name)->pluck('server_id')->toArray(),
+            ]
+        ], 200);
+    }
+
+
+
+
+        // expert file
+    public function expertModuleFileIsServer (ExpertModuleFileIsServerRequset $request)
+    {
+        $validation = $request->validated();
+        $module = Module::find($validation['module_id']);
+        $server = Server::find($module['server_id']);
+
+        $command = 'cat ' . $server['path_config'] . $module['name'] . '.yaml' ;
+
+
+        try {
+                // download file
+            $sshHelper = new sshHelper($server, $validation['username'], $validation['password']);
+            $output = $sshHelper->getFileContent($command);
+
+                    // هدر های ارسال فایل به عنوان فایل دانلودی برای مرورگر
+            return response($output, 200, [
+                'Content-Type' => 'application/octet-stream',
+                'Content-Disposition' => "attachment; filename={$module->name}.yaml",
+                'Content-Length' => strlen($output),
+            ]);
+
+        } catch (Exception $e) {
+
+            activity('not-export-file-error')
+            ->causedBy(Auth::user())
+            ->event('expertModuleFileIsServer')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'method' => 'expertModuleFileIsServer',
+                'user' => Auth::user(),
+                'module' => $module,
+                'command' => $command
+            ])
+            ->log('The configuration values have been changed');
+
+            return response()->json(['message'=> $e->getMessage()],500);
+        }
     }
 
 
@@ -770,12 +899,6 @@ class ModuleController extends ApiController
         return response()->json(['msg' => 'server is off'], 403);
 
 
-    $host = $server['ip'];
-    $username = $request->input('username');
-    $password = $request->input('password');
-    $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
-
-
     $module = Module::find($creadtional['module_id']);
     $modulePreviousConfig = $module['previous_config'];
 
@@ -785,9 +908,8 @@ class ModuleController extends ApiController
     try {
             // ssh to server format yaml
             $yamlContent = $this->convertJsonToYaml($modulePreviousConfig);
-
-            // $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
-            // SshHelper::runSshCommand($host, $username, $password, $command);
+            $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
+                 $module['name'], $yamlContent, $server);
 
 
                 // save to datebase format json
@@ -843,23 +965,17 @@ class ModuleController extends ApiController
         return response()->json(['msg'=> 'server is off']);
 
 
-    $host = $server['ip'];
-    $username = $request->input('username');
-    $password = $request->input('password');
-    $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
-
-
     $module = Module::find($creadtional['module_id']);
     $moduleInitialConfig = $module['initial_config'];
 
     try {
                 // ssh to server format yaml
         $yamlContent = $this->convertJsonToYaml($moduleInitialConfig);
+        $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
+            $module['name'], $yamlContent, $server);
 
-        // $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
-        // SshHelper::runSshCommand($host, $username, $password, $command);
 
-            // save to datebase format json
+        // save to datebase format json
         $module['current_config'] = $moduleInitialConfig;
         $module->save();
 

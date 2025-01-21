@@ -15,7 +15,6 @@ class UndoConfigModulesRequest extends FormRequest
             'module_id' => ['required', 'exists:modules,id', 'integer'],
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
-            'path' => ['nullable', 'string']
         ];
     }
 

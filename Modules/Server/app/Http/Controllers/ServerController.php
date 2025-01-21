@@ -5,12 +5,15 @@ namespace Modules\Server\Http\Controllers;
 use Spyc;
 use Exception;
 use Illuminate\Http\Request;
+use Modules\User\Models\User;
 use Modules\Server\Models\Server;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Modules\Server\Helpers\SshHelper;
 use Modules\User\Services\PaginationService;
+use phpseclib3\Crypt\EC\Formats\Signature\SSH2;
 use App\Http\Controllers\Contract\ApiController;
 use Modules\Server\Http\Requests\TestConnectionRequest;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -126,7 +129,7 @@ class ServerController extends ApiController
         $server = Server::find($credentials['server_id']);
 
         $host = $server['ip'];
-        $username = $request->input('username');
+        $username = $request->input('auth_name');
         $password = $request->input('password');
         $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
 
@@ -136,6 +139,28 @@ class ServerController extends ApiController
 
                 // delete all module server in VPS
             // $this->deleteAllModuleServer($server, $host, $username, $password, $path);
+
+                // validate user authName and Password in delete server
+            $user = User::whereRaw('BINARY auth_name = ?', [$credentials['auth_name']])->first();
+            if (!$user || !Hash::check($credentials['password'], $user->password)) {
+
+                activity('auth-name-or-passord-wrong')
+                    ->causedBy(Auth::user())
+                    ->event('login')
+                    ->withProperties([
+                        'type-log' => 'app',
+                        'route' => request()->fullUrl(),
+                        'method' => 'login',
+                        'auth-name' => $credentials['auth_name'],
+                        'password' => $credentials['password']
+                    ])
+                    ->log('The user entered an incorrect email or password during login.');
+
+                    return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
+
+            }
+
+            $server->delete();
 
                 DB::commit();
         } catch (Exception $e) {
@@ -287,26 +312,15 @@ class ServerController extends ApiController
         $server = Server::find($creadtional['server_id']);
 
 
-                // Parameter is connect server
-        $sshHost = $server['ip'];
-        $sshUsername = $creadtional['username'];
-        $sshPassword = $creadtional['password'];
-
                 // is stop server
         if ($server['is_down'] == 1)
             return response()->json(['msg' => 'this off server'], 403);
 
 
             try {
-            // SshHelper::testConnection($sshHost, $sshUsername, $sshPassword);
 
-            Log::channel('daily')->info('The connection to the server was successful', [
-            'route' => request()->fullUrl(),
-            'method' => 'showConfigModule',
-            'user' => Auth::user(),
-            'server' => $server
-            ]);
-
+                // $sshHelper = new sshHelper($server, $creadtional['username'], $creadtional['password']);
+                // $sshHelper->testConnection();
 
             activity('server-connection')
             ->causedBy(Auth::user())
@@ -317,23 +331,12 @@ class ServerController extends ApiController
                 'method' => 'showConfigModule',
                 'user' => Auth::user(),
                 'server' => $server,
-                'host' => $sshHost,
-                'userName' => $sshUsername
             ])
             ->log('The connection to the server was successful');
 
             return response()->json(['msg'=> 'connect successful.'], 200);
 
         } catch (Exception $e) {
-            Log::channel('daily')->error('The connection to the server failed', [
-                'route' => request()->fullUrl(),
-                'method' => 'showConfigModule',
-                'error' => $e->getMessage(),
-                'user' => Auth::user(),
-                'host' => $sshHost,
-                'userName' => $sshUsername
-            ]);
-
             return response()->json(['msg' => 'The connection to the server failed:' . $e->getMessage()], 500);
         }
     }

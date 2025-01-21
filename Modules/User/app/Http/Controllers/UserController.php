@@ -80,7 +80,7 @@ class UserController extends ApiController
                 DB::beginTransaction();
             $user = User::create($credentials);
             $role = $credentials['role'] ?? null;
-            $permissionName = $credentials['permission_name'];
+            $permissionName = $credentials['permission_name'] ?? null;
 
             if ($role)
                 $user->assignRole($role);
@@ -113,6 +113,7 @@ class UserController extends ApiController
                         'route' => request()->fullUrl(),
                         'method' => 'addMember',
                         'member' => $credentials,
+                        'user' => Auth::user(),
                     ])
                 ->log('An issue occurred during the process');
 
