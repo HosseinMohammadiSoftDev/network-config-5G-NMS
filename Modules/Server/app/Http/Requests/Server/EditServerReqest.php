@@ -23,6 +23,7 @@ class EditServerReqest extends FormRequest
                 Rule::unique('servers', 'name')->ignore($this->server_id, 'id')
             ],
 
+
             'ip' => [
                 'nullable',
                 Rule::unique('servers', 'ip')->ignore($this->server_id, 'id'),

@@ -24,11 +24,12 @@ class CreateModulesRequest extends FormRequest
                 foreach ($serverIds as $serverId) {
 
                 $modulNameExists = Module::where('name', $value)
-                ->where('server_id', $serverId)
-                ->exists();
+                ->whereHas('servers', function($query) use ($serverId) {
+                    $query->where('servers.id', $serverId);
+                })->exists();
 
                 if ($modulNameExists)
-                    $fail('module name is not uniqe');
+                    $fail('module name is not uniqe in server');
                 }
 
             }],

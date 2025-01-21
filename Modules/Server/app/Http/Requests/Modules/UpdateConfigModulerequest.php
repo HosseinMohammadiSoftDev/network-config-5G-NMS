@@ -13,6 +13,7 @@ class UpdateConfigModulerequest extends FormRequest
     {
         return [
             'module_id' => ['required', 'exists:modules,id', 'integer'],
+            'server_id' => ['required', 'integer', 'exists:servers,id'],
             'data' => ['required', 'array'],
             'servers' => ['nullable', 'array'],
             'servers.*' => ['required', 'integer', 'exists:servers,id'],

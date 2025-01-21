@@ -33,13 +33,15 @@ class Module extends Model
     //     ->logOnly(['id', 'name', 'type', 'server_id', 'created_at', 'updated_at']);
     // }
 
-    public function server()
-    {
-        return $this->belongsTo(Server::class);
-    }
+        // oen to mony
+    // public function server()
+    // {
+    //     return $this->belongsTo(Server::class);
+    // }
 
     public function servers()
     {
-        return $this->belongsToMany(Server::class, 'server_modules', 'module_id', 'server_id');
+        return $this->belongsToMany(Server::class)
+        ->withPivot('initial_config', 'previous_config', 'current_config');
     }
 }

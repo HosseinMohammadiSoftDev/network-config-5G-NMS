@@ -13,6 +13,7 @@ class UndoToInitialConfigModulesRequest extends FormRequest
     {
         return [
             'module_id' => ['required', 'integer', 'exists:modules,id'],
+            'server_id' => ['required', 'integer', 'exists:servers,id'],
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
