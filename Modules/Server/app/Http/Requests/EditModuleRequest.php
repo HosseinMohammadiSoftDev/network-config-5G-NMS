@@ -17,7 +17,7 @@ class EditModuleRequest extends FormRequest
             'module_id' => ['required', 'integer', 'exists:modules,id'],
             'name' => ['nullable', 'string', 'min:2', 'max:255'],
             'type' => ['nullable', 'string'],
-            'server_id'=> ['required', 'integer','exists:servers,id'],
+            // 'server_id'=> ['required', 'integer','exists:servers,id'],
 
             'server_ids' => ['nullable', 'array'],
             'server_ids.*' => ['required', 'integer', 'exists:servers,id'],

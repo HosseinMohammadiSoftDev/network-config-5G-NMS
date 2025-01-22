@@ -11,16 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('servers', function (Blueprint $table) {
+        Schema::create('system_settings', function (Blueprint $table) {
             $table->id();
 
-            $table->string('name')->unique();
-
-            $table->string('path_config')->nullable();
-            $table->string('path_run_config')->nullable();
-
-            $table->string('ip')->unique();
-            $table->boolean('is_down')->default(false);
+            $table->string('zabbix_address')->nullable();
+            $table->string('elk_address')->nullable();
 
             $table->timestamps();
         });
@@ -31,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('servers');
+        Schema::dropIfExists('system_settings');
     }
 };
