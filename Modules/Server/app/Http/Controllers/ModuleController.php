@@ -763,12 +763,11 @@ class ModuleController extends ApiController
             if (!$module->servers->contains($serverId)) {
                 $module->servers()->attach($serverId, [
                     'initial_config' => $pivotData->initial_config,
-                    'previous_config' => $pivotData->previous_config,
-                    'current_config' => $pivotData->current_config,
+                    'current_config' => $pivotData->initial_config,
                 ]);
             }
 
-            $yamlContent = $this->convertJsonToYaml($pivotData['current_config']);
+            $yamlContent = $this->convertJsonToYaml($pivotData['initial_config']);
             $this->sendConfigToServer( $request['username'], $request['password'],
                  $module['name'], $yamlContent, $server);
 
@@ -805,10 +804,7 @@ class ModuleController extends ApiController
     public function editModule(EditModuleRequest $request)
     {
         $validated = $request->validated();
-
-        $module = Module::where('id', $validated['module_id'])->whereHas('servers', function ($query) use ($validated) {
-            $query->where('server_id', $validated['server_id']);
-        })->first();
+        $module = Module::find($validated['module_id']);
 
         if (!$module)
             throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.']));        $serverIds = $validated['server_ids'] ?? [];
