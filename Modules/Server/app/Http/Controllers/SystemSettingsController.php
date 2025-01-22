@@ -26,12 +26,17 @@ class SystemSettingsController extends ApiController
 
 
 
-    public function addAddress(AddAddressRequest $request)
+    public function addOrUpdateAddress(AddAddressRequest $request)
     {
         $creadtioanle = $request->validated();
 
-        $address = SystemSettings::create($creadtioanle);
+        $address = SystemSettings::first();
 
-        return response()->json(['msg' => 'save address successfuly', 'address' => $address], 201);
+            if (!$address)
+                $address = SystemSettings::create($creadtioanle);
+            else
+                $address->update($creadtioanle);
+
+        return response()->json(['msg' => 'save address successfuly', 'address' => $address], 200);
     }
 }

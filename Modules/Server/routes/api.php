@@ -53,7 +53,7 @@ Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('server-status', 
 
 
 Route::middleware(['auth:sanctum', 'role:admin|expert'])->get('show-address', [SystemSettingsController::class, 'showAllAddress']);
-Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('add-address', [SystemSettingsController::class,'addAddress']);
+Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('add-address', [SystemSettingsController::class,'addOrUpdateAddress']);
 
 
 
