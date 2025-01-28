@@ -56,24 +56,29 @@ class ModuleController extends ApiController
         // show Config in database
   public function showConfigModule ($serverId, $moduleId)
   {
-        $module = Module::where('id', $moduleId)->whereHas('servers', function ($query) use ($serverId) {
+        $module = Module::where('id', $moduleId)
+        ->whereHas('servers', function ($query) use ($serverId) {
             $query->where('server_id', $serverId);
-        })->first();
+        })
+        ->with(['servers' => function ($query) {
+            $query->select('servers.id', 'servers.name'); // انتخاب فیلدهای موردنیاز
+        }])
+        ->first();
 
         if (!$module)
             throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.']));
 
 
 
-        $serverIdsInModuleName = $module->servers->pluck('id');
+        $serverIdsInModuleName = $module->servers->pluck('pivot.server_id');
 
-        $configData = [];
-        foreach ($module->servers as $server)
-            $configData[] = json_decode($server->pivot->current_config, true);
+        $currentConfig = $module->servers
+        ->where('pivot.server_id', $serverId)
+        ->first()?->pivot->current_config;
 
 
         return response()->json([
-            'config' => $configData,
+            'config' => json_decode($currentConfig),
             'serversIdInModuleName' => $serverIdsInModuleName
         ]);
   }
