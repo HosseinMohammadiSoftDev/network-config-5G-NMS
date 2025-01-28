@@ -788,6 +788,13 @@ class ModuleController extends ApiController
                      $module['name'], null, $server);
 
                 $module->servers()->detach($serverId);
+
+
+            // delete module filde
+            $module->load('servers');
+            if (!$module->servers->isEmpty())
+                $module->delete();
+
         }
     }
     private function syncModuleWithServers(Module $module, array $serverIds, $request)
@@ -796,7 +803,7 @@ class ModuleController extends ApiController
 
         $serversToDelete = array_diff($existingServerIds, $serverIds);
         $serversToAdd = array_diff($serverIds, $existingServerIds);
-
+// dd($serversToDelete, $serversToAdd);
         try {
 
             $this->addModules($module, $serversToAdd, $request);
