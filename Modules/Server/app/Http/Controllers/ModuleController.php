@@ -283,8 +283,9 @@ class ModuleController extends ApiController
     $serverIds = $creadtional['server_id'];
 
     $jsonContent = $this->uploadModuleFile($request->file('config_file'));
-    $yamlContent = $this->convertJsonToYaml($jsonContent);
+    $jsonContent = json_encode(json_decode($jsonContent, true), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
+    $yamlContent = $this->convertJsonToYaml($jsonContent);
 
     if (is_array($jsonContent) || is_object($jsonContent))
         return $jsonContent;
@@ -294,6 +295,7 @@ class ModuleController extends ApiController
 
 
     try {
+        DB::beginTransaction();
 
         $module = Module::create([
             'name' => $creadtional['name'],
@@ -357,11 +359,14 @@ class ModuleController extends ApiController
         if (!empty($failedServers))
             return response()->json(['msg' => 'An issue occurred while adding the module to the server', 'server-faild' => $failedServers]);
 
+        DB::commit();
 
         return $this->respondCreated('The module was successfully created on the servers',  [
             'created_modules' => $createdModules
         ]);
+
     } catch (Exception $e) {
+        DB::rollBack();
         return response()->json(['error' => $e->getMessage()],);
     }
   }
@@ -372,7 +377,7 @@ class ModuleController extends ApiController
 
     $module->delete();
 
-    return response()->json(['msg' => 'Module Deleted']);
+    return response()->json(['msg' => 'Module Deleted', 'module' => $module]);
   }
 
         // update Config Module
