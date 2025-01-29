@@ -34,7 +34,6 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Modules\Server\Http\Requests\Modules\ShowAllModules;
 use PharIo\Version\UnsupportedVersionConstraintException;
 use Modules\Server\Http\Requests\Server\UploadModuleRequest;
-use Modules\Server\Http\Requests\Modules\DeleteModuleRequest;
 use Modules\Server\Http\Requests\Modules\CreateModulesRequest;
 use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
 use Modules\Server\Http\Requests\Undo\UndoConfigModulesRequest;
@@ -43,6 +42,7 @@ use Modules\Server\Http\Requests\Module\DeleteCofigModuleRequest;
 use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
 use Modules\Server\Http\Requests\Module\ExpertModuleFileIsServerRequset;
+use Modules\Server\Http\Requests\Modules\deleteModuleRequest;
 use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
 use PhpParser\Node\Expr\Cast\Object_;
 
@@ -61,7 +61,7 @@ class ModuleController extends ApiController
             $query->where('server_id', $serverId);
         })
         ->with(['servers' => function ($query) {
-            $query->select('servers.id', 'servers.name'); // انتخاب فیلدهای موردنیاز
+            $query->select('servers.id', 'servers.name');
         }])
         ->first();
 
@@ -365,7 +365,15 @@ class ModuleController extends ApiController
         return response()->json(['error' => $e->getMessage()],);
     }
   }
+  public function deleteModule (deleteModuleRequest $request)
+  {
+    $validated = $request->validated();
+    $module = Module::find($validated['module_id']);
 
+    $module->delete();
+
+    return response()->json(['msg' => 'Module Deleted']);
+  }
 
         // update Config Module
     public function chackPermissionModule($module, $server)
@@ -530,7 +538,7 @@ class ModuleController extends ApiController
 
                 $this->chackPermissionModule($module, $server);
 
-                $updatedModule = $this->updateModuleConfigInDatabase($module['id'], $request->input('data'));
+                $updatedModule = $this->updateModuleConfigInDatabase($module['id'], $request->input('data'), $server);
 
                 $yamlContent = $this->convertJsonToYaml($updatedModule->current_config);
 
@@ -789,12 +797,6 @@ class ModuleController extends ApiController
 
                 $module->servers()->detach($serverId);
 
-
-            // delete module filde
-            $module->load('servers');
-            if (!$module->servers->isEmpty())
-                $module->delete();
-
         }
     }
     private function syncModuleWithServers(Module $module, array $serverIds, $request)
@@ -803,7 +805,7 @@ class ModuleController extends ApiController
 
         $serversToDelete = array_diff($existingServerIds, $serverIds);
         $serversToAdd = array_diff($serverIds, $existingServerIds);
-// dd($serversToDelete, $serversToAdd);
+
         try {
 
             $this->addModules($module, $serversToAdd, $request);
