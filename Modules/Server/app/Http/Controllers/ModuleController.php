@@ -404,18 +404,15 @@ class ModuleController extends ApiController
     $validated = $request->validated();
     $module = Module::find($validated['module_id']);
 
-    foreach ($module->servers()->get() as $server)
-            // check permission
-        $this->chackPermissionModule($server);
+    $serverModule =  $module->servers()->get();
+    if (!$serverModule) {
+        $module->delete();
+        return response()->json(['msg' => 'Module Deleted', 'module' => $module]);
+    }
 
-        if ($server['is_down'])
-            return response()->json([
-                'msg' => 'this server is off',
-                'data' => [
-                    'server_id' => $server['id'],
-                    'server_name' => $server['name'],
-                    'server_is_down' => $server['is_down'],
-                ]], 422);
+
+    foreach ($serverModule as $server)
+        $this->chackPermissionModule($server);
 
 
     $module->delete();
