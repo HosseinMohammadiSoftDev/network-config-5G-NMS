@@ -71,6 +71,13 @@ class ModuleController extends ApiController
 
 
         $serverIdsInModuleName = $module->servers->pluck('pivot.server_id');
+        $serversData = $module->servers->map(function ($server) {
+            return [
+                'id' => $server->id,
+                'name' => $server->name,
+                'is_down' => $server->is_down,
+            ];
+        });
 
         $currentConfig = $module->servers
         ->where('pivot.server_id', $serverId)
@@ -79,6 +86,7 @@ class ModuleController extends ApiController
 
         return response()->json([
             'config' => json_decode($currentConfig),
+            'serversDetails' => $serversData,
             'serversIdInModuleName' => $serverIdsInModuleName
         ]);
   }
@@ -112,7 +120,7 @@ class ModuleController extends ApiController
 
   public function ShowAllModules (Request $request)
    {
-        $modules = Module::with('servers:id,name')->get();
+        $modules = Module::with('servers')->get();
 
         $result = [];
 
@@ -122,11 +130,19 @@ class ModuleController extends ApiController
 
 
             $serverIdsInModuleName = $module->servers->pluck('id')->toArray();
+            $serversData = $module->servers->map(function ($server) {
+                return [
+                    'id' => $server->id,
+                    'name' => $server->name,
+                    'is_down' => $server->is_down,
+                ];
+            });
 
             $result[] = [
                 'module_id' => $module->id,
                 'module_name' => $module->name,
                 'module_type' => $module->type,
+                'server_detaile' => $serversData,
                 'server_ids' => $serverIdsInModuleName
             ];
 
@@ -491,8 +507,17 @@ class ModuleController extends ApiController
 
             DB::commit();
 
+            $serversData = $module->servers->map(function ($server) {
+                return [
+                    'id' => $server->id,
+                    'name' => $server->name,
+                    'is_down' => $server->is_down,
+                ];
+            });
+
             return response()->json([
                 'config' => json_decode($currentConfig, true),
+                'serverDetaile' => $serversData,
                 'serverIdsInModuleName' => $serverIdsInModuleName
             ]);
 
@@ -554,23 +579,32 @@ class ModuleController extends ApiController
             foreach ($servers as $server) {
                 $module = $server->modules()->wherePivot('module_id', $request['module_id'])->first();
 
-                // dd($module->pivot->current_config);
                 $this->chackPermissionModule($module, $server);
 
                 $updatedModule = $this->updateModuleConfigInDatabase($module['id'], $request->input('data'), $server);
 
                 $yamlContent = $this->convertJsonToYaml($updatedModule);
 
-                // $this->sendConfigToServer( $request['username'], $request['password'],
-                    //  $updatedModule['name'], $yamlContent, $server);
+                $this->sendConfigToServer( $request['username'], $request['password'],
+                     $module['name'], $yamlContent, $server);
 
                 $this->logModuleUpdate($module, $server,  $request->input('data'));
             }
 
             DB::commit();
 
+
+            $serversData = $module->servers->map(function ($server) {
+                return [
+                    'id' => $server->id,
+                    'name' => $server->name,
+                    'is_down' => $server->is_down,
+                ];
+            });
+
             return response()->json([
                 'config' => json_decode($updatedModule, true),
+                'serverDetaile' => $serversData,
                 'serverIdsInModuleName' => $serverIdsInModuleName
             ]);
 
