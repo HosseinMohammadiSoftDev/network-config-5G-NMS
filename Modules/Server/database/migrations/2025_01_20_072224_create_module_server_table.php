@@ -25,9 +25,9 @@ return new class extends Migration
                     ->onUpdate('cascade');
 
                             // config module
-                    $table->json('initial_config')->nullable()->comment('config module');
-                    $table->json('previous_config')->nullable()->comment('config module');
-                    $table->json('current_config')->nullable()->comment('config module');
+                    $table->text('initial_config')->nullable()->comment('config module');
+                    $table->text('previous_config')->nullable()->comment('config module');
+                    $table->text('current_config')->nullable()->comment('config module');
 
 
             $table->timestamps();

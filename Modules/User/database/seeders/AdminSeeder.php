@@ -18,69 +18,34 @@ class AdminSeeder extends Seeder
 
         $permissions = [
                 // user
-            'user/read',
-            'user/create',
-            'user/update',
-            'user/delete',
+            'user',
 
                 // server
-            'server/read',
-            'server/create',
-            'server/update',
-            'server/delete',
-
-            'server/1',
-            'server/2',
-            'server/3',
-            'server/4',
-            'server/5',
-
-            'server/epc',
-            'server/5gc',
-
+            'server',
 
                 // module
-            'module/read',
-            'module/create',
-            'module/update',
-            'module/delete',
+            'module',
 
                 // on or off server
-            'server/off',
+            'server/status',
 
                 // log
             'log',
 
-
         ];
 
 
-        $restrictedPermissions = [
-            'server/1',
-            'server/2',
-            'server/3',
-            'server/4',
-            'server/5',
-            'server/epc',
-            'server/5gc',
-        ];
 
-
-            foreach ($permissions as $permission) {
+        foreach ($permissions as $permission)
             Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
-        }
+
 
 
         $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
 
         $allPermissions = Permission::all();
 
-         // Filter out restricted permissions
-         $filteredPermissions = $allPermissions->reject(function ($permission) use ($restrictedPermissions) {
-            return in_array($permission->name, $restrictedPermissions);
-        });
-
-        $adminRole->syncPermissions($filteredPermissions);
+        $adminRole->syncPermissions($allPermissions);
 
         $admin = User::firstOrCreate(
             ['auth_name' => 'ownerApp'],
@@ -99,14 +64,10 @@ class AdminSeeder extends Seeder
 
             // visitor
         $visitorRole = Role::firstOrCreate(['name' => 'visitor']);
-        $permissions = Permission::whereIn('name', ['server/read', 'module/read'])->get();
-        $visitorRole->syncPermissions($permissions);
 
             // expert
         $visitorRole = Role::firstOrCreate(['name' => 'expert']);
-        $permissions = Permission::whereIn('name', ['server/read', 'server/create','serve/update',
-                                        'server/delete', 'moduel/read', 'module/create', 'module/update',
-                                        'module/delte', 'server/off'])->get();
+        $permissions = Permission::whereIn('name', ['server', 'server', 'server/status'])->get();
         $visitorRole->syncPermissions($permissions);
 
 
