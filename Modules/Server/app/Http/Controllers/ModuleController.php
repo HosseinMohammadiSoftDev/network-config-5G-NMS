@@ -309,6 +309,8 @@ class ModuleController extends ApiController
             if (!$server)
                 $failedServers[] = $serverId;
 
+            if ($server && $server['is_down'] == 1)
+                return response()->json(['msg'=> 'server is off', 'server' => $server]);
 
                 $module->servers()->syncWithoutDetaching([
                     $serverId => [
@@ -318,8 +320,8 @@ class ModuleController extends ApiController
                 ]);
 
 
-            $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
-                $creadtional['name'], $yamlContent, $server);
+            // $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
+            //     $creadtional['name'], $yamlContent, $server);
 
 
         $module->servers()->syncWithoutDetaching([$serverId]);
@@ -374,6 +376,18 @@ class ModuleController extends ApiController
   {
     $validated = $request->validated();
     $module = Module::find($validated['module_id']);
+
+    foreach ($module->servers()->get() as $server)
+        if ($server['is_down'])
+            return response()->json([
+                'msg' => 'this server is off',
+                'data' => [
+                    'server_id' => $server['id'],
+                    'server_name' => $server['name'],
+                    'server_is_down' => $server['is_down'],
+                ]], 422);
+
+
 
     $module->delete();
 
@@ -524,39 +538,39 @@ class ModuleController extends ApiController
         $module = Module::find($request['module_id']);
 
             // validate
-        $serverIdsInModuleName = Module::where('name', $module['name'])->pluck('server_id')->toArray();
+        $serverIdsInModuleName = $module->servers->pluck('id');
         foreach ($serverIds as $serverId) {
-            if (!in_array($serverId, $serverIdsInModuleName))
+            if (!in_array($serverId, $serverIdsInModuleName->toArray()))
                 throw new Exception('An invalid server ID has been sent among the server IDs');
         }
 
-        $modules = $module->servers()
+        $servers = $module->servers()
             ->whereIn('server_id', $serverIds)
             ->get();
 
 
-        $firstModule = null;
         DB::beginTransaction();
         try {
-            foreach ($modules as $module) {
-                $server = $module->server;
+            foreach ($servers as $server) {
+                $module = $server->modules()->wherePivot('module_id', $request['module_id'])->first();
 
+                // dd($module->pivot->current_config);
                 $this->chackPermissionModule($module, $server);
 
                 $updatedModule = $this->updateModuleConfigInDatabase($module['id'], $request->input('data'), $server);
 
-                $yamlContent = $this->convertJsonToYaml($updatedModule->current_config);
+                $yamlContent = $this->convertJsonToYaml($updatedModule);
 
-                $this->sendConfigToServer( $request['username'], $request['password'],
-                     $updatedModule['name'], $yamlContent, $server);
+                // $this->sendConfigToServer( $request['username'], $request['password'],
+                    //  $updatedModule['name'], $yamlContent, $server);
 
-                $this->logModuleUpdate($updatedModule, $server,  $request->input('data'));
+                $this->logModuleUpdate($module, $server,  $request->input('data'));
             }
 
             DB::commit();
 
             return response()->json([
-                'config' => json_decode($updatedModule->current_config, true),
+                'config' => json_decode($updatedModule, true),
                 'serverIdsInModuleName' => $serverIdsInModuleName
             ]);
 
@@ -597,6 +611,7 @@ class ModuleController extends ApiController
             ], 500));
         }
     }
+
     private function sendConfigToServer($username, $password, $moduleName, $yamlContent, $server)
     {
         // is down server
@@ -624,6 +639,9 @@ class ModuleController extends ApiController
     }
     private function updateModuleConfigInDatabase($moduleId, $data, $server)
     {
+        if ($server['is_down'] == 1)
+            throw new HttpResponseException( response()->json(['msg' => 'server is off'], 403));
+
         $module = Module::find($moduleId);
 
         if (!$module)
@@ -705,6 +723,8 @@ class ModuleController extends ApiController
         $server = $module->servers()->find($request['server_id']);
         $pathConfig = $request['path_config'];
 
+        if ($server['is_down'] == 1)
+            return response()->json(['msg' => 'server is off'], 403);
 
         DB::beginTransaction();
 
@@ -876,6 +896,8 @@ class ModuleController extends ApiController
 
         $command = 'cat ' . $server['path_config'] . $module['name'] . '.yaml' ;
 
+        if ($server['is_down'] == 1)
+            return response()->json(['msg' => 'server is off'], 403);
 
         try {
                 // download file
