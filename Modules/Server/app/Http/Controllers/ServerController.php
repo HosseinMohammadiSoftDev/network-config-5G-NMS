@@ -314,7 +314,7 @@ class ServerController extends ApiController
 
             // permission
         $serverPermission = 'server/' . $server['name'];
-        if (!Auth::user()->hasPermissionTo($serverPermission) && Auth::user()->hasRole('admin'))
+        if (!Auth::user()->hasPermissionTo($serverPermission) && !Auth::user()->hasRole('admin'))
             throw new HttpException(403, 'You do not have the Permission to use this server.');
 
 

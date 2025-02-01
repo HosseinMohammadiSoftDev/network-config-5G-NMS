@@ -21,16 +21,25 @@ class AdminSeeder extends Seeder
             'user',
 
                 // server
-            'server',
+            'VM/read',
+            'VM/create',
+            'VM/update',
+            'VM/delete',
 
                 // module
-            'module',
+            'module/read',
+            'module/create',
+            'module/update',
+            'module/delete',
 
                 // on or off server
-            'server/status',
+            'VM/status',
 
                 // log
             'log',
+
+                // monitoring
+            'monitoring'
 
         ];
 
@@ -64,10 +73,26 @@ class AdminSeeder extends Seeder
 
             // visitor
         $visitorRole = Role::firstOrCreate(['name' => 'visitor']);
+        $permissions = Permission::whereIn('name', ['VM/read', 'module/read'])->get();
+        $visitorRole->syncPermissions($permissions);
+
 
             // expert
         $visitorRole = Role::firstOrCreate(['name' => 'expert']);
-        $permissions = Permission::whereIn('name', ['server', 'server', 'server/status'])->get();
+        $permissions = Permission::whereIn('name', [
+            'module/read',
+            'module/create',
+            'module/update',
+            'module/delete',
+
+            'VM/read',
+            'VM/create',
+            'VM/update',
+            'VM/delete',
+
+            'monitoring'
+
+            ])->get();
         $visitorRole->syncPermissions($permissions);
 
 
