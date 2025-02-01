@@ -5,10 +5,12 @@ namespace Modules\Server\Http\Controllers;
 use Spyc;
 use Exception;
 use Illuminate\Http\Request;
+use Modules\User\Models\Role;
 use Modules\User\Models\User;
 use Modules\Server\Models\Server;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Modules\User\Models\Permission;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Modules\Server\Helpers\SshHelper;
@@ -42,17 +44,12 @@ class ServerController extends ApiController
 
     public function createServer (CreateServerRequest $request)
     {
-        $credentials = $request->validated();
+        $server = Server::create($request()->validated());
 
-        $server = Server::create($credentials);
 
-        Log::channel('daily')->info('A new server has been created', [
-            'type-log' => 'server',
-            'route' => request()->fullUrl(),
-            'method' => 'createServer',
-            'user' => Auth::user(),
-            'server' => $server,
-        ]);
+        $permission = Permission::firstOrCreate(['name' => "server/{$server->name}", 'guard_name' => 'web']);
+
+        Role::whereIn('name', ['visitor', 'expert'])->get()->each(fn($role) => $role->givePermissionTo($permission));
 
 
         activity('create-server')
@@ -162,6 +159,7 @@ class ServerController extends ApiController
             }
 
             $server->delete();
+            Permission::where('name', "server/{$server->name}")->delete();
 
                 DB::commit();
         } catch (Exception $e) {
