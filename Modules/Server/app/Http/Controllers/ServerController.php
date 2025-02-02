@@ -76,14 +76,6 @@ class ServerController extends ApiController
 
         $server->update($credentials);
 
-        Log::channel('daily')->info('this server edited', [
-            'type-log' => 'server',
-            'route' => request()->fullUrl(),
-            'method' => 'editServer',
-            'user' => Auth::user(),
-            'server' => $server,
-        ]);
-
 
         activity('edit-server')
             ->causedBy(Auth::user())

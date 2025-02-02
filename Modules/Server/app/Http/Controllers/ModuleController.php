@@ -674,11 +674,10 @@ class ModuleController extends ApiController
                 throw new Exception('this server off');
 
         if (!$server['path_config'])
-            throw new Exception('You did not specify a configuration address config');
-
+            throw new HttpResponseException(response()->json(['msg' => 'You did not specify a configuration address config'], 422));
 
         if (!$server['path_run_config'])
-            throw new Exception('You did not specify a configuration address run config');
+            throw new HttpResponseException(response()->json(['msg' => 'You did not specify a configuration address run config'], 422));
 
 
         // $sshHelper = new sshHelper($server, $username, $password);

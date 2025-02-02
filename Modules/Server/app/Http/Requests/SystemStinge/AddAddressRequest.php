@@ -12,8 +12,8 @@ class AddAddressRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'zabbix_address' => ['required', 'string', 'min:1', 'max:512'],
-            'elk_address' => ['required', 'string','min:1','max:512'],
+            'zabbix_address' => ['nullable', 'string', 'min:1', 'max:512'],
+            'elk_address' => ['nullable', 'string','min:1','max:512'],
         ];
     }
 
