@@ -44,7 +44,7 @@ class ServerController extends ApiController
 
     public function createServer (CreateServerRequest $request)
     {
-        $server = Server::create($request()->validated());
+        $server = Server::create($request->validated());
 
 
         $permission = Permission::firstOrCreate(['name' => "server/{$server->name}", 'guard_name' => 'web']);

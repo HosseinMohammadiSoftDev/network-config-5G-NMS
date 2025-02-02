@@ -47,7 +47,7 @@ Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert']
 Route::middleware(['auth:sanctum', 'permission:module/read|role:admin|expert'])->post('export-module-file', [ModuleController::class, 'expertModuleFileIsServer']);
 
         // power on | off server
-Route::middleware(['auth:sanctum', 'permission:VM/status/status|role:admin|expert'])->post('server-stop', [ServerController::class, 'serverStop']);
+Route::middleware(['auth:sanctum', 'permission:VM/status|role:admin|expert'])->post('server-stop', [ServerController::class, 'serverStop']);
 Route::middleware(['auth:sanctum', 'permission:VM/status|role:admin|expert'])->post('server-start', [ServerController::class, 'ServerStart']);
 Route::middleware(['auth:sanctum', 'role:admin|expert|visitor'])->post('server-status', [ServerController::class, 'serverStatus']);
 
