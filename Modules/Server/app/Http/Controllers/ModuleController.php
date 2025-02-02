@@ -952,7 +952,8 @@ class ModuleController extends ApiController
     {
         $validation = $request->validated();
         $module = Module::find($validation['module_id']);
-        $server = Server::find($module['server_id']);
+        $server = Server::find($validation['server_id']);
+
 
         $command = 'cat ' . $server['path_config'] . $module['name'] . '.yaml' ;
 
