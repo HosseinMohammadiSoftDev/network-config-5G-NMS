@@ -13,10 +13,6 @@ class deleteModuleRequest extends FormRequest
     {
         return [
             'module_id' => ['required', 'integer', 'exists:modules,id'],
-
-                //  ssh connection
-            'username' =>  ['required', 'string', 'max:256'],
-            'password' => ['required', 'string']
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace Modules\Server\Http\Requests\Modules;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateConfigModulerequest extends FormRequest
@@ -15,8 +16,21 @@ class UpdateConfigModulerequest extends FormRequest
             'module_id' => ['required', 'exists:modules,id', 'integer'],
             'server_id' => ['required', 'integer', 'exists:servers,id'],
             'data' => ['required', 'array'],
+
             'servers' => ['nullable', 'array'],
-            'servers.*' => ['required', 'integer', 'exists:servers,id'],
+            'servers.*' => ['required', 'integer', 'exists:servers,id',  function ($attribute, $value, $fail) {
+                $server = DB::table('servers')->where('id', $value)->first();
+                    if (!$server) {
+                        $fail("The selected server ID ($value) is invalid.");
+                        return;
+                    }
+
+                    if (empty($server->path_config) || empty($server->path_run_config)) {
+                        $fail("The selected server ($value) is missing required configuration paths (path_config and path_run_config).");
+                        return;
+                    }
+                }
+            ],
 
             // 'data.*' => ['required', 'string'],
             'username' => ['required', 'string'],

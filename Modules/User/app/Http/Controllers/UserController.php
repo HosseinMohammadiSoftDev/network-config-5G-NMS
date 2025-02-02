@@ -85,8 +85,11 @@ class UserController extends ApiController
             if ($role)
                 $user->assignRole($role);
 
-            if ($permissionName)
-                $user->givePermissionTo($permissionName);
+            if (!empty($permissionName) && is_array($permissionName)) {
+                foreach ($permissionName as $permission) {
+                    $user->givePermissionTo($permission);
+                }
+            }
 
 
                 activity('add-member')
@@ -101,7 +104,7 @@ class UserController extends ApiController
                 ->log('The admin added the user to the application');
 
                 DB::commit();
-            return $this->respondCreated('The user was successfully created', ['user' => $user,'role' => $role ]);
+            return $this->respondCreated('The user was successfully created', ['user' => $user,'role' => $role, 'permission_name' => $permissionName ]);
 
         } catch (\Exception $e) {
                 DB::rollBack();

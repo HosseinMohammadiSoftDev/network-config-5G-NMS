@@ -5,10 +5,12 @@ namespace Modules\Server\Http\Controllers;
 use Spyc;
 use Exception;
 use Illuminate\Http\Request;
+use Modules\User\Models\Role;
 use Modules\User\Models\User;
 use Modules\Server\Models\Server;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Modules\User\Models\Permission;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Modules\Server\Helpers\SshHelper;
@@ -18,6 +20,7 @@ use App\Http\Controllers\Contract\ApiController;
 use Modules\Server\Http\Requests\TestConnectionRequest;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Modules\Server\Http\Requests\Server\EditServerReqest;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Modules\Server\Http\Requests\Server\DeleteServerReqest;
 use Modules\Server\Http\Requests\Server\CreateServerRequest;
 use Modules\Server\Http\Requests\Server\UploadModuleRequest;
@@ -41,17 +44,12 @@ class ServerController extends ApiController
 
     public function createServer (CreateServerRequest $request)
     {
-        $credentials = $request->validated();
+        $server = Server::create($request->validated());
 
-        $server = Server::create($credentials);
 
-        Log::channel('daily')->info('A new server has been created', [
-            'type-log' => 'server',
-            'route' => request()->fullUrl(),
-            'method' => 'createServer',
-            'user' => Auth::user(),
-            'server' => $server,
-        ]);
+        $permission = Permission::firstOrCreate(['name' => "server/{$server->name}", 'guard_name' => 'web']);
+
+        Role::whereIn('name', ['visitor', 'expert'])->get()->each(fn($role) => $role->givePermissionTo($permission));
 
 
         activity('create-server')
@@ -77,14 +75,6 @@ class ServerController extends ApiController
         $server = Server::find($credentials['server_id']);
 
         $server->update($credentials);
-
-        Log::channel('daily')->info('this server edited', [
-            'type-log' => 'server',
-            'route' => request()->fullUrl(),
-            'method' => 'editServer',
-            'user' => Auth::user(),
-            'server' => $server,
-        ]);
 
 
         activity('edit-server')
@@ -161,6 +151,7 @@ class ServerController extends ApiController
             }
 
             $server->delete();
+            Permission::where('name', "server/{$server->name}")->delete();
 
                 DB::commit();
         } catch (Exception $e) {
@@ -310,6 +301,11 @@ class ServerController extends ApiController
 
         $creadtional = $request->validated();
         $server = Server::find($creadtional['server_id']);
+
+            // permission
+        $serverPermission = 'server/' . $server['name'];
+        if (!Auth::user()->hasPermissionTo($serverPermission) && !Auth::user()->hasRole('admin'))
+            throw new HttpException(403, 'You do not have the Permission to use this server.');
 
 
                 // is stop server

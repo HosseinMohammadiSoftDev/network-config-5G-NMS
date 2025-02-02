@@ -15,10 +15,12 @@ use Modules\Server\Models\Server;
 use PHPUnit\Event\Code\Throwable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Modules\User\Models\Permission;
 use App\Http\Controllers\Controller;
 use function Laravel\Prompts\select;
 use Illuminate\Support\Facades\Auth;
 use Modules\Server\Helpers\SshHelper;
+use PhpParser\Node\Expr\Cast\Object_;
 use Illuminate\Support\Facades\Storage;
 use Modules\Server\Helpers\JsonUpdater;
 use Spatie\Activitylog\Models\Activity;
@@ -34,7 +36,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Modules\Server\Http\Requests\Modules\ShowAllModules;
 use PharIo\Version\UnsupportedVersionConstraintException;
 use Modules\Server\Http\Requests\Server\UploadModuleRequest;
-use Modules\Server\Http\Requests\Modules\DeleteModuleRequest;
+use Modules\Server\Http\Requests\Modules\deleteModuleRequest;
 use Modules\Server\Http\Requests\Modules\CreateModulesRequest;
 use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
 use Modules\Server\Http\Requests\Undo\UndoConfigModulesRequest;
@@ -44,7 +46,6 @@ use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
 use Modules\Server\Http\Requests\Module\ExpertModuleFileIsServerRequset;
 use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
-use PhpParser\Node\Expr\Cast\Object_;
 
 class ModuleController extends ApiController
 {
@@ -56,24 +57,37 @@ class ModuleController extends ApiController
         // show Config in database
   public function showConfigModule ($serverId, $moduleId)
   {
-        $module = Module::where('id', $moduleId)->whereHas('servers', function ($query) use ($serverId) {
+        $module = Module::where('id', $moduleId)
+        ->whereHas('servers', function ($query) use ($serverId) {
             $query->where('server_id', $serverId);
-        })->first();
+        })
+        ->with(['servers' => function ($query) {
+            $query->select('servers.id', 'servers.name', 'servers.is_down');
+        }])
+        ->first();
 
         if (!$module)
             throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.']));
 
 
 
-        $serverIdsInModuleName = $module->servers->pluck('id');
+        $serverIdsInModuleName = $module->servers->pluck('pivot.server_id');
+        $serversData = $module->servers->map(function ($server) {
+            return [
+                'id' => $server->id,
+                'name' => $server->name,
+                'is_down' => $server->is_down,
+            ];
+        });
 
-        $configData = [];
-        foreach ($module->servers as $server)
-            $configData[] = json_decode($server->pivot->current_config, true);
+        $currentConfig = $module->servers
+        ->where('pivot.server_id', $serverId)
+        ->first()?->pivot->current_config;
 
 
         return response()->json([
-            'config' => $configData,
+            'config' => json_decode($currentConfig),
+            'serversDetails' => $serversData,
             'serversIdInModuleName' => $serverIdsInModuleName
         ]);
   }
@@ -107,28 +121,44 @@ class ModuleController extends ApiController
 
   public function ShowAllModules (Request $request)
    {
-        $modules = Module::with('servers:id,name')->get();
+        $user = Auth::user();
 
-        $result = [];
+        if ($user->hasRole('admin')) {
+            return response()->json([
+                'msg' => 'The list of modules was successfully retrieved',
+                'module' => $this->formatModules(Module::with('servers')->get())
+            ]);
+        }
 
-        foreach ($modules as $module) {
-            if (in_array($module->name, array_column($result, 'module_name')))
-                continue;
+        $userPermissions = $user->getAllPermissions()->pluck('name')->toArray();
 
+        $modules = Module::with(['servers' => function ($query) use ($userPermissions) {
+            $query->whereIn('name', collect($userPermissions)->map(function ($permission) {
+                return str_replace('server/', '', $permission);
+            })->toArray());
+        }])->get();
 
-            $serverIdsInModuleName = $module->servers->pluck('id')->toArray();
+        $filteredModules = $modules->filter(fn($module) => $module->servers->isNotEmpty());
 
-            $result[] = [
+        return response()->json(['msg' => 'The list of modules was successfully retrieved','module' => $this->formatModules($filteredModules)]);
+  }
+  private function formatModules($modules)
+  {
+        return $modules->map(function ($module) {
+            return [
                 'module_id' => $module->id,
                 'module_name' => $module->name,
                 'module_type' => $module->type,
-                'server_ids' => $serverIdsInModuleName
+                'server_detaile' => $module->servers->map(fn($server) => [
+                    'id' => $server->id,
+                    'name' => $server->name,
+                    'is_down' => $server->is_down,
+                ]),
+                'server_ids' => $module->servers->pluck('id')->toArray(),
             ];
-
-        }
-
-        return response()->json(['msg' => 'The list of modules was successfully retrieved', 'module' => $result]);
+        });
   }
+
 
 
         // convet format
@@ -278,8 +308,9 @@ class ModuleController extends ApiController
     $serverIds = $creadtional['server_id'];
 
     $jsonContent = $this->uploadModuleFile($request->file('config_file'));
-    $yamlContent = $this->convertJsonToYaml($jsonContent);
+    $jsonContent = json_encode(json_decode($jsonContent, true), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
+    $yamlContent = $this->convertJsonToYaml($jsonContent);
 
     if (is_array($jsonContent) || is_object($jsonContent))
         return $jsonContent;
@@ -289,6 +320,7 @@ class ModuleController extends ApiController
 
 
     try {
+        DB::beginTransaction();
 
         $module = Module::create([
             'name' => $creadtional['name'],
@@ -298,10 +330,14 @@ class ModuleController extends ApiController
 
         foreach ($serverIds as $serverId) {
             $server = Server::find($serverId);
+                // check permission
+            $this->chackPermissionModule($server);
 
             if (!$server)
                 $failedServers[] = $serverId;
 
+            if ($server && $server['is_down'] == 1)
+                return response()->json(['msg'=> 'server is off', 'server' => $server]);
 
                 $module->servers()->syncWithoutDetaching([
                     $serverId => [
@@ -352,51 +388,77 @@ class ModuleController extends ApiController
         if (!empty($failedServers))
             return response()->json(['msg' => 'An issue occurred while adding the module to the server', 'server-faild' => $failedServers]);
 
+        DB::commit();
 
         return $this->respondCreated('The module was successfully created on the servers',  [
             'created_modules' => $createdModules
         ]);
+
     } catch (Exception $e) {
+        DB::rollBack();
         return response()->json(['error' => $e->getMessage()],);
     }
   }
+  public function deleteModule (deleteModuleRequest $request)
+  {
+    $validated = $request->validated();
+    $module = Module::find($validated['module_id']);
+
+    $serverModule =  $module->servers()->get();
+    if (!$serverModule) {
+        $module->delete();
+        return response()->json(['msg' => 'Module Deleted', 'module' => $module]);
+    }
+
+
+    foreach ($serverModule as $server)
+        $this->chackPermissionModule($server);
+
+
+    $module->delete();
+
+    return response()->json(['msg' => 'Module Deleted', 'module' => $module]);
+  }
+
 
 
         // update Config Module
-    public function chackPermissionModule($module, $server)
+    public function createAndDeletePermission ()
     {
-        $user = Auth::user();
+        $servers = Server::pluck('name')->toArray();
 
+        $existingPermissions = Permission::where('name', 'like', 'server/%')->pluck('name')->toArray();
+
+        $currentServerPermissions = array_map(fn($server) => "server/{$server}", $servers);
+
+        $newPermissions = array_diff($currentServerPermissions, $existingPermissions);
+        foreach ($newPermissions as $newPermission)
+            Permission::create(['name' => $newPermission, 'guard_name' => 'web']);
+
+
+        $removedPermissions = array_diff($existingPermissions, $currentServerPermissions);
+        foreach ($removedPermissions as $removedPermission)
+            Permission::where('name', $removedPermission)->delete();
+
+    }
+    public function chackPermissionModule($server)
+    {
+        $this->createAndDeletePermission();
+
+        $user = Auth::user();
         if ($user->hasRole('admin'))
             return true;
 
-        $moduleTypePermissions = [
-            'Epc' => 'server/epc',
-            '5gc' => 'server/5gc',
-        ];
 
-        $serverPermissions = [
-            1 => 'server/1',
-            2 => 'server/2',
-            3 => 'server/3',
-            4 => 'server/4',
-            5 => 'server/5',
-        ];
+        $serverPermission = 'server/' . $server['name'];
+        if ($user->hasPermissionTo($serverPermission))
+            return true;
 
-        $moduleType = $module['type'];
-        $serverId = $server['id'];
+        throw new HttpResponseException(response()->json([
+            'msg' => 'You do not have permission to use this server.',
+            'your-permissions' => $user->getAllPermissions()->pluck('name')
+        ], 403));
 
-        if (isset($moduleTypePermissions[$moduleType]) && isset($serverPermissions[$serverId])) {
-            $hasModuleTypePermission = $user->hasPermissionTo($moduleTypePermissions[$moduleType]);
-            $hasServerPermission = $user->hasPermissionTo($serverPermissions[$serverId]);
-
-            if ($hasModuleTypePermission && $hasServerPermission) {
-                return true;
-            }
-        }
-
-        throw new HttpResponseException(response()->json(['msg' => 'You do not have the required access to use this module and server.',
-                'yer-permission' => $user->getAllPermissions()->pluck('name')], 403));
     }
     private function logModuleUpdate($module, $server, $data)
     {
@@ -428,9 +490,13 @@ class ModuleController extends ApiController
     }
     private function updateSingleModule ($request)
     {
-        $module = Module::where('id', $request['module_id'])->whereHas('servers', function ($query) use ($request) {
-            $query->where('server_id', $request['server_id']);
-        })->first();
+        $server = Server::find($request['server_id']);
+
+        $module = Module::where('id', $request['module_id'])
+            ->whereHas('servers', function ($query) use ($server) {
+                $query->where('server_id', $server->id);
+            })
+        ->first();
 
         if (!$module)
             throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.']));
@@ -443,27 +509,38 @@ class ModuleController extends ApiController
 
         try {
 
-            foreach ($module->servers as $server)
+            foreach ($module->servers as $moduleServer)
             {
-                $this->chackPermissionModule($module, $server);
+                $this->chackPermissionModule($moduleServer);
 
-                $currentConfig = $this->updateModuleConfigInDatabase($module['id'], $data, $server);
+                $currentConfig = $this->updateModuleConfigInDatabase($module['id'], $data, $moduleServer);
 
                 $yamlContent = $this->convertJsonToYaml($currentConfig);
 
                 $this->sendConfigToServer($request['username'], $request['password'],
-                            $module['name'], $yamlContent, $server);
+                            $module['name'], $yamlContent, $moduleServer);
 
                 $this->logModuleUpdate($module, $server, $data);
             }
 
             DB::commit();
 
+            $serversData = $module->servers->map(function ($server) {
+                return [
+                    'id' => $server->id,
+                    'name' => $server->name,
+                    'is_down' => $server->is_down,
+                ];
+            });
+
             return response()->json([
                 'config' => json_decode($currentConfig, true),
+                'serverDetaile' => $serversData,
                 'serverIdsInModuleName' => $serverIdsInModuleName
             ]);
 
+        } catch (HttpResponseException $e) {
+            throw $e;
         } catch (InvalidArgumentException $e) {
                 DB::rollBack();
 
@@ -506,42 +583,53 @@ class ModuleController extends ApiController
         $module = Module::find($request['module_id']);
 
             // validate
-        $serverIdsInModuleName = Module::where('name', $module['name'])->pluck('server_id')->toArray();
+        $serverIdsInModuleName = $module->servers->pluck('id');
         foreach ($serverIds as $serverId) {
-            if (!in_array($serverId, $serverIdsInModuleName))
+            if (!in_array($serverId, $serverIdsInModuleName->toArray()))
                 throw new Exception('An invalid server ID has been sent among the server IDs');
         }
 
-        $modules = $module->servers()
+        $servers = $module->servers()
             ->whereIn('server_id', $serverIds)
             ->get();
 
 
-        $firstModule = null;
         DB::beginTransaction();
         try {
-            foreach ($modules as $module) {
-                $server = $module->server;
+            foreach ($servers as $server) {
+                $module = $server->modules()->wherePivot('module_id', $request['module_id'])->first();
 
                 $this->chackPermissionModule($module, $server);
 
-                $updatedModule = $this->updateModuleConfigInDatabase($module['id'], $request->input('data'));
+                $updatedModule = $this->updateModuleConfigInDatabase($module['id'], $request->input('data'), $server);
 
-                $yamlContent = $this->convertJsonToYaml($updatedModule->current_config);
+                $yamlContent = $this->convertJsonToYaml($updatedModule);
 
                 $this->sendConfigToServer( $request['username'], $request['password'],
-                     $updatedModule['name'], $yamlContent, $server);
+                     $module['name'], $yamlContent, $server);
 
-                $this->logModuleUpdate($updatedModule, $server,  $request->input('data'));
+                $this->logModuleUpdate($module, $server,  $request->input('data'));
             }
 
             DB::commit();
 
+
+            $serversData = $module->servers->map(function ($server) {
+                return [
+                    'id' => $server->id,
+                    'name' => $server->name,
+                    'is_down' => $server->is_down,
+                ];
+            });
+
             return response()->json([
-                'config' => json_decode($updatedModule->current_config, true),
+                'config' => json_decode($updatedModule, true),
+                'serverDetaile' => $serversData,
                 'serverIdsInModuleName' => $serverIdsInModuleName
             ]);
 
+        } catch (HttpResponseException $e) {
+            throw $e;
         } catch (InvalidArgumentException $e) {
                 DB::rollBack();
 
@@ -586,11 +674,10 @@ class ModuleController extends ApiController
                 throw new Exception('this server off');
 
         if (!$server['path_config'])
-            throw new Exception('You did not specify a configuration address config');
-
+            throw new HttpResponseException(response()->json(['msg' => 'You did not specify a configuration address config'], 422));
 
         if (!$server['path_run_config'])
-            throw new Exception('You did not specify a configuration address run config');
+            throw new HttpResponseException(response()->json(['msg' => 'You did not specify a configuration address run config'], 422));
 
 
         // $sshHelper = new sshHelper($server, $username, $password);
@@ -606,6 +693,9 @@ class ModuleController extends ApiController
     }
     private function updateModuleConfigInDatabase($moduleId, $data, $server)
     {
+        if ($server['is_down'] == 1)
+            throw new HttpResponseException( response()->json(['msg' => 'server is off'], 403));
+
         $module = Module::find($moduleId);
 
         if (!$module)
@@ -687,6 +777,8 @@ class ModuleController extends ApiController
         $server = $module->servers()->find($request['server_id']);
         $pathConfig = $request['path_config'];
 
+        if ($server['is_down'] == 1)
+            return response()->json(['msg' => 'server is off'], 403);
 
         DB::beginTransaction();
 
@@ -783,6 +875,7 @@ class ModuleController extends ApiController
                      $module['name'], null, $server);
 
                 $module->servers()->detach($serverId);
+
         }
     }
     private function syncModuleWithServers(Module $module, array $serverIds, $request)
@@ -810,6 +903,12 @@ class ModuleController extends ApiController
             throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.']));        $serverIds = $validated['server_ids'] ?? [];
 
         $configFile = $request->file('config_file');
+
+            // check permissions
+        foreach ($serverIds as $serverId) {
+            $server = Server::find($serverId);
+            $this->chackPermissionModule($server);
+        }
 
         if ($serverIds) {
 
@@ -853,10 +952,13 @@ class ModuleController extends ApiController
     {
         $validation = $request->validated();
         $module = Module::find($validation['module_id']);
-        $server = Server::find($module['server_id']);
+        $server = Server::find($validation['server_id']);
+
 
         $command = 'cat ' . $server['path_config'] . $module['name'] . '.yaml' ;
 
+        if ($server['is_down'] == 1)
+            return response()->json(['msg' => 'server is off'], 403);
 
         try {
                 // download file
