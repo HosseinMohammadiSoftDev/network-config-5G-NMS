@@ -30,7 +30,7 @@ return new class extends Migration
                     $table->text('current_config')->nullable()->comment('config module');
 
 
-            $table->timestamps();
+            // $table->timestamps();
         });
     }
 

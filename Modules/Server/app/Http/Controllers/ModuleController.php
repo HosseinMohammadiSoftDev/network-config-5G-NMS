@@ -187,6 +187,7 @@ class ModuleController extends ApiController
   }
   private function convertNullKeysToComments(array $array)
   {
+    // dd($array);
       foreach ($array as $key => $value) {
           if (is_array($value)) {
               $array[$key] = $this->convertNullKeysToComments($value);
@@ -709,21 +710,21 @@ class ModuleController extends ApiController
 
         $serverModel = $module->servers()->find($server['id']);
 
-        $moduleConfig = json_decode($serverModel->pivot['current_config'], true);
+        // $moduleConfig = json_decode($serverModel->pivot['current_config'], true);
         $moduleCurrentConfig = $serverModel->pivot['current_config'];
         $serverModel->pivot['previous_config'] = $moduleCurrentConfig;
 
-        foreach ($data as $key => $value)
-            $moduleConfig = JsonUpdater::updateJsonValue($moduleConfig, $key, $value);
+        // foreach ($data as $key => $value)
+        //     $moduleConfig = JsonUpdater::updateJsonValue($moduleConfig, $key, $value);
 
 
         $module->servers()->updateExistingPivot($server->id, [
-            'current_config' => json_encode($moduleConfig, JSON_PRETTY_PRINT),
+            'current_config' => json_encode($data, JSON_PRETTY_PRINT),
             'previous_config' => $moduleCurrentConfig
         ]);
 
 
-        return json_encode($moduleConfig, true);
+        return json_encode($data, true);
     }
     public function updateConfigModule(UpdateConfigModuleRequest $request)
     {

@@ -19,8 +19,6 @@ class Server extends Model
     protected $fillable = [
         'name',
         'ip',
-        'zabbix_ip',
-        'elk_ip',
         'path_config',
         'path_run_config',
         'is_down',

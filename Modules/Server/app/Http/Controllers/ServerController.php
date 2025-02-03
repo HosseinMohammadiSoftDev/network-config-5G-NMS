@@ -46,27 +46,39 @@ class ServerController extends ApiController
     {
         $server = Server::create($request->validated());
 
+        try {
+            DB::beginTransaction();
 
-        $permission = Permission::firstOrCreate(['name' => "server/{$server->name}", 'guard_name' => 'web']);
+            $permission = Permission::firstOrCreate(['name' => "server/{$server->name}", 'guard_name' => 'web']);
 
-        Role::whereIn('name', ['visitor', 'expert'])->get()->each(fn($role) => $role->givePermissionTo($permission));
+            $roles = Role::whereIn('name', ['visitor', 'expert'])->get();
+            foreach ($roles as $role) {
+                $role->givePermissionTo($permission);
+            }
+                // delete cache permission
+            app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
+            activity('create-server')
+                ->causedBy(Auth::user())
+                ->performedOn($server)
+                ->event('create-server')
+                ->withProperties([
+                    'type-log' => 'server',
+                    'route' => request()->fullUrl(),
+                    'method' => 'createServer',
+                    'server' => $server,
+                    'user' => Auth::user(),
+                ])
+            ->log('A new server has been created'
+            );
 
-        activity('create-server')
-            ->causedBy(Auth::user())
-            ->performedOn($server)
-            ->event('create-server')
-            ->withProperties([
-                'type-log' => 'server',
-                'route' => request()->fullUrl(),
-                'method' => 'createServer',
-                'server' => $server,
-                'user' => Auth::user(),
-            ])
-        ->log('A new server has been created'
-        );
+            DB::commit();
+            return $this->respondCreated('A new server has been created', $server);
 
-        return $this->respondCreated('A new server has been created', $server);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['msg' => $e->getMessage()],422);
+        }
     }
     public function editServer (EditServerReqest $request)
     {
@@ -304,8 +316,8 @@ class ServerController extends ApiController
 
             // permission
         $serverPermission = 'server/' . $server['name'];
-        if (!Auth::user()->hasPermissionTo($serverPermission) && !Auth::user()->hasRole('admin'))
-            throw new HttpException(403, 'You do not have the Permission to use this server.');
+        // if (!Auth::user()->hasPermissionTo($serverPermission) && !Auth::user()->hasRole('admin'))
+        //     throw new HttpException(403, 'You do not have the Permission to use this server.');
 
 
                 // is stop server
