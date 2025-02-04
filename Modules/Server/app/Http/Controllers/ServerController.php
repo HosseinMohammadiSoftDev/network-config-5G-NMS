@@ -53,8 +53,11 @@ class ServerController extends ApiController
 
             $roles = Role::whereIn('name', ['visitor', 'expert'])->get();
             foreach ($roles as $role) {
-                $role->givePermissionTo($permission);
-            }
+                $users = $role->users;
+                foreach ($users as $user)
+                    $user->givePermissionTo($permission);
+            };
+
                 // delete cache permission
             app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
