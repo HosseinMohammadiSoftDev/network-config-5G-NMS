@@ -86,21 +86,21 @@ class UserController extends ApiController
         $user->revokePermissionTo($rolePermissions);
         $user->syncPermissions([]);
 
-        if (!empty($permissionNames) && is_array($permissionNames))
+        if (!empty($permissionNames) && is_array($permissionNames)) {
             $user->givePermissionTo($permissionNames);
 
-        $vmCrudPermissions = ['VM/create', 'VM/delete', 'VM/update'];
-        $moduleCrudPermissions = ['module/create', 'module/delete', 'module/update'];
+            $vmCrudPermissions = ['VM/create', 'VM/delete', 'VM/update'];
+            $moduleCrudPermissions = ['module/create', 'module/delete', 'module/update'];
 
-        $hasVmCrud = !empty(array_intersect($vmCrudPermissions, $permissionNames));
-        $hasModuleCrud = !empty(array_intersect($moduleCrudPermissions, $permissionNames));
+            $hasVmCrud = !empty(array_intersect($vmCrudPermissions, $permissionNames));
+            $hasModuleCrud = !empty(array_intersect($moduleCrudPermissions, $permissionNames));
 
-        if ($hasVmCrud)
-            $user->givePermissionTo('VM/read');
+            if ($hasVmCrud)
+                $user->givePermissionTo('VM/read');
 
-        if ($hasModuleCrud)
-            $user->givePermissionTo('module/read');
-
+            if ($hasModuleCrud)
+                $user->givePermissionTo('module/read');
+        }
     }
     public function addMember (AddMemberRequest $request)
     {
@@ -149,11 +149,13 @@ class UserController extends ApiController
             return $this->respondInternalError('An issue occurred during the process');
         }
     }
-    public function resetPsswordAndAuthName (resetPasswordRequest $request)
+    public function editMember (resetPasswordRequest $request)
     {
         $credentials = $request->validated();
 
         $user = User::find($credentials['user_id']);
+        $role = $credentials['role'] ?? null;
+        $permissionName = $credentials['permission_name'] ?? null;
 
         if ($user->hasRole('admin') && !Auth::user()->hasRole('admin'))
             return response()->json(['msg' => 'You cannot change the admin username and password'], 403);
@@ -161,6 +163,8 @@ class UserController extends ApiController
 
         try {
                 DB::beginTransaction();
+
+            $this->assignRoleAndPermissions($user, $role, $permissionName);
 
             $user->update([
                 'auth_name' => $credentials['auth_name'] ?? $user['auth_name'],

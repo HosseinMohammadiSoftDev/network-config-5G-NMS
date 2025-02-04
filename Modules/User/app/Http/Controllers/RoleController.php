@@ -22,19 +22,16 @@ class RoleController extends ApiController
 
         $roles = [
             [
-                'id' => 1,
                 'name' => 'admin',
                 'permissions' => Permission::pluck('name')->toArray(),
             ],
             [
-                'id' => 2,
                 'permissions' => array_merge(
                     ['VM/read', 'module/read'],
                     $serverPermissions
                 ),
             ],
             [
-                'id' => 3,
                 'name' => 'expert',
                 'permissions' => array_merge(
                     [

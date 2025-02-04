@@ -26,7 +26,7 @@ Route::middleware(['auth:sanctum', 'permission:user|role:admin'])->get('show-all
 Route::middleware(['auth:sanctum', 'permission:user|role:admin'])->get('get-deleted-accounts', [UserController::class, 'getDeletedAccounts']);
 
 Route::middleware(['auth:sanctum', 'permission:user|role:admin'])->post('add-member', [UserController::class, 'addMember']);
-Route::middleware(['auth:sanctum', 'permission:user|role:admin'])->put('reset-password-and-auth-name', [UserController::class, 'resetPsswordAndAuthName']);
+Route::middleware(['auth:sanctum', 'permission:user|role:admin'])->put('edit_member', [UserController::class, 'editMember']);
 Route::middleware(['auth:sanctum', 'permission:user|role:admin'])->delete('delete-member-Account/{UserID}', [UserController::class, 'deleteAccountMember']);
 
 Route::middleware(['auth:sanctum', 'role:admin|visitor|expert'])->get('show-all-roles', [RoleController::class, 'showAllRolesPermissions']);
