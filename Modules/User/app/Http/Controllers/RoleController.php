@@ -13,7 +13,39 @@ class RoleController extends ApiController
 {
     public function showAllRolesPermissions (Request $request)
     {
-        $roles = Role::with('permissions:name')->get();
+            // old code And read defalte permission assign to role
+        // $roles = Role::with('permissions:name')->get();
+
+
+            // now code (hard code in clear defalte permssion this role)
+        $serverPermissions = Permission::where('name', 'like', 'server/%')->pluck('name')->toArray();
+
+        $roles = [
+            [
+                'id' => 1,
+                'name' => 'admin',
+                'permissions' => Permission::pluck('name')->toArray(),
+            ],
+            [
+                'id' => 2,
+                'permissions' => array_merge(
+                    ['VM/read', 'module/read'],
+                    $serverPermissions
+                ),
+            ],
+            [
+                'id' => 3,
+                'name' => 'expert',
+                'permissions' => array_merge(
+                    [
+                        'VM/read', 'VM/create', 'VM/update', 'VM/delete',
+                        'module/read', 'module/create', 'module/update', 'module/delete',
+                        'monitoring'
+                    ],
+                    $serverPermissions
+                ),
+            ]
+        ];
 
         return $this->respondSuccess('List of all roles with access', $roles);
     }

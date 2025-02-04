@@ -75,20 +75,19 @@ class UserController extends ApiController
 
     private function assignRoleAndPermissions(User $user, $role, $permissionNames)
     {
-        if ($role) {
-            $rolePermissions = Permission::whereHas('roles', function ($query) use ($role) {
-                $query->where('name', $role);
-            })->pluck('name')->toArray();
 
-            $user->revokePermissionTo($rolePermissions);
-            $user->syncPermissions([]);
-        }
+        $user->assignRole($role);
 
-        if (!empty($permissionNames) && is_array($permissionNames)) {
-            foreach ($permissionNames as $permission)
-                $user->givePermissionTo($permission);
+        $rolePermissions = Permission::whereHas('roles', function ($query) use ($role) {
+            $query->where('name', $role);
+        })->pluck('name')->toArray();
 
-        }
+
+        $user->revokePermissionTo($rolePermissions);
+        $user->syncPermissions([]);
+
+        if (!empty($permissionNames) && is_array($permissionNames))
+            $user->givePermissionTo($permissionNames);
 
         $vmCrudPermissions = ['VM/create', 'VM/delete', 'VM/update'];
         $moduleCrudPermissions = ['module/create', 'module/delete', 'module/update'];
