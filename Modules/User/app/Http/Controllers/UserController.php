@@ -2,16 +2,17 @@
 
 namespace Modules\User\Http\Controllers;
 
-use App\Http\Controllers\Contract\ApiController;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Modules\User\Models\User;
+use function PHPSTORM_META\map;
 use Illuminate\Support\Facades\DB;
+use Modules\User\Models\Permission;
+use Illuminate\Support\Facades\Auth;
+use Modules\User\Services\PaginationService;
+use App\Http\Controllers\Contract\ApiController;
+
 use Modules\User\Http\Requests\User\AddMemberRequest;
 use Modules\User\Http\Requests\User\resetPasswordRequest;
-use Modules\User\Models\User;
-use Modules\User\Services\PaginationService;
-
-use function PHPSTORM_META\map;
 
 class UserController extends ApiController
 {
@@ -71,6 +72,37 @@ class UserController extends ApiController
     }
 
 
+
+    private function assignRoleAndPermissions(User $user, $role, $permissionNames)
+    {
+        if ($role) {
+            $rolePermissions = Permission::whereHas('roles', function ($query) use ($role) {
+                $query->where('name', $role);
+            })->pluck('name')->toArray();
+
+            $user->revokePermissionTo($rolePermissions);
+            $user->syncPermissions([]);
+        }
+
+        if (!empty($permissionNames) && is_array($permissionNames)) {
+            foreach ($permissionNames as $permission)
+                $user->givePermissionTo($permission);
+
+        }
+
+        $vmCrudPermissions = ['VM/create', 'VM/delete', 'VM/update'];
+        $moduleCrudPermissions = ['module/create', 'module/delete', 'module/update'];
+
+        $hasVmCrud = !empty(array_intersect($vmCrudPermissions, $permissionNames));
+        $hasModuleCrud = !empty(array_intersect($moduleCrudPermissions, $permissionNames));
+
+        if ($hasVmCrud)
+            $user->givePermissionTo('VM/read');
+
+        if ($hasModuleCrud)
+            $user->givePermissionTo('module/read');
+
+    }
     public function addMember (AddMemberRequest $request)
     {
         $credentials = $request->validated();
@@ -82,14 +114,7 @@ class UserController extends ApiController
             $role = $credentials['role'] ?? null;
             $permissionName = $credentials['permission_name'] ?? null;
 
-            if ($role)
-                $user->assignRole($role);
-
-            if (!empty($permissionName) && is_array($permissionName)) {
-                foreach ($permissionName as $permission) {
-                    $user->givePermissionTo($permission);
-                }
-            }
+            $this->assignRoleAndPermissions($user, $role, $permissionName);
 
 
                 activity('add-member')
@@ -104,6 +129,8 @@ class UserController extends ApiController
                 ->log('The admin added the user to the application');
 
                 DB::commit();
+
+
             return $this->respondCreated('The user was successfully created', ['user' => $user,'role' => $role, 'permission_name' => $permissionName ]);
 
         } catch (\Exception $e) {
