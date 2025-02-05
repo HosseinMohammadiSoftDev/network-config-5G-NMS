@@ -26,6 +26,7 @@ class RoleController extends ApiController
                 'permissions' => Permission::pluck('name')->toArray(),
             ],
             [
+                'name' => 'visitor',
                 'permissions' => array_merge(
                     ['VM/read', 'module/read'],
                     $serverPermissions

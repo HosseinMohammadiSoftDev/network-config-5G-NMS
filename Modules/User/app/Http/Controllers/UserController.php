@@ -5,12 +5,12 @@ namespace Modules\User\Http\Controllers;
 use Illuminate\Http\Request;
 use Modules\User\Models\User;
 use function PHPSTORM_META\map;
+use Modules\Server\Models\Server;
 use Illuminate\Support\Facades\DB;
 use Modules\User\Models\Permission;
 use Illuminate\Support\Facades\Auth;
 use Modules\User\Services\PaginationService;
 use App\Http\Controllers\Contract\ApiController;
-
 use Modules\User\Http\Requests\User\AddMemberRequest;
 use Modules\User\Http\Requests\User\resetPasswordRequest;
 
@@ -25,6 +25,12 @@ class UserController extends ApiController
     public function getMe ()
     {
         $user = User::find(Auth::id());
+        $serverPermissions = Permission::where('name', 'like', 'server/%')->pluck('name')->toArray();
+        $userPermissions = $user->permissions()->whereIn('name', $serverPermissions)->pluck('name')->toArray();
+        $modifiedArray = array_map(fn($item) => str_replace("server/", "", $item), $userPermissions);
+
+        $serverIds = Server::whereIn('name', $modifiedArray)->pluck('id');
+
 
         return $this->respondSuccess('The user was successfully displayed', [
             'user' => [
@@ -36,6 +42,7 @@ class UserController extends ApiController
                 'updated_at' => $user->updated_at,
                 'roles' => $user->getRoleNames(),
                 'permissions' => $user->getAllPermissions()->pluck('name'),
+                'permissionServerIds' => $serverIds
             ],
         ]);
     }
