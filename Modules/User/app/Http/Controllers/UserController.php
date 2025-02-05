@@ -2,16 +2,17 @@
 
 namespace Modules\User\Http\Controllers;
 
-use App\Http\Controllers\Contract\ApiController;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Modules\User\Models\User;
+use function PHPSTORM_META\map;
+use Modules\Server\Models\Server;
 use Illuminate\Support\Facades\DB;
+use Modules\User\Models\Permission;
+use Illuminate\Support\Facades\Auth;
+use Modules\User\Services\PaginationService;
+use App\Http\Controllers\Contract\ApiController;
 use Modules\User\Http\Requests\User\AddMemberRequest;
 use Modules\User\Http\Requests\User\resetPasswordRequest;
-use Modules\User\Models\User;
-use Modules\User\Services\PaginationService;
-
-use function PHPSTORM_META\map;
 
 class UserController extends ApiController
 {
@@ -24,6 +25,12 @@ class UserController extends ApiController
     public function getMe ()
     {
         $user = User::find(Auth::id());
+        $serverPermissions = Permission::where('name', 'like', 'server/%')->pluck('name')->toArray();
+        $userPermissions = $user->permissions()->whereIn('name', $serverPermissions)->pluck('name')->toArray();
+        $modifiedArray = array_map(fn($item) => str_replace("server/", "", $item), $userPermissions);
+
+        $serverIds = Server::whereIn('name', $modifiedArray)->pluck('id');
+
 
         return $this->respondSuccess('The user was successfully displayed', [
             'user' => [
@@ -35,6 +42,7 @@ class UserController extends ApiController
                 'updated_at' => $user->updated_at,
                 'roles' => $user->getRoleNames(),
                 'permissions' => $user->getAllPermissions()->pluck('name'),
+                'permissionServerIds' => $serverIds
             ],
         ]);
     }
@@ -71,6 +79,36 @@ class UserController extends ApiController
     }
 
 
+
+    private function assignRoleAndPermissions(User $user, $role, $permissionNames)
+    {
+
+        $user->assignRole($role);
+
+        $rolePermissions = Permission::whereHas('roles', function ($query) use ($role) {
+            $query->where('name', $role);
+        })->pluck('name')->toArray();
+
+
+        $user->revokePermissionTo($rolePermissions);
+        $user->syncPermissions([]);
+
+        if (!empty($permissionNames) && is_array($permissionNames)) {
+            $user->givePermissionTo($permissionNames);
+
+            $vmCrudPermissions = ['VM/create', 'VM/delete', 'VM/update'];
+            $moduleCrudPermissions = ['module/create', 'module/delete', 'module/update'];
+
+            $hasVmCrud = !empty(array_intersect($vmCrudPermissions, $permissionNames));
+            $hasModuleCrud = !empty(array_intersect($moduleCrudPermissions, $permissionNames));
+
+            if ($hasVmCrud)
+                $user->givePermissionTo('VM/read');
+
+            if ($hasModuleCrud)
+                $user->givePermissionTo('module/read');
+        }
+    }
     public function addMember (AddMemberRequest $request)
     {
         $credentials = $request->validated();
@@ -82,14 +120,7 @@ class UserController extends ApiController
             $role = $credentials['role'] ?? null;
             $permissionName = $credentials['permission_name'] ?? null;
 
-            if ($role)
-                $user->assignRole($role);
-
-            if (!empty($permissionName) && is_array($permissionName)) {
-                foreach ($permissionName as $permission) {
-                    $user->givePermissionTo($permission);
-                }
-            }
+            $this->assignRoleAndPermissions($user, $role, $permissionName);
 
 
                 activity('add-member')
@@ -104,6 +135,8 @@ class UserController extends ApiController
                 ->log('The admin added the user to the application');
 
                 DB::commit();
+
+
             return $this->respondCreated('The user was successfully created', ['user' => $user,'role' => $role, 'permission_name' => $permissionName ]);
 
         } catch (\Exception $e) {
@@ -123,11 +156,13 @@ class UserController extends ApiController
             return $this->respondInternalError('An issue occurred during the process');
         }
     }
-    public function resetPsswordAndAuthName (resetPasswordRequest $request)
+    public function editMember (resetPasswordRequest $request)
     {
         $credentials = $request->validated();
 
         $user = User::find($credentials['user_id']);
+        $role = $credentials['role'] ?? null;
+        $permissionName = $credentials['permission_name'] ?? null;
 
         if ($user->hasRole('admin') && !Auth::user()->hasRole('admin'))
             return response()->json(['msg' => 'You cannot change the admin username and password'], 403);
@@ -135,6 +170,8 @@ class UserController extends ApiController
 
         try {
                 DB::beginTransaction();
+
+            $this->assignRoleAndPermissions($user, $role, $permissionName);
 
             $user->update([
                 'auth_name' => $credentials['auth_name'] ?? $user['auth_name'],

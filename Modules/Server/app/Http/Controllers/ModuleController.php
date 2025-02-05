@@ -187,6 +187,7 @@ class ModuleController extends ApiController
   }
   private function convertNullKeysToComments(array $array)
   {
+    // dd($array);
       foreach ($array as $key => $value) {
           if (is_array($value)) {
               $array[$key] = $this->convertNullKeysToComments($value);
@@ -460,13 +461,40 @@ class ModuleController extends ApiController
         ], 403));
 
     }
-    private function logModuleUpdate($module, $server, $data)
+    function getArrayChanges($array1, $array2) {
+        $changes = [];
+
+        foreach ($array2 as $key => $value) {
+            if (!array_key_exists($key, $array1))
+                $changes[$key] = $value;
+
+            elseif (is_array($value) && is_array($array1[$key])) {
+                $subChanges = $this->getArrayChanges($array1[$key], $value);
+
+                if (!empty($subChanges))
+                    $changes[$key] = $subChanges;
+
+            elseif ($array1[$key] !== $value)
+                $changes[$key] = [
+                    'old' => $array1[$key],
+                    'new' => $value
+                ];
+            }
+        }
+
+        return $changes;
+    }
+    private function logModuleUpdate($module, $server, $array2)
     {
+        $array1 = json_decode($module->pivot->current_config, true);
+        $change = json_encode($this->getArrayChanges($array1, $array2));
+
+
         Log::channel('daily')->info('The configuration values have been changed', [
             'route' => request()->fullUrl(),
             'method' => 'updateConfigModule',
             'user' => Auth::user(),
-            'data' => $data,
+            'changes' => $change,
             'module_id' => $module['id'],
             'module_name' => $module['name'],
             'module_type' => $module['type'],
@@ -480,7 +508,7 @@ class ModuleController extends ApiController
                 'route' => request()->fullUrl(),
                 'method' => 'updateConfigModule',
                 'user' => Auth::user(),
-                'data' => $data,
+                'changes' => $change,
                 'server' => $server,
                 'module_id' => $module['id'],
                 'module_name' => $module['name'],
@@ -520,7 +548,7 @@ class ModuleController extends ApiController
                 $this->sendConfigToServer($request['username'], $request['password'],
                             $module['name'], $yamlContent, $moduleServer);
 
-                $this->logModuleUpdate($module, $server, $data);
+                $this->logModuleUpdate($moduleServer, $server, $data);
             }
 
             DB::commit();
@@ -709,21 +737,21 @@ class ModuleController extends ApiController
 
         $serverModel = $module->servers()->find($server['id']);
 
-        $moduleConfig = json_decode($serverModel->pivot['current_config'], true);
+        // $moduleConfig = json_decode($serverModel->pivot['current_config'], true);
         $moduleCurrentConfig = $serverModel->pivot['current_config'];
         $serverModel->pivot['previous_config'] = $moduleCurrentConfig;
 
-        foreach ($data as $key => $value)
-            $moduleConfig = JsonUpdater::updateJsonValue($moduleConfig, $key, $value);
+        // foreach ($data as $key => $value)
+        //     $moduleConfig = JsonUpdater::updateJsonValue($moduleConfig, $key, $value);
 
 
         $module->servers()->updateExistingPivot($server->id, [
-            'current_config' => json_encode($moduleConfig, JSON_PRETTY_PRINT),
+            'current_config' => json_encode($data, JSON_PRETTY_PRINT),
             'previous_config' => $moduleCurrentConfig
         ]);
 
 
-        return json_encode($moduleConfig, true);
+        return json_encode($data, true);
     }
     public function updateConfigModule(UpdateConfigModuleRequest $request)
     {

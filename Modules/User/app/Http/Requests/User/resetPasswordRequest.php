@@ -26,7 +26,12 @@ class resetPasswordRequest extends FormRequest
             'password' => ['nullable', Password::min(8), 'max:40', 'confirmed'],
             'role' => ['nullable', 'string', 'in:expert,visitor'],
             'first_name' => ['nullable', 'min:3', 'max:256'],
-            'last_name' => ['nullable', 'min:3', 'max:256']
+            'last_name' => ['nullable', 'min:3', 'max:256'],
+
+
+            'role' => ['nullable', 'string', Rule::exists('roles', 'name'), Rule::notIn('admin')],
+            'permission_name' => ['nullable', 'array'],
+            'permission_name.*' =>  ['required', 'string', 'exists:permissions,name']
         ];
     }
 
