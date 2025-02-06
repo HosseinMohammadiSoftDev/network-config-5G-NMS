@@ -981,7 +981,7 @@ class ModuleController extends ApiController
         $validation = $request->validated();
         $module = Module::find($validation['module_id']);
         $server = Server::find($validation['server_id']);
-
+// dd('tesssssssss');
 
         $command = 'cat ' . $server['path_config'] . $module['name'] . '.yaml' ;
 
@@ -997,6 +997,7 @@ class ModuleController extends ApiController
             return response($output, 200, [
                 'Content-Type' => 'application/octet-stream',
                 'Content-Disposition' => "attachment; filename={$module->name}.yaml",
+                'X-Name-Header' => "{$module->name}.yaml",
                 'Content-Length' => strlen($output),
             ]);
 
