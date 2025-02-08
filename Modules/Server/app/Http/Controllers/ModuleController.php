@@ -2,6 +2,7 @@
 
 namespace Modules\Server\Http\Controllers;
 
+use Modules\Server\Http\Requests\Module\restartServiceModuleRequest;
 use Spyc;
 use Exception;
 use RuntimeException;
@@ -719,6 +720,53 @@ class ModuleController extends ApiController
         // $output = $sshHelper->restartModule($commandRestart );
 
     }
+    public function restartServiceModule (restartServiceModuleRequest $request)
+    {
+        $validate = $request->validated();
+
+        $server = server::find($validate['server_id']);
+        $module = Module::find($validate['module_id']);
+
+        $username = $validate['username'];
+        $password = $validate['password'];
+
+            // is down server
+         if ($server['is_down'] == 1)
+             throw new Exception('this server off');
+
+
+        try {
+
+            $sshHelper = new sshHelper($server, $username, $password);
+            $commandRestart = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' restart';
+
+            $output = $sshHelper->restartModule($commandRestart);
+
+            return response()->json($output);
+        } catch (Exception $e) {
+
+            $message = $e->getMessage();
+            $message = preg_replace('/\x1b\[[0-9;]*m/', '', $message); // حذف کدهای ANSI
+            $message = preg_replace('/\r?\n.*?\[root@localhost.*?$/', '', $message); // حذف اطلاعات اضافی مربوط به خط فرمان
+
+            preg_match_all('/\b(FATAL|ERROR):\s.*?(?=\s\(.*?\)|$)/m', $message, $matches);
+
+            $formattedMessages = $matches[0] ?? [];
+
+            $separatedMessages = [];
+            foreach ($formattedMessages as $index => $msg) {
+                $separatedMessages["Error-" . ($index + 1)] = $msg;
+            }
+
+            throw new HttpResponseException(response()->json([
+                'msg' => 'server error!',
+                'error' => [
+                    'type' => 'restart-service-error',
+                    'message' => $separatedMessages
+                ]
+            ], 500));
+        }
+    }
     private function updateModuleConfigInDatabase($moduleId, $data, $server)
     {
         if ($server['is_down'] == 1)
@@ -981,7 +1029,7 @@ class ModuleController extends ApiController
         $validation = $request->validated();
         $module = Module::find($validation['module_id']);
         $server = Server::find($validation['server_id']);
-// dd('tesssssssss');
+
 
         $command = 'cat ' . $server['path_config'] . $module['name'] . '.yaml' ;
 
