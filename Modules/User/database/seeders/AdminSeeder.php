@@ -17,8 +17,6 @@ class AdminSeeder extends Seeder
     {
 
         $permissions = [
-                // user
-            'user',
 
                 // server
             'VM/read',
@@ -35,12 +33,14 @@ class AdminSeeder extends Seeder
                 // on or off server
             'VM/status',
 
+                // monitoring
+            'monitoring',
+
                 // log
             'log',
 
-                // monitoring
-            'monitoring'
-
+               // user
+            'user',
         ];
 
 

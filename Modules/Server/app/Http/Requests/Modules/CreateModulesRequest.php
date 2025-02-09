@@ -30,7 +30,7 @@ class CreateModulesRequest extends FormRequest
                 })->exists();
 
                 if ($modulNameExists)
-                    $fail('module name is not uniqe in server');
+                    return $fail('module name is not uniqe in server');
                 }
 
             }],
