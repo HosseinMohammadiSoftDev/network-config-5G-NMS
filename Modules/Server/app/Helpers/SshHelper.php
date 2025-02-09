@@ -3,6 +3,7 @@
 namespace Modules\Server\Helpers;
 
 use Exception;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use phpseclib3\Net\SSH2;
 use InvalidArgumentException;
 use PHPUnit\Event\Code\Throwable;
@@ -19,7 +20,7 @@ class SshHelper
 
         if (!$this->ssh->login($username, $password)) {
             $this->logActivity('failed-connection-server', 'constructor');
-            throw new Exception('Your server login credentials are incorrect.');
+            throw new HttpResponseException(response()->json(['msg' => 'Your server login credentials are incorrect.'], 422));
         }
     }
 
@@ -65,7 +66,7 @@ class SshHelper
 
         if (str_contains($output, 'FATAL') || str_contains($output, 'ERROR')) {
             $this->logActivity('module-error', 'restartModule', ['command' => $command, 'output' => $output]);
-            throw new InvalidArgumentException($output);
+            throw new HttpResponseException(response()->json($output, 422));
         }
         else
             $this->logActivity('module-restart', 'restartModule');

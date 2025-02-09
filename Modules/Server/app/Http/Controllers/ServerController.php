@@ -17,6 +17,7 @@ use Modules\Server\Helpers\SshHelper;
 use Modules\User\Services\PaginationService;
 use phpseclib3\Crypt\EC\Formats\Signature\SSH2;
 use App\Http\Controllers\Contract\ApiController;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Modules\Server\Http\Requests\TestConnectionRequest;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Modules\Server\Http\Requests\Server\EditServerReqest;
@@ -319,8 +320,9 @@ class ServerController extends ApiController
 
             // permission
         $serverPermission = 'server/' . $server['name'];
-        // if (!Auth::user()->hasPermissionTo($serverPermission) && !Auth::user()->hasRole('admin'))
-        //     throw new HttpException(403, 'You do not have the Permission to use this server.');
+
+        if (!Auth::user()->hasPermissionTo($serverPermission) && !Auth::user()->hasRole('admin'))
+            throw new HttpResponseException(response()->json(['msg' => 'You do not have the Permission to use this server.'], 422));
 
 
                 // is stop server

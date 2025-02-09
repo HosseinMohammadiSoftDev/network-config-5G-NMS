@@ -175,7 +175,7 @@ class ModuleController extends ApiController
       $arrayContent = json_decode($jsonContent, true);
 
       if (json_last_error() !== JSON_ERROR_NONE)
-     throw new Exception('error in convert json to yaml');
+     throw new HttpResponseException(response()->json(['msg' => 'error in convert json to yaml'], 422));
 
       $arrayContent = $this->convertNullKeysToComments($arrayContent);
 
@@ -339,7 +339,7 @@ class ModuleController extends ApiController
                 $failedServers[] = $serverId;
 
             if ($server && $server['is_down'] == 1)
-                return response()->json(['msg'=> 'server is off', 'server' => $server]);
+                return response()->json(['msg'=> 'server is off', 'server' => $server], 422);
 
                 $module->servers()->syncWithoutDetaching([
                     $serverId => [
@@ -388,17 +388,17 @@ class ModuleController extends ApiController
         }
 
         if (!empty($failedServers))
-            return response()->json(['msg' => 'An issue occurred while adding the module to the server', 'server-faild' => $failedServers]);
+            return response()->json(['msg' => 'An issue occurred while adding the module to the server', 'server-faild' => $failedServers], 422);
 
         DB::commit();
 
         return $this->respondCreated('The module was successfully created on the servers',  [
             'created_modules' => $createdModules
-        ]);
+        ], 201);
 
     } catch (Exception $e) {
         DB::rollBack();
-        return response()->json(['error' => $e->getMessage()],);
+        return response()->json(['error' => $e->getMessage()],422);
     }
   }
   public function deleteModule (deleteModuleRequest $request)
@@ -528,7 +528,7 @@ class ModuleController extends ApiController
         ->first();
 
         if (!$module)
-            throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.']));
+            throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.'], 422));
 
         $serverIdsInModuleName = $module->servers->pluck('id');
         $data = $request->input('data', []);
@@ -592,7 +592,7 @@ class ModuleController extends ApiController
                     'type' => 'restart-service-error',
                     'message' => $separatedMessages
                 ]
-            ], 500));
+            ], 422));
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -604,7 +604,7 @@ class ModuleController extends ApiController
                     'type' => 'server-error',
                     'message' => $message
                 ]
-            ], 500));
+            ], 422));
         }
     }
     private function updateMultipleModules($serverIds, $request)
@@ -615,7 +615,7 @@ class ModuleController extends ApiController
         $serverIdsInModuleName = $module->servers->pluck('id');
         foreach ($serverIds as $serverId) {
             if (!in_array($serverId, $serverIdsInModuleName->toArray()))
-                throw new Exception('An invalid server ID has been sent among the server IDs');
+                throw new HttpResponseException(response()->json(['msg' => 'An invalid server ID has been sent among the server IDs'], 422));
         }
 
         $servers = $module->servers()
@@ -681,7 +681,7 @@ class ModuleController extends ApiController
                     'type' => 'restart-service-error',
                     'message' => $separatedMessages
                 ]
-            ], 500));
+            ], 422));
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -693,14 +693,14 @@ class ModuleController extends ApiController
                     'type' => 'server-error',
                     'message' => $message
                 ]
-            ], 500));
+            ], 422));
         }
     }
     private function sendConfigToServer($username, $password, $moduleName, $yamlContent, $server)
     {
         // is down server
             if ($server['is_down'] == 1)
-                throw new Exception('this server off');
+                throw new HttpResponseException(response()->json(['msg' => 'this server off'], 422));
 
         if (!$server['path_config'])
             throw new HttpResponseException(response()->json(['msg' => 'You did not specify a configuration address config'], 422));
@@ -732,7 +732,7 @@ class ModuleController extends ApiController
 
             // is down server
          if ($server['is_down'] == 1)
-             throw new Exception('this server off');
+             throw new HttpResponseException(response()->json(['msg' => 'this server off'], 422));
 
 
         try {
@@ -764,7 +764,7 @@ class ModuleController extends ApiController
                     'type' => 'restart-service-error',
                     'message' => $separatedMessages
                 ]
-            ], 500));
+            ], 422));
         }
     }
     private function updateModuleConfigInDatabase($moduleId, $data, $server)
@@ -775,7 +775,7 @@ class ModuleController extends ApiController
         $module = Module::find($moduleId);
 
         if (!$module)
-            throw new Exception('module is notfund');
+            throw new HttpResponseException(response()->json(['msg' => 'module is notfund'], 422));
 
             // example value in data user
         foreach ($data as $key => $value) {
@@ -820,7 +820,7 @@ class ModuleController extends ApiController
         $module = Module::find($moduleId);
 
         if (!$module)
-            throw new Exception('module is not fuond');
+            throw new HttpResponseException(response()->json(['msg' => 'module is not fuond'], 422));
 
 
         $moduleConfig = json_decode($server->pivot['current_config'], true);
@@ -847,7 +847,7 @@ class ModuleController extends ApiController
         })->first();
 
         if (!$module)
-            throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.']));
+            throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.'], 422));
 
 
         $server = $module->servers()->find($request['server_id']);
@@ -967,7 +967,7 @@ class ModuleController extends ApiController
             $this->deleteModules($serversToDelete, $module, $request);
 
         } catch (\Exception $e) {
-            throw new HttpResponseException(response()->json(['error' => $e->getMessage()], 500));
+            throw new HttpResponseException(response()->json(['error' => $e->getMessage()], 422));
         }
     }
     public function editModule(EditModuleRequest $request)
@@ -976,7 +976,8 @@ class ModuleController extends ApiController
         $module = Module::find($validated['module_id']);
 
         if (!$module)
-            throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.']));        $serverIds = $validated['server_ids'] ?? [];
+            throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.'], 422));
+        $serverIds = $validated['server_ids'] ?? [];
 
         $configFile = $request->file('config_file');
 
@@ -1047,7 +1048,7 @@ class ModuleController extends ApiController
                 'Content-Disposition' => "attachment; filename={$module->name}.yaml",
                 'X-Name-Header' => "{$module->name}.yaml",
                 'Content-Length' => strlen($output),
-            ]);
+            ], 200);
 
         } catch (Exception $e) {
 
@@ -1093,7 +1094,7 @@ class ModuleController extends ApiController
     $modulePreviousConfig = $pivotData['previous_config'];
 
     if ($modulePreviousConfig == null)
-        return response()->json(['msg' => 'The module does not have a previous value, you cannot revert it to the previous value']);
+        return response()->json(['msg' => 'The module does not have a previous value, you cannot revert it to the previous value'], 422);
 
     try {
             // ssh to server format yaml
@@ -1128,10 +1129,10 @@ class ModuleController extends ApiController
                 'success' => 'ture',
                 'msg' => 'The module configuration has been reverted to the previous step',
                 'config' => json_decode($pivotData['current_config'], true)
-            ]);
+            ], 200);
 
     } catch (\Exception $e) {
-        return response()->json(['Error' => $e->getMessage()]);
+        return response()->json(['Error' => $e->getMessage()], 422);
     }
   }
   public function undoToInitialConfigModule (UndoToInitialConfigModulesRequest $request)
@@ -1149,7 +1150,7 @@ class ModuleController extends ApiController
     $server = Server::find($creadtional['server_id']);
 
     if ($server && $server['is_down'] == 1)
-        return response()->json(['msg'=> 'server is off']);
+        return response()->json(['msg'=> 'server is off'], 422);
 
     $pivotData = $module->servers()->where('server_id', $creadtional['server_id'])->first()->pivot;
     $moduleInitialConfig = $pivotData['initial_config'];
@@ -1187,9 +1188,9 @@ class ModuleController extends ApiController
             'success' => 'ture',
             'msg' => 'The module configuration has been reverted to its initial state',
             'config' => json_decode($pivotData['initial_config'], true)
-        ]);
+        ], 200);
     } catch (\Exception $e) {
-        return response()->json(['error'=> $e->getMessage()]);
+        return response()->json(['error'=> $e->getMessage()], 422);
     }
   }
 
