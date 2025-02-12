@@ -72,7 +72,7 @@ class AdminSeeder extends Seeder
 
 
             // visitor
-        $visitorRole = Role::firstOrCreate(['name' => 'visitor']);
+    $visitorRole = Role::firstOrCreate(['name' => 'visitor']);
         // $permissions = Permission::whereIn('name', ['VM/read', 'module/read'])->get();
         // $visitorRole->syncPermissions($permissions);
 

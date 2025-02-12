@@ -228,8 +228,8 @@ class ModuleController extends ApiController
               'route' => request()->fullUrl(),
               'method' => 'uploadModule',
               'error' => $e->getMessage(),
-              'user' => Auth::user(),
-          ])
+            'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+            'user_role' =>Auth::user()->roles()->pluck('name')->first(),          ])
         ->log('An issue occurred while converting the YAML file to JSON');
 
 
@@ -262,8 +262,8 @@ class ModuleController extends ApiController
             'route' => request()->fullUrl(),
             'method' => 'uploadModule',
             'module' => $module,
-            'user' => Auth::user(),
-        ])
+            'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+            'user_role' =>Auth::user()->roles()->pluck('name')->first(),        ])
       ->log('The config file has been placed in the specified module');
 
 
@@ -292,8 +292,8 @@ class ModuleController extends ApiController
               'route' => request()->fullUrl(),
               'method' => 'uploadModuleFile',
               'error' => $e->getMessage(),
-              'user_id' => Auth::id(),
-          ])
+              'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+              'user_role' =>Auth::user()->roles()->pluck('name')->first(),          ])
         ->log('An issue occurred while converting the file format to JSON');
 
         return response()->json(['msg' => 'An issue occurred while converting the file format to JSON: ' . $e->getMessage()], 400);
@@ -375,8 +375,8 @@ class ModuleController extends ApiController
                 ->withProperties([
                     'type-log' => 'server',
                     'route' => request()->fullUrl(),
-                    'user' => Auth::user(),
-                    'method' => 'createModule',
+                    'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                    'user_role' =>Auth::user()->roles()->pluck('name')->first(),                    'method' => 'createModule',
                     'module' => [
                         'name' => $creadtional['name'],
                         'type' => $creadtional['type'],
@@ -394,7 +394,7 @@ class ModuleController extends ApiController
 
         return $this->respondCreated('The module was successfully created on the servers',  [
             'created_modules' => $createdModules
-        ], 201);
+        ]);
 
     } catch (Exception $e) {
         DB::rollBack();
@@ -490,17 +490,6 @@ class ModuleController extends ApiController
         $array1 = json_decode($module->pivot->current_config, true);
         $change = json_encode($this->getArrayChanges($array1, $array2));
 
-
-        Log::channel('daily')->info('The configuration values have been changed', [
-            'route' => request()->fullUrl(),
-            'method' => 'updateConfigModule',
-            'user' => Auth::user(),
-            'changes' => $change,
-            'module_id' => $module['id'],
-            'module_name' => $module['name'],
-            'module_type' => $module['type'],
-        ]);
-
         activity('update-module-config')
             ->causedBy(Auth::user())
             ->event('update-config-module')
@@ -508,7 +497,8 @@ class ModuleController extends ApiController
                 'type-log' => 'server',
                 'route' => request()->fullUrl(),
                 'method' => 'updateConfigModule',
-                'user' => Auth::user(),
+                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                'user_role' =>Auth::user()->roles()->pluck('name')->first(),
                 'changes' => $change,
                 'server' => $server,
                 'module_id' => $module['id'],
@@ -1059,8 +1049,8 @@ class ModuleController extends ApiController
                 'type-log' => 'server',
                 'route' => request()->fullUrl(),
                 'method' => 'expertModuleFileIsServer',
-                'user' => Auth::user(),
-                'module' => $module,
+                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                'user_role' =>Auth::user()->roles()->pluck('name')->first(),                'module' => $module,
                 'command' => $command
             ])
             ->log('The configuration values have been changed');
@@ -1117,8 +1107,8 @@ class ModuleController extends ApiController
                     'type-log' => 'server',
                     'route' => request()->fullUrl(),
                     'method' => 'undoConfigModule',
-                    'user' => Auth::user(),
-                    'module_id' => $module['id'],
+                    'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                    'user_role' =>Auth::user()->roles()->pluck('name')->first(),                    'module_id' => $module['id'],
                     'module_name' => $module['name'],
                     'module_type'=> $module['type'],
                 ])
@@ -1176,7 +1166,8 @@ class ModuleController extends ApiController
                 'type-log' => 'server',
                 'route' => request()->fullUrl(),
                 'method' => 'undoConfigModule',
-                'user' => Auth::user(),
+                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                'user_role' =>Auth::user()->roles()->pluck('name')->first(),
                 'module_id' => $module['id'],
                 'module_name' => $module['name'],
                 'module_type' => $module['type'],

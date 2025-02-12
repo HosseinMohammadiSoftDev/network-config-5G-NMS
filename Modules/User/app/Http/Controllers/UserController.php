@@ -129,7 +129,8 @@ class UserController extends ApiController
                     ->withProperties([
                         'route' => request()->fullUrl(),
                         'method' => 'addMember',
-                        'user' => Auth::user(),
+                        'user' =>  Auth::user()->makeHidden(['role  s', 'permissions'])->toArray(),
+                        'user_role' =>Auth::user()->roles()->pluck('name')->first(),
                         'member' => $credentials,
                     ])
                 ->log('The admin added the user to the application');
@@ -149,7 +150,8 @@ class UserController extends ApiController
                         'route' => request()->fullUrl(),
                         'method' => 'addMember',
                         'member' => $credentials,
-                        'user' => Auth::user(),
+                        'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                        'user_role' =>Auth::user()->roles()->pluck('name')->first(),
                     ])
                 ->log('An issue occurred during the process');
 
@@ -196,7 +198,8 @@ class UserController extends ApiController
                     'type-log' => 'app',
                     'route' => request()->fullUrl(),
                     'method' => 'resetPsswordAndAuthName',
-                    'user' => Auth::user(),
+                    'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                    'user_role' =>Auth::user()->roles()->pluck('name')->first(),
                     'member' => $user,
                 ])
             ->log('The user\'s username and password were successfully updated');

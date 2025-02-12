@@ -79,7 +79,8 @@ class AuthController extends ApiController
                     'type-log' => 'app',
                     'route' => request()->fullUrl(),
                     'method' => 'logout',
-                    'user' => $user
+                    'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                    'user_role' =>Auth::user()->roles()->pluck('name')->first(),
                 ])
             ->log('The user has logged out of their account');
 
