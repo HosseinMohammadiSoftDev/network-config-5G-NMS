@@ -2,6 +2,7 @@
 
 namespace Modules\User\Http\Controllers;
 
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Modules\User\Models\User;
 use function PHPSTORM_META\map;
@@ -13,6 +14,7 @@ use Modules\User\Services\PaginationService;
 use App\Http\Controllers\Contract\ApiController;
 use Modules\User\Http\Requests\User\AddMemberRequest;
 use Modules\User\Http\Requests\User\resetPasswordRequest;
+use function PHPUnit\Framework\isEmpty;
 
 class UserController extends ApiController
 {
@@ -79,10 +81,29 @@ class UserController extends ApiController
     }
 
 
-
-    private function assignRoleAndPermissions(User $user, $role, $permissionNames)
+    private function assignRoleAndPermissionsToVisitor(User $user, $role, $permissionNames)
     {
+        $allowed = ['monitoring', "module/read", "VM/read"];
+        $allowed = array_merge($allowed, Permission::where('name', 'like', 'server/%')->pluck('name')->toArray());
 
+        if ((!in_array('module/read', $permissionNames, true) || !in_array('VM/read', $permissionNames, true)))
+            throw new HttpResponseException(response()->json(['msg' => 'You cannot take read access from the visitor user'], 422));
+
+
+        if (count($permissionNames) === 0 )
+            throw new HttpResponseException(response()->json(['msg' => 'Granting access to the user is mandatory'], 422));
+
+        if (!empty($permissionNames) && is_array($permissionNames)) {
+            $invalidPermissions = array_diff($permissionNames, $allowed);
+            if (!empty($invalidPermissions))
+                throw new HttpResponseException(response()->json(['msg' => 'Invalid permissions provided: ' . implode(', ', $invalidPermissions)], 422));
+
+            $user->assignRole($role);
+            $user->syncPermissions($permissionNames);
+        }
+    }
+    private function assignRoleAndPermissionsToExpert(User $user, $role, $permissionNames)
+    {
         $user->assignRole($role);
 
         $rolePermissions = Permission::whereHas('roles', function ($query) use ($role) {
@@ -102,6 +123,9 @@ class UserController extends ApiController
             $hasVmCrud = !empty(array_intersect($vmCrudPermissions, $permissionNames));
             $hasModuleCrud = !empty(array_intersect($moduleCrudPermissions, $permissionNames));
 
+            if (isEmpty($permissionNames))
+                throw new HttpResponseException(response()->json(['msg' => 'Granting access to the user is mandatory'], 422));
+
             if ($hasVmCrud)
                 $user->givePermissionTo('VM/read');
 
@@ -114,13 +138,27 @@ class UserController extends ApiController
         $credentials = $request->validated();
         $credentials['added_by'] = Auth::id();
 
+        $user = User::create($credentials);
+        $role = $credentials['role'] ?? null;
+        $permissionNames = $credentials['permission_name'] ?? null;
+
+
+        $serverPermissions = Permission::where('name', 'like', 'server/%')->pluck('name')->toArray();
+        if (! $serverPermissions)
+            return response()->json(['msg' => 'server permission empity'], 422);
+
+        if (empty(array_intersect($permissionNames, $serverPermissions)))
+            throw new HttpResponseException(response()->json(['msg' => 'At least one server-related permission is required'], 422));
+
+
         try {
                 DB::beginTransaction();
-            $user = User::create($credentials);
-            $role = $credentials['role'] ?? null;
-            $permissionName = $credentials['permission_name'] ?? null;
 
-            $this->assignRoleAndPermissions($user, $role, $permissionName);
+
+            if ($role == 'visitor' || $user->getRoleNames())
+                $this->assignRoleAndPermissionsToVisitor($user, $role, $permissionNames);
+            else
+                $this->assignRoleAndPermissionsToExpert($user, $role, $permissionNames);
 
 
                 activity('add-member')
@@ -129,7 +167,7 @@ class UserController extends ApiController
                     ->withProperties([
                         'route' => request()->fullUrl(),
                         'method' => 'addMember',
-                        'user' =>  Auth::user()->makeHidden(['role  s', 'permissions'])->toArray(),
+                        'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
                         'user_role' =>Auth::user()->roles()->pluck('name')->first(),
                         'member' => $credentials,
                     ])
@@ -138,7 +176,7 @@ class UserController extends ApiController
                 DB::commit();
 
 
-            return $this->respondCreated('The user was successfully created', ['user' => $user,'role' => $role, 'permission_name' => $permissionName ]);
+            return $this->respondCreated('The user was successfully created', ['user' => $user,'role' => $role, 'permission_name' => $permissionNames ]);
 
         } catch (\Exception $e) {
                 DB::rollBack();
@@ -163,60 +201,73 @@ class UserController extends ApiController
         $credentials = $request->validated();
 
         $user = User::find($credentials['user_id']);
-        $role = $credentials['role'] ?? null;
-        $permissionName = $credentials['permission_name'] ?? null;
+        $role = $credentials['role'] ?? $user->getRoleNames();
+        $permissionNames = $credentials['permission_name'] ?? null;
 
         if ($user->hasRole('admin') && !Auth::user()->hasRole('admin'))
             return response()->json(['msg' => 'You cannot change the admin username and password'], 403);
 
+        $serverPermissions = Permission::where('name', 'like', 'server/%')->pluck('name')->toArray();
+        if (! $serverPermissions)
+            return response()->json(['msg' => 'server permission empity'], 422);
+
+        if (empty(array_intersect($permissionNames, $serverPermissions)))
+            throw new HttpResponseException(response()->json(['msg' => 'At least one server-related permission is required'], 422));
+
 
         try {
-                DB::beginTransaction();
-
-            $this->assignRoleAndPermissions($user, $role, $permissionName);
-
-            $user->update([
-                'auth_name' => $credentials['auth_name'] ?? $user['auth_name'],
-                'password' => $credentials['password'] ?? $user['password'],
-                'first_name' => $credentials['first_name'] ?? $user['first_name'],
-                'last_name' => $credentials['last_name'] ?? $user['last_name'],
-            ]);
-
-                // edit role user
-            if (isset($credentials['role']))
-                $user->syncRoles([$credentials['role']]);
+        DB::beginTransaction();
 
 
-                // logout user
-            $user->tokens()->delete();
 
-            activity('reset-pass-and-auth-name')
-                ->causedBy(Auth::user())
-                ->performedOn($user)
-                ->event('update-pass-auth-name')
-                ->withProperties([
-                    'type-log' => 'app',
-                    'route' => request()->fullUrl(),
-                    'method' => 'resetPsswordAndAuthName',
-                    'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                    'user_role' =>Auth::user()->roles()->pluck('name')->first(),
-                    'member' => $user,
-                ])
+        if ($role == 'visitor' || $user->getRoleNames())
+            $this->assignRoleAndPermissionsToVisitor($user, $role, $permissionNames);
+        else
+            $this->assignRoleAndPermissionsToExpert($user, $role, $permissionNames);
+
+
+        $user->update([
+            'auth_name' => $credentials['auth_name'] ?? $user['auth_name'],
+            'password' => $credentials['password'] ?? $user['password'],
+            'first_name' => $credentials['first_name'] ?? $user['first_name'],
+            'last_name' => $credentials['last_name'] ?? $user['last_name'],
+        ]);
+
+        // edit role user
+        if (isset($credentials['role']))
+            $user->syncRoles([$credentials['role']]);
+
+
+        // logout user
+        $user->tokens()->delete();
+
+        activity('reset-pass-and-auth-name')
+            ->causedBy(Auth::user())
+            ->performedOn($user)
+            ->event('update-pass-auth-name')
+            ->withProperties([
+                'type-log' => 'app',
+                'route' => request()->fullUrl(),
+                'method' => 'resetPsswordAndAuthName',
+                'user' => Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                'user_role' => Auth::user()->roles()->pluck('name')->first(),
+                'member' => $user,
+            ])
             ->log('The user\'s username and password were successfully updated');
 
-                    DB::commit();
-            return $this->respondSuccess('The user\'s username and password were successfully changed', [
-                'user' => [
-                    'id' => $user->id,
-                    'first_name' => $user->first_name,
-                    'last_name' => $user->last_name,
-                    'auth_name' => $user->auth_name,
-                    'created_at' => $user->created_at,
-                    'updated_at' => $user->updated_at,
-                    'roles' => $user->getRoleNames(),
-                    'permissions' => $user->getAllPermissions()->pluck('name'),
-                ],
-            ]);
+        DB::commit();
+        return $this->respondSuccess('The user\'s username and password were successfully changed', [
+            'user' => [
+                'id' => $user->id,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'auth_name' => $user->auth_name,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
+                'roles' => $user->getRoleNames(),
+                'permissions' => $user->getAllPermissions()->pluck('name'),
+            ],
+        ]);
 
         } catch (\Exception $e) {
                 DB::rollBack();

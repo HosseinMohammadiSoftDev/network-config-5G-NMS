@@ -52,7 +52,7 @@ class ServerController extends ApiController
 
             $permission = Permission::firstOrCreate(['name' => "server/{$server->name}", 'guard_name' => 'web']);
 
-            $roles = Role::whereIn('name', ['visitor', 'expert'])->get();
+            $roles = Role::whereIn('name', ['expert'])->get();
             foreach ($roles as $role) {
                 $users = $role->users;
                 foreach ($users as $user)
