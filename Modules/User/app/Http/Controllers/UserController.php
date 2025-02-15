@@ -87,7 +87,7 @@ class UserController extends ApiController
         $allowed = array_merge($allowed, Permission::where('name', 'like', 'server/%')->pluck('name')->toArray());
 
         if ((!in_array('module/read', $permissionNames, true) || !in_array('VM/read', $permissionNames, true)))
-            throw new HttpResponseException(response()->json(['msg' => 'You cannot take read access from the visitor user'], 422));
+            $permissionNames = array_unique(array_merge($permissionNames, ['module/read', 'VM/read']));
 
 
         if (count($permissionNames) === 0 )
@@ -99,7 +99,7 @@ class UserController extends ApiController
                 throw new HttpResponseException(response()->json(['msg' => 'Invalid permissions provided: ' . implode(', ', $invalidPermissions)], 422));
 
             $user->assignRole($role);
-            $user->syncPermissions($permissionNames);
+            $user->givePermissionTo($permissionNames);
         }
     }
     private function assignRoleAndPermissionsToExpert(User $user, $role, $permissionNames)
@@ -113,6 +113,10 @@ class UserController extends ApiController
 
         $user->revokePermissionTo($rolePermissions);
         $user->syncPermissions([]);
+
+        if ((!in_array('module/read', $permissionNames, true) || !in_array('VM/read', $permissionNames, true)))
+            $permissionNames = array_unique(array_merge($permissionNames, ['module/read', 'VM/read']));
+
 
         if (!empty($permissionNames) && is_array($permissionNames)) {
             $user->givePermissionTo($permissionNames);
@@ -131,12 +135,17 @@ class UserController extends ApiController
 
             if ($hasModuleCrud)
                 $user->givePermissionTo('module/read');
+
+            $user->syncPermissions($permissionNames);
         }
     }
     public function addMember (AddMemberRequest $request)
     {
         $credentials = $request->validated();
         $credentials['added_by'] = Auth::id();
+
+        try {
+            DB::beginTransaction();
 
         $user = User::create($credentials);
         $role = $credentials['role'] ?? null;
@@ -147,12 +156,9 @@ class UserController extends ApiController
         if (! $serverPermissions)
             return response()->json(['msg' => 'server permission empity'], 422);
 
-        if (empty(array_intersect($permissionNames, $serverPermissions)))
+        if (empty($permissionNames) || empty(array_intersect($permissionNames, $serverPermissions)))
             throw new HttpResponseException(response()->json(['msg' => 'At least one server-related permission is required'], 422));
 
-
-        try {
-                DB::beginTransaction();
 
 
             if ($role == 'visitor' || $user->getRoleNames())
