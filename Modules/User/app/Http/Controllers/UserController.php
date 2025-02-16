@@ -127,7 +127,7 @@ class UserController extends ApiController
             $hasVmCrud = !empty(array_intersect($vmCrudPermissions, $permissionNames));
             $hasModuleCrud = !empty(array_intersect($moduleCrudPermissions, $permissionNames));
 
-            if (isEmpty($permissionNames))
+            if (!$permissionNames)
                 throw new HttpResponseException(response()->json(['msg' => 'Granting access to the user is mandatory'], 422));
 
             if ($hasVmCrud)
@@ -151,17 +151,16 @@ class UserController extends ApiController
         $role = $credentials['role'] ?? null;
         $permissionNames = $credentials['permission_name'] ?? null;
 
-
         $serverPermissions = Permission::where('name', 'like', 'server/%')->pluck('name')->toArray();
         if (! $serverPermissions)
-            return response()->json(['msg' => 'server permission empity'], 422);
+        return response()->json(['msg' => 'server permission empity'], 422);
 
+// dd($serverPermissions, $permissionNames, empty($permissionNames) || empty(array_intersect($permissionNames, $serverPermissions)), empty($permissionNames) , empty(array_intersect($permissionNames, $serverPermissions)));
         if (empty($permissionNames) || empty(array_intersect($permissionNames, $serverPermissions)))
             throw new HttpResponseException(response()->json(['msg' => 'At least one server-related permission is required'], 422));
 
 
-
-            if ($role == 'visitor' || $user->getRoleNames())
+            if ($role == 'visitor' || $user->getRoleNames() == 'visitor')
                 $this->assignRoleAndPermissionsToVisitor($user, $role, $permissionNames);
             else
                 $this->assignRoleAndPermissionsToExpert($user, $role, $permissionNames);
@@ -199,7 +198,7 @@ class UserController extends ApiController
                     ])
                 ->log('An issue occurred during the process');
 
-            return $this->respondInternalError('An issue occurred during the process');
+            throw $e;
         }
     }
     public function editMember (resetPasswordRequest $request)
