@@ -1055,7 +1055,7 @@ class ModuleController extends ApiController
             ])
             ->log('The configuration values have been changed');
 
-            return response()->json(['message'=> $e->getMessage()],500);
+            return response()->json(['message'=> $e->getMessage()],422);
         }
     }
 
@@ -1069,9 +1069,7 @@ class ModuleController extends ApiController
     $creadtional = $request->validated();
     $server = Server::find($creadtional['server_id']);
 
-    $module = Module::whereHas('servers', function ($query) use ($creadtional) {
-        $query->where('server_id', $creadtional['server_id']);
-    })->first();
+    $module = $server->modules()->where('modules.id', $creadtional['module_id'])->first();
 
     if (!$module)
         return response()->json(['msg' => 'module is not found'], 404);
@@ -1128,10 +1126,10 @@ class ModuleController extends ApiController
   public function undoToInitialConfigModule (UndoToInitialConfigModulesRequest $request)
   {
     $creadtional = $request->validated();
+    $server = Server::find($creadtional['server_id']);
 
-    $module = Module::whereHas('servers', function ($query) use ($creadtional) {
-        $query->where('server_id', $creadtional['server_id']);
-    })->first();
+    $module = $server->modules()->where('modules.id', $creadtional['module_id'])->first();
+
 
         if (!$module)
             return response()->json(['msg' => 'module is not found'], 404);

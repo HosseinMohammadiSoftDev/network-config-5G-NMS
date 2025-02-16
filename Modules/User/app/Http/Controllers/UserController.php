@@ -153,9 +153,8 @@ class UserController extends ApiController
 
         $serverPermissions = Permission::where('name', 'like', 'server/%')->pluck('name')->toArray();
         if (! $serverPermissions)
-        return response()->json(['msg' => 'server permission empity'], 422);
+            return response()->json(['msg' => 'server permission empity'], 422);
 
-// dd($serverPermissions, $permissionNames, empty($permissionNames) || empty(array_intersect($permissionNames, $serverPermissions)), empty($permissionNames) , empty(array_intersect($permissionNames, $serverPermissions)));
         if (empty($permissionNames) || empty(array_intersect($permissionNames, $serverPermissions)))
             throw new HttpResponseException(response()->json(['msg' => 'At least one server-related permission is required'], 422));
 
@@ -225,7 +224,7 @@ class UserController extends ApiController
 
 
 
-        if ($role == 'visitor' || $user->getRoleNames())
+        if ($role == 'visitor' || $user->getRoleNames() == 'visitor')
             $this->assignRoleAndPermissionsToVisitor($user, $role, $permissionNames);
         else
             $this->assignRoleAndPermissionsToExpert($user, $role, $permissionNames);
@@ -289,7 +288,7 @@ class UserController extends ApiController
                 ])
             ->log('An issue occurred while updating the username and password');
 
-            return $this->respondInternalError('An issue occurred while updating the username and password');
+            throw $e;
         }
     }
     public function deleteAccountMember ($userId)
