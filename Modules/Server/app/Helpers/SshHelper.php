@@ -34,8 +34,8 @@ class SshHelper
                 'type-log' => 'server',
                 'route' => request()->fullUrl(),
                 'method' => $method,
-                'user' => Auth::user(),
-                'host' => $this->server['ip'],
+                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                'user_role' =>Auth::user()->roles()->pluck('name')->first(),                'host' => $this->server['ip'],
                 'username' => $this->username,
                 'server' => $this->server
             ], $extra))

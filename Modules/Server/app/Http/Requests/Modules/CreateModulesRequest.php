@@ -36,7 +36,7 @@ class CreateModulesRequest extends FormRequest
             }],
             'type' => ['required', 'string', 'min:2', 'max:255'],
 
-            'server_id' => ['required', 'array'],
+            'server_id' => ['nullable', 'array'],
             'server_id.*' => ['required', 'integer', 'exists:servers,id',  function ($attribute, $value, $fail) {
                 $server = DB::table('servers')->where('id', $value)->first();
                     if (!$server) {

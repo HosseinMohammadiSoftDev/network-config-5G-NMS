@@ -52,7 +52,7 @@ class ServerController extends ApiController
 
             $permission = Permission::firstOrCreate(['name' => "server/{$server->name}", 'guard_name' => 'web']);
 
-            $roles = Role::whereIn('name', ['visitor', 'expert'])->get();
+            $roles = Role::whereIn('name', ['expert'])->get();
             foreach ($roles as $role) {
                 $users = $role->users;
                 foreach ($users as $user)
@@ -71,7 +71,8 @@ class ServerController extends ApiController
                     'route' => request()->fullUrl(),
                     'method' => 'createServer',
                     'server' => $server,
-                    'user' => Auth::user(),
+                    'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                    'user_role' =>Auth::user()->roles()->pluck('name')->first(),
                 ])
             ->log('A new server has been created'
             );
@@ -102,7 +103,8 @@ class ServerController extends ApiController
                 'route' => request()->fullUrl(),
                 'method' => 'editServer',
                 'server' => $server,
-                'user' => Auth::user(),
+                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                'user_role' =>Auth::user()->roles()->pluck('name')->first(),
             ])
         ->log('this server edited');
 
@@ -158,7 +160,9 @@ class ServerController extends ApiController
                         'route' => request()->fullUrl(),
                         'method' => 'login',
                         'auth-name' => $credentials['auth_name'],
-                        'password' => $credentials['password']
+                        'password' => $credentials['password'],
+                        'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                        'user_role' =>Auth::user()->roles()->pluck('name')->first(),
                     ])
                     ->log('The user entered an incorrect email or password during login.');
 
@@ -182,8 +186,8 @@ class ServerController extends ApiController
                 'route' => request()->fullUrl(),
                 'method' => 'deleteServer',
                 'server' => $server,
-                'user' => Auth::user(),
-            ])
+                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                'user_role' =>Auth::user()->roles()->pluck('name')->first(),            ])
             ->log('An issue occurred while deleting all server modules');
         }
 
@@ -206,8 +210,8 @@ class ServerController extends ApiController
                 'route' => request()->fullUrl(),
                 'method' => 'deleteServer',
                 'server' => $server,
-                'user' => Auth::user(),
-            ])
+                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                'user_role' =>Auth::user()->roles()->pluck('name')->first(),            ])
         ->log('The server was successfully deleted');
 
         return $this->respondSuccess('The server was successfully deleted', $server);
@@ -248,8 +252,8 @@ class ServerController extends ApiController
                 'route' => request()->fullUrl(),
                 'method' => 'serverStart',
                 'server' => $server,
-                'user' => Auth::user(),
-            ])
+                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                'user_role' =>Auth::user()->roles()->pluck('name')->first(),            ])
         ->log('The server was turned off');
 
 
@@ -290,8 +294,8 @@ class ServerController extends ApiController
                 'route' => request()->fullUrl(),
                 'method' => 'serverStart',
                 'server' => $server,
-                'user' => Auth::user(),
-            ])
+                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                'user_role' =>Auth::user()->roles()->pluck('name')->first(),            ])
         ->log('The server has been turned on');
 
 
@@ -342,8 +346,8 @@ class ServerController extends ApiController
                 'type-log' => 'server',
                 'route' => request()->fullUrl(),
                 'method' => 'showConfigModule',
-                'user' => Auth::user(),
-                'server' => $server,
+                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                'user_role' =>Auth::user()->roles()->pluck('name')->first(),                'server' => $server,
             ])
             ->log('The connection to the server was successful');
 
