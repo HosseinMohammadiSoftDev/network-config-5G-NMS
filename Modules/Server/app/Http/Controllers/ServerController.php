@@ -89,7 +89,13 @@ class ServerController extends ApiController
     {
         $credentials = $request->validated();
 
-        $server = Server::find($credentials['server_id']);
+        try {
+            DB::beginTransaction();
+
+            $server = Server::find($credentials['server_id']);
+            $serverOldName = $server['name'];
+            $permission = Permission::where('name', 'like', 'server/' . $server['name'])->first();
+
 
         $server->update($credentials);
 
@@ -108,7 +114,13 @@ class ServerController extends ApiController
             ])
         ->log('this server edited');
 
-        return $this->respondSuccess('this server updated', $server);
+
+            DB::commit();
+            return response()->json(['msg' => 'this server updated', 'server' => $server, 'oldNameServer' => $serverOldName]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['msg' => $e->getMessage()],422);
+        }
     }
 
 

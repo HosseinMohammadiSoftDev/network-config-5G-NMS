@@ -911,8 +911,30 @@ class ModuleController extends ApiController
             }
         }
     }
+    private function sendDefaultConfigToServers(array $serverIds, Request $request, Module $module)
+    {
+        foreach ($serverIds as $serverId) {
+            $server = Server::find($serverId);
+
+            $defaultConfig = [
+                'initial_config' => 'default_config_value',
+                'current_config' => 'default_config_value',
+            ];
+
+
+            $module->servers()->attach($serverId,$defaultConfig);
+
+            // $yamlContent = $this->convertJsonToYaml($defaultConfig['initial_config']);
+            // $this->sendConfigToServer($request['username'], $request['password'], 'default_module', $yamlContent, $server);
+        }
+    }
     private function addModules(Module $module, array $serverIds, Request $request)
     {
+        if ($module->servers->isEmpty()) {
+            $this->sendDefaultConfigToServers($serverIds, $request, $module);
+            return;
+        }
+
       $pivotData = $module->servers()->first()->pivot;
 
         foreach ($serverIds as $serverId) {
@@ -970,6 +992,9 @@ class ModuleController extends ApiController
         $serverIds = $validated['server_ids'] ?? [];
 
         $configFile = $request->file('config_file');
+
+        if ($module->servers->isEmpty() && !$configFile)
+            throw new HttpResponseException(response()->json(['msg' => 'config file required'], 422));
 
             // check permissions
         foreach ($serverIds as $serverId) {
