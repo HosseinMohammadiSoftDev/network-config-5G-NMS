@@ -68,7 +68,16 @@ class UserController extends ApiController
             ];
         });
 
-        return $this->respondSuccess('All users of the application were successfully retrieved', ['user' => $user]);
+        return $this->respondSuccess('All users of the application were successfully retrieved', [
+            'users' => $user,
+            'pagination' => [
+                'total' => $users->total(),
+                'per_page' => $users->perPage(),
+                'current_page' => $users->currentPage(),
+                'last_page' => $users->lastPage(),
+                'path' => $users->path(),
+            ]
+        ]);
     }
     public function getDeletedAccounts (request $request)
     {
