@@ -191,7 +191,7 @@ class ModuleController extends ApiController
       $arrayContent = json_decode($jsonContent, true);
 
       if (json_last_error() !== JSON_ERROR_NONE)
-     throw new HttpResponseException(response()->json(['msg' => 'error in convert json to yaml'], 422));
+        throw new HttpResponseException(response()->json(['msg' => 'error in convert json to yaml'], 422));
 
       $arrayContent = $this->convertNullKeysToComments($arrayContent);
 
@@ -706,7 +706,7 @@ class ModuleController extends ApiController
     {
         // is down server
             if ($server['is_down'] == 1)
-                throw new HttpResponseException(response()->json(['msg' => 'this server off'], 422));
+                throw new HttpResponseException(response()->json(['msg' => 'this server: ' . $server['name'] .' is off'], 422));
 
         if (!$server['path_config'])
             throw new HttpResponseException(response()->json(['msg' => 'You did not specify a configuration address config'], 422));
@@ -882,19 +882,21 @@ class ModuleController extends ApiController
     }
     private function sendDefaultConfigToServers(array $serverIds, Request $request, Module $module)
     {
+        $yamlContent = $request->file('config_file')->getContent();
+        $jsonContent = $this->uploadModuleFile($request->file('config_file'));
+
         foreach ($serverIds as $serverId) {
             $server = Server::find($serverId);
 
             $defaultConfig = [
-                'initial_config' => 'default_config_value',
-                'current_config' => 'default_config_value',
+                'initial_config' => $jsonContent,
+                'current_config' => $jsonContent,
             ];
-
 
             $module->servers()->attach($serverId,$defaultConfig);
 
-            // $yamlContent = $this->convertJsonToYaml($defaultConfig['initial_config']);
-            // $this->sendConfigToServer($request['username'], $request['password'], 'default_module', $yamlContent, $server);
+            $yamlContent = $this->convertJsonToYaml($defaultConfig['initial_config']);
+            $this->sendConfigToServer($request['username'], $request['password'], 'default_module', $yamlContent, $server);
         }
     }
     private function addModules(Module $module, array $serverIds, Request $request)
@@ -937,38 +939,41 @@ class ModuleController extends ApiController
     }
     private function syncModuleWithServers(Module $module, array $serverIds, $request)
     {
+
         $existingServerIds = $module->servers->pluck('id')->toArray();
 
         $serversToDelete = array_diff($existingServerIds, $serverIds);
         $serversToAdd = array_diff($serverIds, $existingServerIds);
 
-        try {
 
-            $this->addModules($module, $serversToAdd, $request);
-            $this->deleteModules($serversToDelete, $module, $request);
+        $this->addModules($module, $serversToAdd, $request);
+        $this->deleteModules($serversToDelete, $module, $request);
 
-        } catch (\Exception $e) {
-            throw new HttpResponseException(response()->json(['error' => $e->getMessage()], 422));
-        }
     }
     public function editModule(EditModuleRequest $request)
     {
-        $validated = $request->validated();
-        $module = Module::find($validated['module_id']);
+        try {
+            DB::beginTransaction();
 
-        if (!$module)
-            throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.'], 422));
-        $serverIds = $validated['server_ids'] ?? [];
+            $validated = $request->validated();
+            $module = Module::find($validated['module_id']);
 
-        $configFile = $request->file('config_file');
+            if (!$module)
+                throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.'], 422));
+            $serverIds = $validated['server_ids'] ?? [];
 
-        if ($module->servers->isEmpty() && !$configFile)
-            throw new HttpResponseException(response()->json(['msg' => 'config file required'], 422));
+            $configFile = $request->file('config_file');
+
+            if ($module->servers->isEmpty() && !$configFile)
+                throw new HttpResponseException(response()->json(['msg' => 'config file required'], 422));
 
             // check permissions
         foreach ($serverIds as $serverId) {
             $server = Server::find($serverId);
             $this->chackPermissionModule($server);
+
+            if ($server['is_down'])
+                throw new HttpResponseException(response()->json(['msg' => 'server : ' . $server['name'] . ' is off']));
         }
 
         if ($serverIds) {
@@ -986,23 +991,30 @@ class ModuleController extends ApiController
 
 
 
-        $types = implode(',', array_map('trim', explode(',', $validated['type'] ?? $module['type'])));
+            $types = implode(',', array_map('trim', explode(',', $validated['type'] ?? $module['type'])));
 
-        $module->update([
-            'name' => $validated['name'] ?? $module->name,
-            'type' => $types,
-        ]);
+            $module->update([
+                'name' => $validated['name'] ?? $module->name,
+                'type' => $types,
+            ]);
 
-        $module->load('servers');
+            $module->load('servers');
 
-        return response()->json([
-            'message' => 'Module updated successfully',
-            'module' => [
-                'module_name' => $module['name'],
-                'module_type' => $module['type'],
-                'module_server' => $module->servers->pluck('id')->toArray(),
-            ]
-        ], 200);
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Module updated successfully',
+                'module' => [
+                    'module_name' => $module['name'],
+                    'module_type' => $module['type'],
+                    'module_server' => $module->servers->pluck('id')->toArray(),
+                ]
+            ], 200);
+
+        } catch (\Exception $e){
+            DB::rollBack();
+            throw $e;
+        }
     }
 
 
