@@ -165,6 +165,7 @@ class ModuleController extends ApiController
                   'name' => $server->name,
                   'is_down' => $server->is_down,
               ]),
+              'server_name' => $module->servers->pluck('name')->toArray(),
               'server_ids' => $module->servers->pluck('id')->toArray(),
           ];
       });
@@ -414,7 +415,7 @@ class ModuleController extends ApiController
 
     } catch (Exception $e) {
         DB::rollBack();
-        return response()->json(['error' => $e->getMessage()],422);
+        throw $e;
     }
   }
   public function deleteModule (deleteModuleRequest $request)
@@ -605,7 +606,7 @@ class ModuleController extends ApiController
             $message = $e->getMessage();
 
             throw new HttpResponseException(response()->json([
-                'msg' => 'خطای سرور!',
+                'msg' => 'server error',
                 'error' => [
                     'type' => 'server-error',
                     'message' => $message
@@ -694,7 +695,7 @@ class ModuleController extends ApiController
             $message = $e->getMessage();
 
             throw new HttpResponseException(response()->json([
-                'msg' => 'خطای سرور!',
+                'msg' => 'server error!',
                 'error' => [
                     'type' => 'server-error',
                     'message' => $message
@@ -973,7 +974,7 @@ class ModuleController extends ApiController
             $this->chackPermissionModule($server);
 
             if ($server['is_down'])
-                throw new HttpResponseException(response()->json(['msg' => 'server : ' . $server['name'] . ' is off']));
+                throw new HttpResponseException(response()->json(['msg' => 'server : ' . $server['name'] . ' is off'], 422));
         }
 
         if ($serverIds) {
@@ -1008,6 +1009,7 @@ class ModuleController extends ApiController
                     'module_name' => $module['name'],
                     'module_type' => $module['type'],
                     'module_server' => $module->servers->pluck('id')->toArray(),
+                    'module_server_name' => $module->servers->pluck('name')->toArray(),
                 ]
             ], 200);
 
@@ -1061,7 +1063,7 @@ class ModuleController extends ApiController
             ])
             ->log('The configuration values have been changed');
 
-            return response()->json(['message'=> $e->getMessage()],422);
+            return $e;
         }
     }
 
@@ -1090,7 +1092,7 @@ class ModuleController extends ApiController
 
             $output = $sshHelper->restartModule($commandRestart);
 
-            return response()->json($output);
+            return response()->json(['message' => $output]);
 
         } catch (HttpResponseException $e) {
             throw $e;
@@ -1124,7 +1126,7 @@ class ModuleController extends ApiController
             $message = $e->getMessage();
 
             throw new HttpResponseException(response()->json([
-                'msg' => 'خطای سرور!',
+                'msg' => 'server error!',
                 'error' => [
                     'type' => 'server-error',
                     'message' => $message
@@ -1154,7 +1156,7 @@ class ModuleController extends ApiController
 
             $output = $sshHelper->restartModule($commandRestart);
 
-            return response()->json($output);
+            return response()->json(['message' => $output]);
         } catch (HttpResponseException $e) {
             throw $e;
         } catch (InvalidArgumentException $e) {
@@ -1186,7 +1188,7 @@ class ModuleController extends ApiController
             $message = $e->getMessage();
 
             throw new HttpResponseException(response()->json([
-                'msg' => 'خطای سرور!',
+                'msg' => 'server error!',
                 'error' => [
                     'type' => 'server-error',
                     'message' => $message
@@ -1216,7 +1218,7 @@ class ModuleController extends ApiController
 
             $output = $sshHelper->restartModule($commandRestart);
 
-            return response()->json($output);
+            return response()->json(['message' => $output]);
         } catch (HttpResponseException $e) {
             throw $e;
         } catch (InvalidArgumentException $e) {
@@ -1248,7 +1250,7 @@ class ModuleController extends ApiController
             $message = $e->getMessage();
 
             throw new HttpResponseException(response()->json([
-                'msg' => 'خطای سرور!',
+                'msg' => 'server error!',
                 'error' => [
                     'type' => 'server-error',
                     'message' => $message
@@ -1278,7 +1280,7 @@ class ModuleController extends ApiController
 
             $output = $sshHelper->restartModule($commandRestart);
 
-            return response()->json($output);
+            return response()->json(['message' => $output]);
         } catch (HttpResponseException $e) {
             throw $e;
         } catch (InvalidArgumentException $e) {
@@ -1310,7 +1312,7 @@ class ModuleController extends ApiController
             $message = $e->getMessage();
 
             throw new HttpResponseException(response()->json([
-                'msg' => 'خطای سرور!',
+                'msg' => 'server error!',
                 'error' => [
                     'type' => 'server-error',
                     'message' => $message

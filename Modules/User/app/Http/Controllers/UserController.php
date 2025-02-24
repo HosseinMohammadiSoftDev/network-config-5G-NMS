@@ -232,9 +232,9 @@ class UserController extends ApiController
         DB::beginTransaction();
 
 
-
-        if ($role == 'visitor' || $user->getRoleNames() == 'visitor')
-            $this->assignRoleAndPermissionsToVisitor($user, $role, $permissionNames);
+        if ($role == 'visitor' || $user->getRoleNames()[0] == 'visitor')
+            dd('ere');
+            // $this->assignRoleAndPermissionsToVisitor($user, $role, $permissionNames);
         else
             $this->assignRoleAndPermissionsToExpert($user, $role, $permissionNames);
 

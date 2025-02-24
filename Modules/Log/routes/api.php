@@ -14,4 +14,4 @@ use Modules\Log\Http\Controllers\LogController;
  *
 */
 
-Route::middleware(['auth:sanctum', 'role:admin'])->post('show-all-logs', [LogController::class, 'showAllLogs']);
+Route::middleware(['auth:sanctum', 'permission:log|role:admin|expert'])->post('show-all-logs', [LogController::class, 'showAllLogs']);

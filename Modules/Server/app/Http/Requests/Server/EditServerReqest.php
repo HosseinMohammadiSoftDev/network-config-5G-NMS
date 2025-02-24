@@ -16,7 +16,6 @@ class EditServerReqest extends FormRequest
             'server_id' => ['required', 'exists:servers,id'],
 
             'name' => [
-                'nullable',
                 'string',
                 'min:2',
                 'max:127',

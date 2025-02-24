@@ -52,12 +52,12 @@ class ServerController extends ApiController
 
             $permission = Permission::firstOrCreate(['name' => "server/{$server->name}", 'guard_name' => 'web']);
 
-            $roles = Role::whereIn('name', ['expert'])->get();
-            foreach ($roles as $role) {
-                $users = $role->users;
-                foreach ($users as $user)
-                    $user->givePermissionTo($permission);
-            };
+            // $roles = Role::whereIn('name', ['expert'])->get();
+            // foreach ($roles as $role) {
+            //     $users = $role->users;
+            //     foreach ($users as $user)
+            //         $user->givePermissionTo($permission);
+            // };
 
                 // delete cache permission
             app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
@@ -98,12 +98,12 @@ class ServerController extends ApiController
 
 
         $server->update($credentials);
-
+        $permission->update(['name' => $credentials['name']]);
 
         activity('edit-server')
             ->causedBy(Auth::user())
             ->performedOn($server)
-            ->event('create-server')
+            ->event('edit-server')
             ->withProperties([
                 'type-log' => 'server',
                 'route' => request()->fullUrl(),
