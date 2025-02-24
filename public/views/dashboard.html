@@ -1,0 +1,2257 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <title>BBDH</title>
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="/assets/logo%20white-C7adMC3s.png"
+    />
+    <script type="module" crossorigin src="/assets/dashboard-CXkCWHel.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/useApi-CLu8VdKs.js">
+    <link rel="modulepreload" crossorigin href="/assets/auth-CIdfLHBs.js">
+    <link rel="stylesheet" crossorigin href="/assets/useApi-BHbPscNU.css">
+    <link rel="stylesheet" crossorigin href="/assets/dashboard-D9uWqRZ5.css">
+  </head>
+  <body id="body">
+    <div class="container-fluid">
+      <div class="row d-grid">
+        <!-- Sidebar -->
+        <nav
+          class="col-2 sidebar"
+          id="idSidebar"
+        >
+          <div
+            id="idLoadingDashbord"
+            class="loadingDashbord col-11"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div class="mb-3">
+            <img
+              class="w-100 h-50 pe-3"
+              src="/assets/Untitled-3-2-8x-Lm6.png"
+              alt="logo"
+            />
+          </div>
+          <div class="bg-warning rounded-4 text-center">
+            <div class="pt-2">
+              <span class="fs-6 text-dark">User Name:</span>
+              <span
+                class="fs-5 text-dark"
+                id="userName"
+              ></span>
+            </div>
+            <div class="mt-3 pb-2">
+              <span class="fs-6 text-dark">Your Role:</span>
+              <span
+                class="fs-5 text-dark"
+                id="role"
+              ></span>
+            </div>
+          </div>
+
+          <!-- Accordion Menu -->
+          <div
+            class="accordion nav-pills"
+            id="v-pills-tab"
+            role="tablist"
+            aria-orientation="vertical"
+          >
+            <!-- App Management Item -->
+            <div class="accordion-item bg-transparent border-0">
+              <h2 class="accordion-header my-3">
+                <button
+                  class="clickTab styleButton border-0 active ActiveMenuClick ActiveMenuScroll activeMenu menus1"
+                  data-id="1"
+                  id="v-servers-tab"
+                  data-bs-toggle="pill"
+                  data-bs-target="#v-servers-home"
+                  type="button"
+                  role="tab"
+                  aria-controls="v-servers-home"
+                  aria-selected="true"
+                >
+                  <span class="ms-2">Server Settings</span>
+                </button>
+              </h2>
+            </div>
+
+            <div class="accordion-item bg-transparent border-0">
+              <h2 class="accordion-header my-3">
+                <button
+                  class="clickTab styleButton border-0 ActiveMenuClick ActiveMenuScroll collapsed menus5"
+                  data-id="5"
+                  type="button"
+                  id="v-module-tab"
+                  role="tab"
+                  data-bs-toggle="pill"
+                  data-bs-target="#v-module"
+                  aria-controls="v-module"
+                  aria-selected="false"
+                >
+                  <span class="ms-2">Modules</span>
+                </button>
+              </h2>
+            </div>
+
+            <div class="accordion-item bg-transparent border-0">
+              <h2 class="accordion-header my-3">
+                <button
+                  class="styleButton border-0 ActiveMenuClick collapsed menus2"
+                  data-id="2"
+                  type="button"
+                  id="v-userManagement"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseAppManagement"
+                  aria-expanded="false"
+                  aria-controls="collapseAppManagement"
+                >
+                  <span class="ms-2">User Management</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    class="bi bi-caret-right-fill"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"
+                    />
+                  </svg>
+                </button>
+              </h2>
+              <div
+                id="collapseAppManagement"
+                class="accordion-collapse collapse"
+                data-bs-parent="#v-pills-tab"
+              >
+                <div class="accordion-body p-0">
+                  <div
+                    id="class-access-level"
+                    class="ms-3 mb-3 d-flex"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="10"
+                      height="10"
+                      fill="currentColor"
+                      class="bi bi-circle-fill iconSubMenu1"
+                      viewBox="0 0 16 16"
+                    >
+                      <circle
+                        cx="8"
+                        cy="8"
+                        r="8"
+                      />
+                    </svg>
+                    <button
+                      class="clickTab styleButton border-0 subMenuClick subMenu subMenu1"
+                      data-id="1"
+                      id="v-access-levels-tab"
+                      data-bs-toggle="pill"
+                      data-bs-target="#v-access-levels"
+                      type="button"
+                      role="tab"
+                      aria-controls="v-access-levels"
+                      aria-selected="false"
+                    >
+                      Access Levels
+                    </button>
+                  </div>
+                  <div class="ms-3 d-flex">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="10"
+                      height="10"
+                      fill="currentColor"
+                      class="bi bi-circle-fill iconSubMenu2"
+                      viewBox="0 0 16 16"
+                    >
+                      <circle
+                        cx="8"
+                        cy="8"
+                        r="8"
+                      />
+                    </svg>
+                    <button
+                      class="clickTab styleButton border-0 subMenuClick subMenu subMenu2"
+                      data-id="2"
+                      id="v-users-tab"
+                      data-bs-toggle="pill"
+                      data-bs-target="#v-users"
+                      type="button"
+                      role="tab"
+                      aria-controls="v-users"
+                      aria-selected="false"
+                    >
+                      Users
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item bg-transparent border-0">
+              <h2 class="accordion-header my-3">
+                <button
+                  class="clickTab styleButton border-0 ActiveMenuClick ActiveMenuScroll collapsed menus3"
+                  data-id="3"
+                  type="button"
+                  id="V-monitoring-tab"
+                  data-bs-toggle="pill"
+                  data-bs-target="#v-monitoring"
+                  aria-controls="v-monitoring"
+                  aria-expanded="false"
+                >
+                  <span class="ms-2">Monitoring</span>
+                </button>
+              </h2>
+            </div>
+
+            <div class="accordion-item bg-transparent border-0">
+              <h2 class="accordion-header my-3">
+                <button
+                  class="clickTab styleButton border-0 ActiveMenuClick ActiveMenuScroll collapsed menus4"
+                  data-id="4"
+                  type="button"
+                  id="v-log-tab"
+                  role="tab"
+                  data-bs-toggle="pill"
+                  data-bs-target="#v-log"
+                  aria-controls="v-log"
+                  aria-selected="false"
+                >
+                  <span class="ms-2">Log</span>
+                </button>
+              </h2>
+            </div>
+
+            <a
+              href="../views/login.html"
+              class="logout-link"
+            >
+              Log Out
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="currentColor"
+                class="bi bi-door-open-fill"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M1.5 15a.5.5 0 0 0 0 1h13a.5.5 0 0 0 0-1H13V2.5A1.5 1.5 0 0 0 11.5 1H11V.5a.5.5 0 0 0-.57-.495l-7 1A.5.5 0 0 0 3 1.5V15zM11 2h.5a.5.5 0 0 1 .5.5V15h-1zm-2.5 8c-.276 0-.5-.448-.5-1s.224-1 .5-1 .5.448.5 1-.224 1-.5 1"
+                />
+              </svg>
+            </a>
+          </div>
+        </nav>
+
+        <div
+          class="tab-content col-10 mr-auto pageDashbord"
+          id="v-pills-tabContent"
+        >
+          <!-- Main Dashboard Content -->
+          <div
+            class="tab-pane fade show active"
+            id="v-servers-home"
+            role="tabpanel"
+            aria-labelledby="v-servers-tab"
+            tabindex="0"
+          >
+            <main class="col-md-12 dashboard-content">
+              <div
+                class="d-flex justify-content-between align-items-center mb-4 flex-wrap"
+              ></div>
+              <div>
+                <h2 class="mb-3">Dashbord</h2>
+              </div>
+
+              <div class="card-main mb-4">
+                <h3>Settings Management</h3>
+                <p>Configuration and View of 4G/5G Core and RAN Settings</p>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  id="iconAddServer"
+                  data-bs-toggle="modal"
+                  data-bs-target="#addServer"
+                >
+                  Add Server
+                </button>
+              </div>
+
+              <div
+                id="cardContainer"
+                class="row"
+              ></div>
+            </main>
+            <div
+              class="modal fade"
+              id="staticBackdrop"
+              data-bs-backdrop="static"
+              data-bs-keyboard="false"
+              tabindex="-1"
+              aria-labelledby="staticBackdropLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-body">
+                    <div id="divEditServer">
+                      <div
+                        class="container-fluid formEdit d-flex justify-content-center align-items-center"
+                      >
+                        <form class="w-100 was-validated">
+                          <div class="mb-3">
+                            <label
+                              for="editNameServer"
+                              class="form-label"
+                              >Server Name</label
+                            >
+                            <input
+                              minlength="3"
+                              class="form-control"
+                              id="editNameServer"
+                              type="text"
+                              name="nameEditNameServer"
+                              aria-label="default input example"
+                            />
+                          </div>
+                          <div class="mb-3">
+                            <label
+                              for="editIpServer"
+                              class="form-label"
+                              >Server IP
+                            </label>
+                            <input
+                              minlength="7"
+                              class="form-control"
+                              id="editIpServer"
+                              type="text"
+                              name="nameEditIpServer"
+                              aria-label="default input example"
+                            />
+                          </div>
+                          <div class="mb-3">
+                            <label
+                              for="editPathConfigServer"
+                              class="form-label"
+                              >Path Config
+                            </label>
+                            <input
+                              minlength="1"
+                              class="form-control"
+                              id="editPathConfigServer"
+                              type="text"
+                              name="nameEditPathConfigServer"
+                              aria-label="default input example"
+                              required
+                            />
+                          </div>
+                          <div class="mb-3">
+                            <label
+                              for="editPathRunConfigServer"
+                              class="form-label"
+                              >Path Run Config
+                            </label>
+                            <input
+                              minlength="1"
+                              class="form-control"
+                              id="editPathRunConfigServer"
+                              type="text"
+                              name="nameEditPathRunConfigServer"
+                              aria-label="default input example"
+                              required
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            id="subServer"
+                            class="btn btn-success"
+                          >
+                            Edit Server
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              fill="currentColor"
+                              class="bi bi-pencil-fill"
+                              viewBox="0 0 16 16"
+                            >
+                              <path
+                                d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"
+                              />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-danger"
+                            data-bs-dismiss="modal"
+                          >
+                            Cancel
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Modal -->
+            <div
+              class="modal fade"
+              id="addServer"
+              data-bs-backdrop="static"
+              data-bs-keyboard="false"
+              tabindex="-1"
+              aria-labelledby="staticBackdropLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-body">
+                    <div id="divAddServer">
+                      <div
+                        class="container-fluid formEdit d-flex justify-content-center align-items-center"
+                      >
+                        <form class="w-100 was-validated">
+                          <div class="mb-3">
+                            <label
+                              for="addNameServer"
+                              class="form-label"
+                              >Server Name</label
+                            >
+                            <input
+                              minlength="3"
+                              class="form-control"
+                              id="addNameServer"
+                              type="text"
+                              name="nameAddNameServer"
+                              aria-label="default input example"
+                              required
+                            />
+                          </div>
+                          <div class="mb-3">
+                            <label
+                              for="addIpServer"
+                              class="form-label"
+                              >Server IP
+                            </label>
+                            <input
+                              minlength="7"
+                              class="form-control"
+                              id="addIpServer"
+                              type="text"
+                              name="nameAddIpServer"
+                              aria-label="default input example"
+                              placeholder="192.168.1.1"
+                              required
+                            />
+                          </div>
+                          <div class="mb-3">
+                            <label
+                              for="addPathConfigServer"
+                              class="form-label"
+                              >Path Config
+                            </label>
+                            <input
+                              minlength="1"
+                              class="form-control"
+                              id="addPathConfigServer"
+                              type="text"
+                              name="nameAddPathConfigServer"
+                              aria-label="default input example"
+                              required
+                            />
+                          </div>
+                          <div class="mb-3">
+                            <label
+                              for="addPathRunConfigServer"
+                              class="form-label"
+                              >Path Run Config
+                            </label>
+                            <input
+                              minlength="1"
+                              class="form-control"
+                              id="addPathRunConfigServer"
+                              type="text"
+                              name="nameAddPathRunConfigServer"
+                              aria-label="default input example"
+                              required
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            id="subAddServer"
+                            class="btn btn-success"
+                          >
+                            Add
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              fill="currentColor"
+                              class="bi bi-check2"
+                              viewBox="0 0 16 16"
+                            >
+                              <path
+                                d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"
+                              />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-danger"
+                            data-bs-dismiss="modal"
+                          >
+                            Cancel
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              fill="currentColor"
+                              class="bi bi-x-lg"
+                              viewBox="0 0 16 16"
+                            >
+                              <path
+                                d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"
+                              />
+                            </svg>
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal -->
+            <div
+              class="modal fade"
+              id="stopServer"
+              tabindex="-1"
+              aria-labelledby="exampleModalLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="modal"
+                      aria-label="Close"
+                    ></button>
+                  </div>
+                  <div class="modal-body p-2">
+                    Are you sure you want to turn off the server
+                    <span
+                      id="spanPauseServer"
+                      class="text-danger"
+                    ></span>
+                    ?
+                  </div>
+                  <div class="modal-footer">
+                    <button
+                      type="button"
+                      id="pauseClick"
+                      class="btn btn-primary"
+                      data-bs-dismiss="modal"
+                    >
+                      I am sure
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-danger"
+                      data-bs-dismiss="modal"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal -->
+            <div
+              class="modal fade"
+              id="playServer"
+              tabindex="-1"
+              aria-labelledby="exampleModalLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="modal"
+                      aria-label="Close"
+                    ></button>
+                  </div>
+                  <div class="modal-body p-2">
+                    Are you sure you want to turn on the server
+                    <span
+                      id="spanPlayServer"
+                      class="text-danger"
+                    ></span>
+                    ?
+                  </div>
+                  <div class="modal-footer">
+                    <button
+                      type="button"
+                      id="playClick"
+                      class="btn btn-primary"
+                      data-bs-dismiss="modal"
+                    >
+                      I am sure
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-danger"
+                      data-bs-dismiss="modal"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal -->
+            <div
+              class="modal fade"
+              id="deletServer"
+              data-bs-backdrop="static"
+              data-bs-keyboard="false"
+              tabindex="-1"
+              aria-labelledby="staticBackdropLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-body">
+                    <div
+                      class="container-fluid formEdit d-flex justify-content-center align-items-center"
+                    >
+                      <form class="w-100 was-validated">
+                        <div class="mb-3">
+                          <label
+                            for="userNameDeletServer"
+                            class="form-label"
+                          >
+                            User Name
+                          </label>
+                          <input
+                            class="form-control"
+                            id="userNameDeletServer"
+                            minlength="3"
+                            type="text"
+                            name="nameUserNameDeletServer"
+                            aria-label="default input example"
+                            required
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="passwordDeletServer"
+                            class="form-label"
+                            >Password
+                          </label>
+                          <input
+                            class="form-control"
+                            id="passwordDeletServer"
+                            minlength="1"
+                            type="password"
+                            name="namePasswordDeletServer"
+                            aria-label="default input example"
+                            required
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            class="form-check-label"
+                            for="showPasswordDeletServer"
+                            >Show Password</label
+                          >
+                          <input
+                            type="checkbox"
+                            class="form-check-input"
+                            id="showPasswordDeletServer"
+                            required
+                          />
+                        </div>
+                        <button
+                          id="subDeletServer"
+                          type="button"
+                          class="btn btn-danger"
+                          data-bs-dismiss="modal"
+                        >
+                          Delete Server
+                          <span
+                            id="spanTrashServer"
+                            class="fs-6"
+                          ></span>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-dark"
+                          data-bs-dismiss="modal"
+                        >
+                          Cancel
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal -->
+            <div
+              class="modal fade"
+              id="serverPassword"
+              data-bs-backdrop="static"
+              data-bs-keyboard="false"
+              tabindex="-1"
+              aria-labelledby="staticBackdropLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-body">
+                    <div
+                      class="container-fluid formEdit d-flex justify-content-center align-items-center"
+                    >
+                      <form class="w-100 was-validated">
+                        <div class="mb-3">
+                          <label
+                            for="userNameShowConfig"
+                            class="form-label"
+                          >
+                            Username (vps)
+                          </label>
+                          <input
+                            class="form-control"
+                            id="userNameShowConfig"
+                            minlength="3"
+                            type="text"
+                            name="nameUserNameShowConfig"
+                            aria-label="default input example"
+                            required
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="passwordShowConfig"
+                            class="form-label"
+                            >Password (vps)
+                          </label>
+                          <input
+                            class="form-control"
+                            id="passwordShowConfig"
+                            type="password"
+                            name="namePasswordShowConfig"
+                            aria-label="default input example"
+                            required
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            class="form-check-label"
+                            for="showPasswordShowConfig"
+                            >Show Password</label
+                          >
+                          <input
+                            type="checkbox"
+                            class="form-check-input"
+                            id="showPasswordShowConfig"
+                            required
+                          />
+                        </div>
+                        <button
+                          id="subShowConfigModule"
+                          type="button"
+                          class="btn btn-primary"
+                        >
+                          Confirm
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-danger"
+                          data-bs-dismiss="modal"
+                        >
+                          Cancel
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="tab-pane fade"
+            id="v-access-levels"
+            role="tabpanel"
+            aria-labelledby="v-access-levels-tab"
+            tabindex="0"
+          >
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th scope="col">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="25"
+                      height="25"
+                      fill="currentColor"
+                      class="bi bi-person-add m-2"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0m-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4"
+                      />
+                      <path
+                        d="M8.256 14a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10q.39 0 .74.025c.226-.341.496-.65.804-.918Q8.844 9.002 8 9c-5 0-6 3-6 4s1 1 1 1z"
+                      />
+                    </svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      fill="currentColor"
+                      class="bi bi-pencil-square"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"
+                      />
+                      <path
+                        fill-rule="evenodd"
+                        d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+                      />
+                    </svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      fill="currentColor"
+                      class="bi bi-eye-fill m-2"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
+                      <path
+                        d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"
+                      />
+                    </svg>
+                    admin
+                  </th>
+                  <td>
+                    <div class="dropdown">
+                      <p class="mb-2">full access</p>
+                    </div>
+                  </td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="col">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      fill="currentColor"
+                      class="bi bi-pencil-square m-2"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"
+                      />
+                      <path
+                        fill-rule="evenodd"
+                        d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+                      />
+                    </svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      fill="currentColor"
+                      class="bi bi-eye-fill me-2"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
+                      <path
+                        d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"
+                      />
+                    </svg>
+                    expert
+                  </th>
+                  <td>
+                    <div class="dropdown">
+                      <p class="mt-2 mb-0">All, Except User Management</p>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="col">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      fill="currentColor"
+                      class="bi bi-eye-fill m-2"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
+                      <path
+                        d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"
+                      />
+                    </svg>
+                    visitor
+                  </th>
+                  <td>
+                    <div class="dropdown">
+                      <p class="mt-2 mb-0">read only</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div
+            class="tab-pane fade"
+            id="v-users"
+            role="tabpanel"
+            aria-labelledby="v-users-tab"
+            tabindex="0"
+          >
+            <div
+              class="modal fade"
+              id="modalAddUser"
+              data-bs-backdrop="static"
+              data-bs-keyboard="false"
+              tabindex="-1"
+              aria-labelledby="staticBackdropLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-body">
+                    <div
+                      class="container-fluid formEdit d-flex justify-content-center align-items-center"
+                    >
+                      <form class="w-100 was-validated">
+                        <div class="mb-3">
+                          <label
+                            for="nameInputAddUser"
+                            class="form-label"
+                            >First Name</label
+                          >
+                          <input
+                            class="form-control"
+                            id="nameInputAddUser"
+                            minlength="3"
+                            type="text"
+                            name="name_nameInputAddUser"
+                            aria-label="default input example"
+                            required
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="familyInputAddUser"
+                            class="form-label"
+                            >Last Name
+                          </label>
+                          <input
+                            class="form-control"
+                            id="familyInputAddUser"
+                            minlength="3"
+                            type="text"
+                            name="nameFamilyInputAddUser"
+                            aria-label="default input example"
+                            required
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="authNameInputAddUser"
+                            class="form-label"
+                            >User Name
+                          </label>
+                          <input
+                            class="form-control"
+                            id="authNameInputAddUser"
+                            minlength="3"
+                            type="text"
+                            name="nameAuthNameInputAddUser"
+                            aria-label="default input example"
+                            required
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="selectAddUser"
+                            class="form-label"
+                            >Role
+                          </label>
+                          <select
+                            class="form-select"
+                            id="selectAddUser"
+                            aria-label="Default select example"
+                          >
+                            <option
+                              value="expert"
+                              id="selectExpert"
+                            >
+                              expert
+                            </option>
+                            <option
+                              value="visitor"
+                              id="selectVisitor"
+                            >
+                              visitor
+                            </option>
+                          </select>
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="accessLevelsdAddUser"
+                            class="form-label"
+                            >Access Levels
+                          </label>
+                          <div
+                            id="idLoadingPermission"
+                            class="loadingPermission"
+                          >
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                          </div>
+                          <div id="showAccessLevel"></div>
+                        </div>
+                        <div
+                          class="mb-3"
+                          id="divPasswordAddUser"
+                        >
+                          <label
+                            for="passwordAddUser"
+                            class="form-label"
+                            >Password
+                          </label>
+                          <input
+                            class="form-control"
+                            id="passwordAddUser"
+                            minlength="8"
+                            type="password"
+                            name="namePasswordAddUser"
+                            aria-label="default input example"
+                            required
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="exampleInputPassword1"
+                            class="form-label"
+                            >Repeat Password
+                          </label>
+                          <input
+                            class="form-control"
+                            id="repeatPasswordAddUser"
+                            minlength="8"
+                            type="password"
+                            name="nameRepeatPasswordAddUser"
+                            aria-label="default input example"
+                            required
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            class="form-check-label"
+                            for="showPasswordAddUser"
+                            >Show Password</label
+                          >
+                          <input
+                            type="checkbox"
+                            class="form-check-input"
+                            id="showPasswordAddUser"
+                            required
+                          />
+                        </div>
+                        <button
+                          id="addTableUsers"
+                          type="button"
+                          class="btn btn-success"
+                        >
+                          Add
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            fill="currentColor"
+                            class="bi bi-check2 ms-2"
+                            viewBox="0 0 16 16"
+                          >
+                            <path
+                              d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          id="canselAddTableUser"
+                          type="button"
+                          class="btn btn-danger"
+                          data-bs-dismiss="modal"
+                        >
+                          Cancel
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            fill="currentColor"
+                            class="bi bi-x-lg ms-2"
+                            viewBox="0 0 16 16"
+                          >
+                            <path
+                              d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"
+                            />
+                          </svg>
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="modal fade"
+              id="modalAccessLevel"
+              data-bs-keyboard="false"
+              tabindex="-1"
+              aria-labelledby="staticBackdropLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">More Access Level</h5>
+                    <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="modal"
+                      aria-label="Close"
+                    ></button>
+                  </div>
+                  <div class="modal-body">
+                    <div
+                      class="container-fluid formEdit d-flex justify-content-center align-items-center"
+                    >
+                      <form class="w-100 was-validated">
+                        <div
+                          class="mb-3"
+                          id="divShowPermission"
+                        ></div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="modal fade"
+              id="editUserModal"
+              data-bs-backdrop="static"
+              data-bs-keyboard="false"
+              tabindex="-1"
+              aria-labelledby="staticBackdropLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-body">
+                    <div
+                      class="container-fluid formEdit d-flex justify-content-center align-items-center"
+                    >
+                      <form class="w-100">
+                        <div class="mb-3">
+                          <label
+                            for="nameInputEditUser"
+                            class="form-label"
+                            >First Name</label
+                          >
+                          <input
+                            class="form-control"
+                            id="nameInputEditUser"
+                            type="text"
+                            name="name_nameInputEditUser"
+                            aria-label="default input example"
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="familyInputEditUser"
+                            class="form-label"
+                            >Last Name
+                          </label>
+                          <input
+                            class="form-control"
+                            id="familyInputEditUser"
+                            type="text"
+                            name="nameFamilyInputEditUser"
+                            aria-label="default input example"
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="authNameInputEditUser"
+                            class="form-label"
+                            >User Name
+                          </label>
+                          <input
+                            class="form-control"
+                            id="authNameInputEditUser"
+                            type="text"
+                            name="nameAuthNameInputEditUser"
+                            aria-label="default input example"
+                          />
+                        </div>
+                        <div
+                          class="mb-3"
+                          id="roleEditUser"
+                        >
+                          <label
+                            for="selectEditUser"
+                            class="form-label"
+                            >Role
+                          </label>
+                          <select
+                            class="form-select"
+                            id="selectEditUser"
+                            aria-label="Default select example"
+                          >
+                            <option value="expert">expert</option>
+                            <option value="visitor">visitor</option>
+                          </select>
+                        </div>
+                        <div
+                          id="divEditUsers"
+                          class="mb-3"
+                        >
+                          <label
+                            for="accessLevelsdAddUser"
+                            class="form-label"
+                            >Access Levels
+                          </label>
+                          <div id="divAccessLevelEdit"></div>
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="passwordEditUser"
+                            class="form-label"
+                            >Password
+                          </label>
+                          <input
+                            class="form-control"
+                            id="passwordEditUser"
+                            type="password"
+                            name="namePasswordEditUser"
+                            aria-label="default input example"
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="repeatPasswordEditUser"
+                            class="form-label"
+                            >Repeat Password
+                          </label>
+                          <input
+                            class="form-control"
+                            id="repeatPasswordEditUser"
+                            type="password"
+                            name="myInputRepeatPassword"
+                            aria-label="default input example"
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            class="form-check-label"
+                            for="showPasswordEditUser"
+                            >Show Password</label
+                          >
+                          <input
+                            type="checkbox"
+                            class="form-check-input"
+                            id="showPasswordEditUser"
+                          />
+                        </div>
+                        <button
+                          id="addEditUser"
+                          type="button"
+                          class="btn btn-success"
+                        >
+                          Edit User Details
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            class="bi bi-pencil-fill ms-2"
+                            viewBox="0 0 16 16"
+                          >
+                            <path
+                              d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-danger"
+                          data-bs-dismiss="modal"
+                        >
+                          Cancel
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            class="bi bi-x-lg ms-2"
+                            viewBox="0 0 16 16"
+                          >
+                            <path
+                              d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"
+                            />
+                          </svg>
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <table
+              class="table table-bordered table-striped text-center mt-3"
+              id="usersTable"
+            >
+              <div class="mt-3">
+                <button
+                  type="button"
+                  id="addUserModal"
+                  class="btn btn-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalAddUser"
+                >
+                  Add User<svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    fill="currentColor"
+                    class="bi bi-person-fill ms-2"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <thead>
+                <tr>
+                  <th scope="col">Row</th>
+                  <th scope="col">First Name</th>
+                  <th scope="col">Last Name</th>
+                  <th scope="col">Username</th>
+                  <th scope="col">Role</th>
+                  <th scope="col">Access Level</th>
+                  <th scope="col">Edit</th>
+                  <th scope="col">Delete</th>
+                </tr>
+              </thead>
+              <tbody id="tBody"></tbody>
+            </table>
+            <nav>
+              <ul
+                class="pagination paginationUser justify-content-center"
+                id="paginationUser"
+              ></ul>
+            </nav>
+
+            <!-- <div
+              class="modal fade"
+              id="modalAccessLevel"
+              data-bs-backdrop="static"
+              data-bs-keyboard="false"
+              tabindex="-1"
+              aria-labelledby="staticBackdropLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-body">
+                    <div
+                      class="container-fluid formEdit d-flex justify-content-center align-items-center"
+                    >
+                      <form class="w-100 was-validated">
+                        <div class="mb-3">
+                          <p>
+                            id:
+                            <span
+                              id="idD"
+                              class="text-danger"
+                            ></span>
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          class="btn btn-danger"
+                          data-bs-dismiss="modal"
+                        >
+                          Cancel
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div> -->
+
+            <!-- <div
+              class="modal fade"
+              id="modalAccessLevel"
+              data-bs-backdrop="static"
+              data-bs-keyboard="false"
+              tabindex="-1"
+              aria-labelledby="staticBackdropLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-body">
+                    <div
+                      class="container-fluid formEdit d-flex justify-content-center align-items-center"
+                    >
+                      <form class="w-100 was-validated">
+                        <div class="mb-3">
+                          <p>
+                            id:
+                            <span
+                              id="idD"
+                              class="text-danger"
+                            ></span>
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          class="btn btn-danger"
+                          data-bs-dismiss="modal"
+                        >
+                          Cancel
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div> -->
+            <!-- Modal -->
+            <div
+              class="modal fade"
+              id="removeUserModal"
+              tabindex="-1"
+              aria-labelledby="exampleModalLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="modal"
+                      aria-label="Close"
+                    ></button>
+                  </div>
+                  <div class="modal-body p-2">
+                    Are you sure you want to delete the user
+                    <span
+                      id="spanRemoveUser"
+                      class="text-danger"
+                    ></span>
+                    ?
+                  </div>
+                  <div class="modal-footer">
+                    <button
+                      type="button"
+                      id="removeUserModalClick"
+                      class="btn btn-danger"
+                      data-bs-dismiss="modal"
+                    >
+                      Delete User
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-dark"
+                      data-bs-dismiss="modal"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="tab-pane fade"
+            id="v-monitoring"
+            role="tabpanel"
+            aria-labelledby="V-monitoring-tab"
+            tabindex="0"
+          >
+            <ul class="nav nav-tabs mt-2">
+              <li class="nav-item">
+                <button
+                  class="nav-link active"
+                  id="zobbix"
+                  aria-current="page"
+                  data-bs-toggle="tab"
+                  data-bs-target="#tab1"
+                >
+                  Zobbix
+                </button>
+              </li>
+              <li class="nav-item">
+                <button
+                  class="nav-link"
+                  id="Elk"
+                  data-bs-toggle="tab"
+                  data-bs-target="#tab2"
+                >
+                  Elk
+                </button>
+              </li>
+            </ul>
+
+            <div class="tab-content mt-3">
+              <div
+                class="tab-pane fade show active"
+                id="tab1"
+              >
+                <iframe
+                  id="IframeZobbix"
+                  class="w-100 iframe_one"
+                  src="demo_iframe.htm"
+                  name="iframe_a"
+                  title="Iframe Example"
+                ></iframe>
+                <p class="d-flex">
+                  <input
+                    type="text"
+                    id="url_input_a"
+                    placeholder="Enter URL for iframe Zobbix"
+                    class="form-control mb-2 w-50"
+                  />
+                  <button
+                    class="btn btn-primary mb-2 ms-3"
+                    id="buttonIframe1"
+                  >
+                    Go
+                  </button>
+                </p>
+              </div>
+              <div
+                class="tab-pane fade"
+                id="tab2"
+              >
+                <iframe
+                  id="IframeELK"
+                  class="w-100 iframe_two"
+                  src="demo_iframe.htm"
+                  name="iframe_b"
+                  title="Iframe Example"
+                ></iframe>
+
+                <p class="d-flex">
+                  <input
+                    type="text"
+                    id="url_input_b"
+                    placeholder="Enter URL for iframe Elk"
+                    class="form-control mb-2 w-50"
+                  />
+                  <button
+                    class="btn btn-primary mb-2 ms-3"
+                    id="buttonIframe2"
+                  >
+                    Go
+                  </button>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div
+            class="tab-pane fade"
+            id="v-log"
+            role="tabpanel"
+            aria-labelledby="v-log-tab"
+            tabindex="0"
+          >
+            <table class="table table-bordered table-striped text-center">
+              <thead>
+                <tr>
+                  <th scope="col">Row</th>
+                  <th scope="col">User Name</th>
+                  <th scope="col">Event</th>
+                  <th scope="col">Description</th>
+                  <th scope="col">Date</th>
+                </tr>
+              </thead>
+              <tbody id="tBody2"></tbody>
+            </table>
+
+            <div
+              class="modal fade"
+              id="modalMoreDetailsLog"
+              data-bs-keyboard="false"
+              tabindex="-1"
+              aria-labelledby="staticBackdropLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content modal-log">
+                  <div class="modal-header">
+                    <h5 class="modal-title">More Description</h5>
+                    <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="modal"
+                      aria-label="Close"
+                    ></button>
+                  </div>
+                  <div class="modal-body">
+                    <div
+                      class="container-fluid formEdit d-flex justify-content-center align-items-center"
+                    >
+                      <form
+                        class="w-100 was-validated data-container"
+                        id="formLog"
+                      ></form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- paginate -->
+            <nav>
+              <ul
+                class="pagination paginationLog justify-content-center"
+                id="pagination"
+              ></ul>
+            </nav>
+          </div>
+
+          <div
+            class="tab-pane fade"
+            id="v-module"
+            role="tabpanel"
+            aria-labelledby="v-module-tab"
+            tabindex="0"
+          >
+            <button
+              type="button"
+              id="addModal"
+              class="btn btn-primary mt-3"
+              data-bs-toggle="modal"
+              data-bs-target="#addModule"
+            >
+              Add Module
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="currentColor"
+                class="bi bi-plus-circle-fill ms-2"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z"
+                />
+              </svg>
+            </button>
+            <table class="table table-bordered table-striped text-center mt-3">
+              <thead>
+                <tr>
+                  <th
+                    scope="col"
+                    class="fs-5"
+                  >
+                    Row
+                  </th>
+                  <th
+                    scope="col"
+                    class="fs-5"
+                  >
+                    Module Name
+                  </th>
+                  <th
+                    scope="col"
+                    class="fs-5"
+                  >
+                    Servers
+                  </th>
+                  <th
+                    scope="col"
+                    class="fs-5"
+                  >
+                    Type
+                  </th>
+                  <th
+                    id="thEditModule"
+                    scope="col"
+                    class="fs-5"
+                  >
+                    Edit
+                  </th>
+                  <th
+                    id="thRemoveModule"
+                    scope="col"
+                    class="fs-5"
+                  >
+                    Delete
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="tBody3"></tbody>
+            </table>
+            <nav>
+              <ul
+                class="pagination paginationModule justify-content-center"
+                id="paginationModule"
+              ></ul>
+            </nav>
+            <div
+              class="modal fade"
+              id="removeModule"
+              tabindex="-1"
+              aria-labelledby="exampleModalLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="modal"
+                      aria-label="Close"
+                    ></button>
+                  </div>
+                  <div class="modal-body p-2">
+                    Are you sure you want to delete the module
+                    <span
+                      id="spanRemoveModule"
+                      class="text-danger"
+                    ></span>
+                    ?
+                  </div>
+                  <div class="modal-footer">
+                    <button
+                      type="button"
+                      id="subDeletModule"
+                      class="btn btn-danger"
+                      data-bs-dismiss="modal"
+                    >
+                      Delete Module
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-dark"
+                      data-bs-dismiss="modal"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="modal fade"
+              id="editModule"
+              data-bs-backdrop="static"
+              data-bs-keyboard="false"
+              tabindex="-1"
+              aria-labelledby="staticBackdropLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-body">
+                    <div
+                      class="container-fluid formEdit d-flex justify-content-center align-items-center"
+                    >
+                      <form class="w-100">
+                        <div class="mb-3">
+                          <label
+                            for="moduleName"
+                            class="form-label"
+                            >Module Name</label
+                          >
+                          <input
+                            class="form-control"
+                            id="moduleName"
+                            type="text"
+                            name="name_nameInputEditModule"
+                            aria-label="default input example"
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="moduleFile"
+                            class="form-label"
+                            >Module File
+                          </label>
+                          <div class="input-group mb-3">
+                            <input
+                              type="file"
+                              class="form-control"
+                              id="moduleFile"
+                            />
+                          </div>
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="moduleType"
+                            class="form-label"
+                            >Module Type
+                          </label>
+                          <!-- <div class="form-check">
+                            <div>
+                              <input
+                                class="form-check-input"
+                                type="radio"
+                                value=""
+                                id="moduleTypeEPC"
+                              />
+                              <label
+                                class="form-check-label"
+                                for="moduleTypeEPC"
+                              >
+                                EPC
+                              </label>
+                            </div>
+                            <div>
+                              <input
+                                class="form-check-input"
+                                type="radio"
+                                value=""
+                                id="moduleType5GC"
+                              />
+                              <label
+                                class="form-check-label"
+                                for="moduleType5GC"
+                              >
+                                5GC
+                              </label>
+                            </div>
+                          </div> -->
+                          <div class="form-check">
+                            <input
+                              class="form-check-input"
+                              type="radio"
+                              name="flexRadioDefault"
+                              id="moduleTypeEPC"
+                            />
+                            <label
+                              class="form-check-label"
+                              for="moduleTypeEPC"
+                            >
+                              EPC
+                            </label>
+                          </div>
+                          <div class="form-check">
+                            <input
+                              class="form-check-input"
+                              type="radio"
+                              name="flexRadioDefault"
+                              id="moduleType5GC"
+                            />
+                            <label
+                              class="form-check-label"
+                              for="moduleType5GC"
+                            >
+                              5GC
+                            </label>
+                          </div>
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="selectServer"
+                            class="form-label"
+                            >Servers
+                          </label>
+                          <div id="ServerEditModule"></div>
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="userNameModule"
+                            class="form-label"
+                            >User Name (vps)</label
+                          >
+                          <input
+                            class="form-control"
+                            id="userNameModule"
+                            type="text"
+                            name="name_InputUserNameModule"
+                            aria-label="default input example"
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="passwordModule"
+                            class="form-label"
+                            >Password (vps)</label
+                          >
+                          <input
+                            class="form-control"
+                            id="passwordModule"
+                            type="password"
+                            name="name_InputPasswordModule"
+                            aria-label="default input example"
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <div class="form-check">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              value=""
+                              id="saveValue"
+                            />
+                            <label
+                              class="form-check-label"
+                              for="saveValue"
+                            >
+                              Save Username and Password
+                            </label>
+                          </div>
+                        </div>
+                        <button
+                          id="buttonUpdateModule"
+                          type="button"
+                          class="btn btn-success"
+                        >
+                          Update Module
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            class="bi bi-pencil-fill ms-2"
+                            viewBox="0 0 16 16"
+                          >
+                            <path
+                              d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-danger"
+                          data-bs-dismiss="modal"
+                        >
+                          Cancel
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            class="bi bi-x-lg ms-2"
+                            viewBox="0 0 16 16"
+                          >
+                            <path
+                              d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"
+                            />
+                          </svg>
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="modal fade"
+              id="addModule"
+              data-bs-backdrop="static"
+              data-bs-keyboard="false"
+              tabindex="-1"
+              aria-labelledby="staticBackdropLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-body">
+                    <div
+                      class="container-fluid formEdit d-flex justify-content-center align-items-center"
+                    >
+                      <form class="w-100">
+                        <div class="mb-3">
+                          <label
+                            for="moduleAddName"
+                            class="form-label"
+                            >Module Name</label
+                          >
+                          <input
+                            class="form-control"
+                            id="moduleAddName"
+                            type="text"
+                            name="name_nameInputAddModule"
+                            aria-label="default input example"
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="moduleAddFile"
+                            class="form-label"
+                            >Module File
+                          </label>
+                          <div class="input-group mb-3">
+                            <input
+                              type="file"
+                              class="form-control"
+                              id="moduleAddFile"
+                            />
+                          </div>
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="moduleAddType"
+                            class="form-label"
+                            >Module Type
+                          </label>
+                          <div class="form-check">
+                            <input
+                              class="form-check-input"
+                              type="radio"
+                              name="flexRadioDefault"
+                              id="moduleAddTypeEPC"
+                            />
+                            <label
+                              class="form-check-label"
+                              for="moduleAddTypeEPC"
+                            >
+                              EPC
+                            </label>
+                          </div>
+                          <div class="form-check">
+                            <input
+                              class="form-check-input"
+                              type="radio"
+                              name="flexRadioDefault"
+                              id="moduleAddType5GC"
+                            />
+                            <label
+                              class="form-check-label"
+                              for="moduleAddType5GC"
+                            >
+                              5GC
+                            </label>
+                          </div>
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="selectAddServer"
+                            class="form-label"
+                            >Servers
+                          </label>
+                          <div id="ServerAddModule"></div>
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="userNameAddModule"
+                            class="form-label"
+                            >User Name (vps)
+                          </label>
+                          <input
+                            class="form-control"
+                            id="userNameAddModule"
+                            type="text"
+                            name="name_InputUserNameAddModule"
+                            aria-label="default input example"
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label
+                            for="passwordAddModule"
+                            class="form-label"
+                            >Password (vps)</label
+                          >
+                          <input
+                            class="form-control"
+                            id="passwordAddModule"
+                            type="password"
+                            name="name_InputPasswordAddModule"
+                            aria-label="default input example"
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <div class="form-check">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              value=""
+                              id="saveValueAdd"
+                            />
+                            <label
+                              class="form-check-label"
+                              for="saveValueAdd"
+                            >
+                              Save Username and Password
+                            </label>
+                          </div>
+                        </div>
+                        <button
+                          id="buttonAddModule"
+                          type="button"
+                          class="btn btn-success"
+                        >
+                          Add Module
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            fill="currentColor"
+                            class="bi bi-plus-circle ms-2"
+                            viewBox="0 0 16 16"
+                          >
+                            <path
+                              d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"
+                            />
+                            <path
+                              d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-danger"
+                          data-bs-dismiss="modal"
+                        >
+                          Cancel
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            class="bi bi-x-lg ms-2"
+                            viewBox="0 0 16 16"
+                          >
+                            <path
+                              d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"
+                            />
+                          </svg>
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          id="idLoading"
+          class="loading col-10"
+        >
+          <svg
+            class="pl"
+            width="240"
+            height="240"
+            viewBox="0 0 240 240"
+          >
+            <circle
+              class="pl__ring pl__ring--a"
+              cx="120"
+              cy="120"
+              r="105"
+              fill="none"
+              stroke="#000"
+              stroke-width="20"
+              stroke-dasharray="0 660"
+              stroke-dashoffset="-330"
+              stroke-linecap="round"
+            ></circle>
+            <circle
+              class="pl__ring pl__ring--b"
+              cx="120"
+              cy="120"
+              r="35"
+              fill="none"
+              stroke="#000"
+              stroke-width="20"
+              stroke-dasharray="0 220"
+              stroke-dashoffset="-110"
+              stroke-linecap="round"
+            ></circle>
+            <circle
+              class="pl__ring pl__ring--c"
+              cx="85"
+              cy="120"
+              r="70"
+              fill="none"
+              stroke="#000"
+              stroke-width="20"
+              stroke-dasharray="0 440"
+              stroke-linecap="round"
+            ></circle>
+            <circle
+              class="pl__ring pl__ring--d"
+              cx="155"
+              cy="120"
+              r="70"
+              fill="none"
+              stroke="#000"
+              stroke-width="20"
+              stroke-dasharray="0 440"
+              stroke-linecap="round"
+            ></circle>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> -->
+
+  </body>
+</html>

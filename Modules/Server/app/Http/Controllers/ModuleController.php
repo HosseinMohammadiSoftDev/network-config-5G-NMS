@@ -123,11 +123,12 @@ class ModuleController extends ApiController
   public function ShowAllModules (Request $request)
    {
         $user = Auth::user();
+        $perPage = ($request->input('paginate') ?? 10);
 
         if ($user->hasRole('admin')) {
             return response()->json([
                 'msg' => 'The list of modules was successfully retrieved',
-                'module' => $this->formatModules(Module::with('servers')->get())
+                'module' => $this->formatModules(Module::with('servers')->paginate($perPage))
             ]);
         }
 
@@ -137,27 +138,42 @@ class ModuleController extends ApiController
             $query->whereIn('name', collect($userPermissions)->map(function ($permission) {
                 return str_replace('server/', '', $permission);
             })->toArray());
-        }])->get();
+        }])->paginate($perPage);
 
-        $filteredModules = $modules->filter(fn($module) => $module->servers->isNotEmpty());
 
-        return response()->json(['msg' => 'The list of modules was successfully retrieved','module' => $this->formatModules($filteredModules)]);
+        return response()->json([
+            'msg' => 'The list of modules was successfully retrieved',
+            'module' => $this->formatModules($modules)
+        ]);
   }
   private function formatModules($modules)
   {
-        return $modules->map(function ($module) {
-            return [
-                'module_id' => $module->id,
-                'module_name' => $module->name,
-                'module_type' => $module->type,
-                'server_detaile' => $module->servers->map(fn($server) => [
-                    'id' => $server->id,
-                    'name' => $server->name,
-                    'is_down' => $server->is_down,
-                ]),
-                'server_ids' => $module->servers->pluck('id')->toArray(),
-            ];
-        });
+      $paginationData = [
+          'current_page' => $modules->currentPage(),
+          'per_page' => $modules->perPage(),
+          'total' => $modules->total(),
+          'last_page' => $modules->lastPage(),
+      ];
+
+      $formattedModules = $modules->getCollection()->map(function ($module) {
+          return [
+              'module_id' => $module->id,
+              'module_name' => $module->name,
+              'module_type' => $module->type,
+              'server_detaile' => $module->servers->map(fn($server) => [
+                  'id' => $server->id,
+                  'name' => $server->name,
+                  'is_down' => $server->is_down,
+              ]),
+              'server_ids' => $module->servers->pluck('id')->toArray(),
+          ];
+      });
+
+      return [
+          'msg' => 'The list of modules was successfully retrieved',
+          'module' => $formattedModules,
+          'pagination' => $paginationData,
+      ];
   }
 
 
@@ -175,7 +191,7 @@ class ModuleController extends ApiController
       $arrayContent = json_decode($jsonContent, true);
 
       if (json_last_error() !== JSON_ERROR_NONE)
-     throw new HttpResponseException(response()->json(['msg' => 'error in convert json to yaml'], 422));
+        throw new HttpResponseException(response()->json(['msg' => 'error in convert json to yaml'], 422));
 
       $arrayContent = $this->convertNullKeysToComments($arrayContent);
 
@@ -462,7 +478,7 @@ class ModuleController extends ApiController
         ], 403));
 
     }
-    function getArrayChanges($array1, $array2) {
+    public function getArrayChanges($array1, $array2) {
         $changes = [];
 
         foreach ($array2 as $key => $value) {
@@ -690,7 +706,7 @@ class ModuleController extends ApiController
     {
         // is down server
             if ($server['is_down'] == 1)
-                throw new HttpResponseException(response()->json(['msg' => 'this server off'], 422));
+                throw new HttpResponseException(response()->json(['msg' => 'this server: ' . $server['name'] .' is off'], 422));
 
         if (!$server['path_config'])
             throw new HttpResponseException(response()->json(['msg' => 'You did not specify a configuration address config'], 422));
@@ -709,53 +725,6 @@ class ModuleController extends ApiController
         $commandRestart = $server['path_run_config'] . 'bbdh-' . $moduleName . 'd' . ' restart';
         // $output = $sshHelper->restartModule($commandRestart );
 
-    }
-    public function restartServiceModule (restartServiceModuleRequest $request)
-    {
-        $validate = $request->validated();
-
-        $server = server::find($validate['server_id']);
-        $module = Module::find($validate['module_id']);
-
-        $username = $validate['username'];
-        $password = $validate['password'];
-
-            // is down server
-         if ($server['is_down'] == 1)
-             throw new HttpResponseException(response()->json(['msg' => 'this server off'], 422));
-
-
-        try {
-
-            $sshHelper = new sshHelper($server, $username, $password);
-            $commandRestart = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' restart';
-
-            $output = $sshHelper->restartModule($commandRestart);
-
-            return response()->json($output);
-        } catch (Exception $e) {
-
-            $message = $e->getMessage();
-            $message = preg_replace('/\x1b\[[0-9;]*m/', '', $message); // حذف کدهای ANSI
-            $message = preg_replace('/\r?\n.*?\[root@localhost.*?$/', '', $message); // حذف اطلاعات اضافی مربوط به خط فرمان
-
-            preg_match_all('/\b(FATAL|ERROR):\s.*?(?=\s\(.*?\)|$)/m', $message, $matches);
-
-            $formattedMessages = $matches[0] ?? [];
-
-            $separatedMessages = [];
-            foreach ($formattedMessages as $index => $msg) {
-                $separatedMessages["Error-" . ($index + 1)] = $msg;
-            }
-
-            throw new HttpResponseException(response()->json([
-                'msg' => 'server error!',
-                'error' => [
-                    'type' => 'restart-service-error',
-                    'message' => $separatedMessages
-                ]
-            ], 422));
-        }
     }
     private function updateModuleConfigInDatabase($moduleId, $data, $server)
     {
@@ -913,19 +882,21 @@ class ModuleController extends ApiController
     }
     private function sendDefaultConfigToServers(array $serverIds, Request $request, Module $module)
     {
+        $yamlContent = $request->file('config_file')->getContent();
+        $jsonContent = $this->uploadModuleFile($request->file('config_file'));
+
         foreach ($serverIds as $serverId) {
             $server = Server::find($serverId);
 
             $defaultConfig = [
-                'initial_config' => 'default_config_value',
-                'current_config' => 'default_config_value',
+                'initial_config' => $jsonContent,
+                'current_config' => $jsonContent,
             ];
-
 
             $module->servers()->attach($serverId,$defaultConfig);
 
-            // $yamlContent = $this->convertJsonToYaml($defaultConfig['initial_config']);
-            // $this->sendConfigToServer($request['username'], $request['password'], 'default_module', $yamlContent, $server);
+            $yamlContent = $this->convertJsonToYaml($defaultConfig['initial_config']);
+            $this->sendConfigToServer($request['username'], $request['password'], 'default_module', $yamlContent, $server);
         }
     }
     private function addModules(Module $module, array $serverIds, Request $request)
@@ -968,38 +939,41 @@ class ModuleController extends ApiController
     }
     private function syncModuleWithServers(Module $module, array $serverIds, $request)
     {
+
         $existingServerIds = $module->servers->pluck('id')->toArray();
 
         $serversToDelete = array_diff($existingServerIds, $serverIds);
         $serversToAdd = array_diff($serverIds, $existingServerIds);
 
-        try {
 
-            $this->addModules($module, $serversToAdd, $request);
-            $this->deleteModules($serversToDelete, $module, $request);
+        $this->addModules($module, $serversToAdd, $request);
+        $this->deleteModules($serversToDelete, $module, $request);
 
-        } catch (\Exception $e) {
-            throw new HttpResponseException(response()->json(['error' => $e->getMessage()], 422));
-        }
     }
     public function editModule(EditModuleRequest $request)
     {
-        $validated = $request->validated();
-        $module = Module::find($validated['module_id']);
+        try {
+            DB::beginTransaction();
 
-        if (!$module)
-            throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.'], 422));
-        $serverIds = $validated['server_ids'] ?? [];
+            $validated = $request->validated();
+            $module = Module::find($validated['module_id']);
 
-        $configFile = $request->file('config_file');
+            if (!$module)
+                throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.'], 422));
+            $serverIds = $validated['server_ids'] ?? [];
 
-        if ($module->servers->isEmpty() && !$configFile)
-            throw new HttpResponseException(response()->json(['msg' => 'config file required'], 422));
+            $configFile = $request->file('config_file');
+
+            if ($module->servers->isEmpty() && !$configFile)
+                throw new HttpResponseException(response()->json(['msg' => 'config file required'], 422));
 
             // check permissions
         foreach ($serverIds as $serverId) {
             $server = Server::find($serverId);
             $this->chackPermissionModule($server);
+
+            if ($server['is_down'])
+                throw new HttpResponseException(response()->json(['msg' => 'server : ' . $server['name'] . ' is off']));
         }
 
         if ($serverIds) {
@@ -1017,23 +991,30 @@ class ModuleController extends ApiController
 
 
 
-        $types = implode(',', array_map('trim', explode(',', $validated['type'] ?? $module['type'])));
+            $types = implode(',', array_map('trim', explode(',', $validated['type'] ?? $module['type'])));
 
-        $module->update([
-            'name' => $validated['name'] ?? $module->name,
-            'type' => $types,
-        ]);
+            $module->update([
+                'name' => $validated['name'] ?? $module->name,
+                'type' => $types,
+            ]);
 
-        $module->load('servers');
+            $module->load('servers');
 
-        return response()->json([
-            'message' => 'Module updated successfully',
-            'module' => [
-                'module_name' => $module['name'],
-                'module_type' => $module['type'],
-                'module_server' => $module->servers->pluck('id')->toArray(),
-            ]
-        ], 200);
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Module updated successfully',
+                'module' => [
+                    'module_name' => $module['name'],
+                    'module_type' => $module['type'],
+                    'module_server' => $module->servers->pluck('id')->toArray(),
+                ]
+            ], 200);
+
+        } catch (\Exception $e){
+            DB::rollBack();
+            throw $e;
+        }
     }
 
 
@@ -1081,6 +1062,260 @@ class ModuleController extends ApiController
             ->log('The configuration values have been changed');
 
             return response()->json(['message'=> $e->getMessage()],422);
+        }
+    }
+
+
+
+        // service module
+    public function restartServiceModule (restartServiceModuleRequest $request)
+    {
+        $validate = $request->validated();
+
+        $server = server::find($validate['server_id']);
+        $module = Module::find($validate['module_id']);
+
+        $username = $validate['username'];
+        $password = $validate['password'];
+
+            // is down server
+         if ($server['is_down'] == 1)
+             throw new HttpResponseException(response()->json(['msg' => 'this server off'], 422));
+
+
+        try {
+
+            $sshHelper = new sshHelper($server, $username, $password);
+            $commandRestart = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' restart';
+
+            $output = $sshHelper->restartModule($commandRestart);
+
+            return response()->json($output);
+
+        } catch (HttpResponseException $e) {
+            throw $e;
+        } catch (InvalidArgumentException $e) {
+                DB::rollBack();
+
+                $message = $e->getMessage();
+
+                $message = preg_replace('/\x1b\[[0-9;]*m/', '', $message); // حذف کدهای ANSI
+                $message = preg_replace('/\r?\n.*?\[root@localhost.*?$/', '', $message); // حذف اطلاعات اضافی مربوط به خط فرمان
+
+                preg_match_all('/\b(FATAL|ERROR):\s.*?(?=\s\(.*?\)|$)/m', $message, $matches);
+
+                $formattedMessages = $matches[0] ?? [];
+
+                $separatedMessages = [];
+                foreach ($formattedMessages as $index => $msg) {
+                    $separatedMessages["Error-" . ($index + 1)] = $msg;
+                }
+
+            throw new HttpResponseException(response()->json([
+                'msg' => 'server error!',
+                'error' => [
+                    'type' => 'restart-service-error',
+                    'message' => $separatedMessages
+                ]
+            ], 422));
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            $message = $e->getMessage();
+
+            throw new HttpResponseException(response()->json([
+                'msg' => 'خطای سرور!',
+                'error' => [
+                    'type' => 'server-error',
+                    'message' => $message
+                ]
+            ], 422));
+        }
+    }
+    public function startServiceModule (restartServiceModuleRequest $request)
+    {
+        $validate = $request->validated();
+
+        $server = server::find($validate['server_id']);
+        $module = Module::find($validate['module_id']);
+
+        $username = $validate['username'];
+        $password = $validate['password'];
+
+            // is down server
+         if ($server['is_down'] == 1)
+             throw new HttpResponseException(response()->json(['msg' => 'this server off'], 422));
+
+
+        try {
+
+            $sshHelper = new sshHelper($server, $username, $password);
+            $commandRestart = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' start';
+
+            $output = $sshHelper->restartModule($commandRestart);
+
+            return response()->json($output);
+        } catch (HttpResponseException $e) {
+            throw $e;
+        } catch (InvalidArgumentException $e) {
+                DB::rollBack();
+
+                $message = $e->getMessage();
+                $message = preg_replace('/\x1b\[[0-9;]*m/', '', $message); // حذف کدهای ANSI
+                $message = preg_replace('/\r?\n.*?\[root@localhost.*?$/', '', $message); // حذف اطلاعات اضافی مربوط به خط فرمان
+
+                preg_match_all('/\b(FATAL|ERROR):\s.*?(?=\s\(.*?\)|$)/m', $message, $matches);
+
+                $formattedMessages = $matches[0] ?? [];
+
+                $separatedMessages = [];
+                foreach ($formattedMessages as $index => $msg) {
+                    $separatedMessages["Error-" . ($index + 1)] = $msg;
+                }
+
+            throw new HttpResponseException(response()->json([
+                'msg' => 'server error!',
+                'error' => [
+                    'type' => 'start-service-error',
+                    'message' => $separatedMessages
+                ]
+            ], 422));
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            $message = $e->getMessage();
+
+            throw new HttpResponseException(response()->json([
+                'msg' => 'خطای سرور!',
+                'error' => [
+                    'type' => 'server-error',
+                    'message' => $message
+                ]
+            ], 422));
+        }
+    }
+    public function stopServiceModule (restartServiceModuleRequest $request)
+    {
+        $validate = $request->validated();
+
+        $server = server::find($validate['server_id']);
+        $module = Module::find($validate['module_id']);
+
+        $username = $validate['username'];
+        $password = $validate['password'];
+
+            // is down server
+         if ($server['is_down'] == 1)
+             throw new HttpResponseException(response()->json(['msg' => 'this server off'], 422));
+
+
+        try {
+
+            $sshHelper = new sshHelper($server, $username, $password);
+            $commandRestart = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' stop';
+
+            $output = $sshHelper->restartModule($commandRestart);
+
+            return response()->json($output);
+        } catch (HttpResponseException $e) {
+            throw $e;
+        } catch (InvalidArgumentException $e) {
+                DB::rollBack();
+
+                $message = $e->getMessage();
+                $message = preg_replace('/\x1b\[[0-9;]*m/', '', $message); // حذف کدهای ANSI
+                $message = preg_replace('/\r?\n.*?\[root@localhost.*?$/', '', $message); // حذف اطلاعات اضافی مربوط به خط فرمان
+
+                preg_match_all('/\b(FATAL|ERROR):\s.*?(?=\s\(.*?\)|$)/m', $message, $matches);
+
+                $formattedMessages = $matches[0] ?? [];
+
+                $separatedMessages = [];
+                foreach ($formattedMessages as $index => $msg) {
+                    $separatedMessages["Error-" . ($index + 1)] = $msg;
+                }
+
+            throw new HttpResponseException(response()->json([
+                'msg' => 'server error!',
+                'error' => [
+                    'type' => 'stop-service-error',
+                    'message' => $separatedMessages
+                ]
+            ], 422));
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            $message = $e->getMessage();
+
+            throw new HttpResponseException(response()->json([
+                'msg' => 'خطای سرور!',
+                'error' => [
+                    'type' => 'server-error',
+                    'message' => $message
+                ]
+            ], 422));
+        }
+    }
+    public function statusServiceModule (restartServiceModuleRequest $request)
+    {
+        $validate = $request->validated();
+
+        $server = server::find($validate['server_id']);
+        $module = Module::find($validate['module_id']);
+
+        $username = $validate['username'];
+        $password = $validate['password'];
+
+            // is down server
+         if ($server['is_down'] == 1)
+             throw new HttpResponseException(response()->json(['msg' => 'this server off'], 422));
+
+
+        try {
+
+            $sshHelper = new sshHelper($server, $username, $password);
+            $commandRestart = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' status';
+
+            $output = $sshHelper->restartModule($commandRestart);
+
+            return response()->json($output);
+        } catch (HttpResponseException $e) {
+            throw $e;
+        } catch (InvalidArgumentException $e) {
+                DB::rollBack();
+
+                $message = $e->getMessage();
+                $message = preg_replace('/\x1b\[[0-9;]*m/', '', $message); // حذف کدهای ANSI
+                $message = preg_replace('/\r?\n.*?\[root@localhost.*?$/', '', $message); // حذف اطلاعات اضافی مربوط به خط فرمان
+
+                preg_match_all('/\b(FATAL|ERROR):\s.*?(?=\s\(.*?\)|$)/m', $message, $matches);
+
+                $formattedMessages = $matches[0] ?? [];
+
+                $separatedMessages = [];
+                foreach ($formattedMessages as $index => $msg) {
+                    $separatedMessages["Error-" . ($index + 1)] = $msg;
+                }
+
+            throw new HttpResponseException(response()->json([
+                'msg' => 'server error!',
+                'error' => [
+                    'type' => 'status-service-error',
+                    'message' => $separatedMessages
+                ]
+            ], 422));
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            $message = $e->getMessage();
+
+            throw new HttpResponseException(response()->json([
+                'msg' => 'خطای سرور!',
+                'error' => [
+                    'type' => 'server-error',
+                    'message' => $message
+                ]
+            ], 422));
         }
     }
 

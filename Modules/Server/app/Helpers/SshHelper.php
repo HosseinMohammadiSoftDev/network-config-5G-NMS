@@ -66,7 +66,7 @@ class SshHelper
 
         if (str_contains($output, 'FATAL') || str_contains($output, 'ERROR')) {
             $this->logActivity('module-error', 'restartModule', ['command' => $command, 'output' => $output]);
-            throw new HttpResponseException(response()->json($output, 422));
+            throw new InvalidArgumentException($output);
         }
         else
             $this->logActivity('module-restart', 'restartModule');
