@@ -229,6 +229,7 @@ class UserController extends ApiController
             return response()->json(['msg' => 'server permission empity'], 422);
 
         if (empty(array_intersect($permissionNames, $serverPermissions)))
+            if (!$user->hasRole('admin'))
                 throw new HttpResponseException(response()->json(['msg' => 'At least one server-related permission is required'], 422));
 
 

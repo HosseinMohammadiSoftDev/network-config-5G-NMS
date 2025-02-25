@@ -481,7 +481,7 @@ class ModuleController extends ApiController
             return true;
 
         throw new HttpResponseException(response()->json([
-            'msg' => 'You do not have permission to use this server.',
+            'msg' => 'You do not have permission to use this server : ' . $server['name'],
             'your-permissions' => $user->getAllPermissions()->pluck('name')
         ], 403));
 
