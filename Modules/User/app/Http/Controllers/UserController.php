@@ -93,6 +93,9 @@ class UserController extends ApiController
     private function assignRoleAndPermissionsToVisitor(User $user, $role, $permissionNames)
     {
         $allowed = ['monitoring', "module/read", "VM/read"];
+
+        $user->syncPermissions([]);
+
         $allowed = array_merge($allowed, Permission::where('name', 'like', 'server/%')->pluck('name')->toArray());
 
         if ((!in_array('module/read', $permissionNames, true) || !in_array('VM/read', $permissionNames, true)))
@@ -164,9 +167,10 @@ class UserController extends ApiController
         if (! $serverPermissions)
             return response()->json(['msg' => 'server permission empity'], 422);
 
-        if (empty($permissionNames) || empty(array_intersect($permissionNames, $serverPermissions)))
-            throw new HttpResponseException(response()->json(['msg' => 'At least one server-related permission is required'], 422));
-
+        if (empty($permissionNames) || empty(array_intersect($permissionNames, $serverPermissions))) {
+            if (!Auth::user()->getRoleNames())
+                throw new HttpResponseException(response()->json(['msg' => 'At least one server-related permission is required'], 422));
+        }
 
             if ($role == 'visitor' || $user->getRoleNames() == 'visitor')
                 $this->assignRoleAndPermissionsToVisitor($user, $role, $permissionNames);
@@ -214,27 +218,26 @@ class UserController extends ApiController
         $credentials = $request->validated();
 
         $user = User::find($credentials['user_id']);
-        $role = $credentials['role'] ?? $user->getRoleNames();
+        $role = $credentials['role'] ?? $user->getRoleNames()[0];
         $permissionNames = $credentials['permission_name'] ?? null;
 
         if ($user->hasRole('admin') && !Auth::user()->hasRole('admin'))
-            return response()->json(['msg' => 'You cannot change the admin username and password'], 403);
+            return response()->json(['msg' => 'You cannot edit admin'], 403);
 
         $serverPermissions = Permission::where('name', 'like', 'server/%')->pluck('name')->toArray();
         if (! $serverPermissions)
             return response()->json(['msg' => 'server permission empity'], 422);
 
         if (empty(array_intersect($permissionNames, $serverPermissions)))
-            throw new HttpResponseException(response()->json(['msg' => 'At least one server-related permission is required'], 422));
+                throw new HttpResponseException(response()->json(['msg' => 'At least one server-related permission is required'], 422));
 
 
         try {
         DB::beginTransaction();
 
 
-        if ($role == 'visitor' || $user->getRoleNames()[0] == 'visitor')
-            dd('ere');
-            // $this->assignRoleAndPermissionsToVisitor($user, $role, $permissionNames);
+        if ($role == 'visitor')
+                $this->assignRoleAndPermissionsToVisitor($user, $role, $permissionNames);
         else
             $this->assignRoleAndPermissionsToExpert($user, $role, $permissionNames);
 
@@ -269,7 +272,7 @@ class UserController extends ApiController
             ->log('The user\'s username and password were successfully updated');
 
         DB::commit();
-        return $this->respondSuccess('The user\'s username and password were successfully changed', [
+        return $this->respondSuccess('The user Edit successfully', [
             'user' => [
                 'id' => $user->id,
                 'first_name' => $user->first_name,

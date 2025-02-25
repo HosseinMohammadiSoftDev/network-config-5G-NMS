@@ -98,7 +98,7 @@ class ServerController extends ApiController
 
 
         $server->update($credentials);
-        $permission->update(['name' => $credentials['name']]);
+        $permission->update(['name' => 'server/' . $credentials['name']]);
 
         activity('edit-server')
             ->causedBy(Auth::user())

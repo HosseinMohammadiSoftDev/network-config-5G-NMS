@@ -155,6 +155,12 @@ class ModuleController extends ApiController
           'last_page' => $modules->lastPage(),
       ];
 
+      $userPermissions = Auth::user()->getAllPermissions()
+            ->filter(fn($permission) => str_starts_with($permission->name, 'server'))
+            ->pluck('name')
+            ->toArray();
+
+
       $formattedModules = $modules->getCollection()->map(function ($module) {
           return [
               'module_id' => $module->id,
@@ -172,6 +178,7 @@ class ModuleController extends ApiController
 
       return [
           'msg' => 'The list of modules was successfully retrieved',
+          'user_permissions_server' => $userPermissions,
           'module' => $formattedModules,
           'pagination' => $paginationData,
       ];

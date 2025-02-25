@@ -56,6 +56,7 @@ class AdminSeeder extends Seeder
 
         $adminRole->syncPermissions($allPermissions);
 
+
         $admin = User::firstOrCreate(
             ['auth_name' => 'ownerApp'],
             [
@@ -73,8 +74,8 @@ class AdminSeeder extends Seeder
 
             // visitor
     $visitorRole = Role::firstOrCreate(['name' => 'visitor']);
-         $permissions = Permission::whereIn('name', ['VM/read', 'module/read', 'monitoring'])->get();
-         $visitorRole->syncPermissions($permissions);
+        //  $permissions = Permission::whereIn('name', ['VM/read', 'module/read', 'monitoring'])->get();
+        //  $visitorRole->syncPermissions($permissions);
 
 
             // expert
