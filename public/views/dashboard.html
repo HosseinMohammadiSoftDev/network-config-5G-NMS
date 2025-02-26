@@ -22,11 +22,11 @@
       type="image/x-icon"
       href="/assets/logo%20white-C7adMC3s.png"
     />
-    <script type="module" crossorigin src="/assets/dashboard-CXkCWHel.js"></script>
+    <script type="module" crossorigin src="/assets/dashboard-CD8Nj1pr.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/useApi-CLu8VdKs.js">
     <link rel="modulepreload" crossorigin href="/assets/auth-CIdfLHBs.js">
     <link rel="stylesheet" crossorigin href="/assets/useApi-BHbPscNU.css">
-    <link rel="stylesheet" crossorigin href="/assets/dashboard-D9uWqRZ5.css">
+    <link rel="stylesheet" crossorigin href="/assets/dashboard-DWDmHoRM.css">
   </head>
   <body id="body">
     <div class="container-fluid">
@@ -36,7 +36,7 @@
           class="col-2 sidebar"
           id="idSidebar"
         >
-          <div
+          <!-- <div
             id="idLoadingDashbord"
             class="loadingDashbord col-11"
           >
@@ -45,7 +45,7 @@
             <span></span>
             <span></span>
             <span></span>
-          </div>
+          </div> -->
           <div class="mb-3">
             <img
               class="w-100 h-50 pe-3"
@@ -247,24 +247,26 @@
               </h2>
             </div>
 
-            <a
-              href="../views/login.html"
-              class="logout-link"
-            >
-              Log Out
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                fill="currentColor"
-                class="bi bi-door-open-fill"
-                viewBox="0 0 16 16"
+            <div class="divLogout">
+              <a
+                href="../views/login.html"
+                class="logout-link"
               >
-                <path
-                  d="M1.5 15a.5.5 0 0 0 0 1h13a.5.5 0 0 0 0-1H13V2.5A1.5 1.5 0 0 0 11.5 1H11V.5a.5.5 0 0 0-.57-.495l-7 1A.5.5 0 0 0 3 1.5V15zM11 2h.5a.5.5 0 0 1 .5.5V15h-1zm-2.5 8c-.276 0-.5-.448-.5-1s.224-1 .5-1 .5.448.5 1-.224 1-.5 1"
-                />
-              </svg>
-            </a>
+                Log Out
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  fill="currentColor"
+                  class="bi bi-door-open-fill"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    d="M1.5 15a.5.5 0 0 0 0 1h13a.5.5 0 0 0 0-1H13V2.5A1.5 1.5 0 0 0 11.5 1H11V.5a.5.5 0 0 0-.57-.495l-7 1A.5.5 0 0 0 3 1.5V15zM11 2h.5a.5.5 0 0 1 .5.5V15h-1zm-2.5 8c-.276 0-.5-.448-.5-1s.224-1 .5-1 .5.448.5 1-.224 1-.5 1"
+                  />
+                </svg>
+              </a>
+            </div>
           </div>
         </nav>
 
@@ -306,6 +308,22 @@
                 id="cardContainer"
                 class="row"
               ></div>
+              <div
+                class="w-100"
+                id="divImageServer"
+              >
+                <div class="d-flex justify-content-center w-100">
+                  <img
+                    width="400px"
+                    height="400px"
+                    src="/assets/add-server-Cd6lV3ND.jpg"
+                    alt="Add Server"
+                  />
+                </div>
+                <div class="d-flex justify-content-center w-100">
+                  <h2 class="me-5">Add a Server</h2>
+                </div>
+              </div>
             </main>
             <div
               class="modal fade"
@@ -507,6 +525,7 @@
                             id="subAddServer"
                             class="btn btn-success"
                           >
+                          <!-- <span class="loader"></span> -->
                             Add
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -575,21 +594,23 @@
                     ?
                   </div>
                   <div class="modal-footer">
-                    <button
-                      type="button"
-                      id="pauseClick"
-                      class="btn btn-primary"
-                      data-bs-dismiss="modal"
-                    >
-                      I am sure
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-danger"
-                      data-bs-dismiss="modal"
-                    >
-                      Cancel
-                    </button>
+                    <form class="w-100 was-validated">
+                      <button
+                        type="button"
+                        id="pauseClick"
+                        class="btn btn-primary"
+                        data-bs-dismiss="modal"
+                      >
+                        I am sure
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-danger"
+                        data-bs-dismiss="modal"
+                      >
+                        Cancel
+                      </button>
+                    </form>
                   </div>
                 </div>
               </div>
@@ -1511,21 +1532,23 @@
                     ?
                   </div>
                   <div class="modal-footer">
-                    <button
-                      type="button"
-                      id="removeUserModalClick"
-                      class="btn btn-danger"
-                      data-bs-dismiss="modal"
-                    >
-                      Delete User
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-dark"
-                      data-bs-dismiss="modal"
-                    >
-                      Cancel
-                    </button>
+                    <form class="w-100 was-validated">
+                      <button
+                        type="button"
+                        id="removeUserModalClick"
+                        class="btn btn-danger"
+                        data-bs-dismiss="modal"
+                      >
+                        Delete User
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-dark"
+                        data-bs-dismiss="modal"
+                      >
+                        Cancel
+                      </button>
+                    </form>
                   </div>
                 </div>
               </div>
@@ -1754,6 +1777,22 @@
               <tbody id="tBody3"></tbody>
             </table>
             <nav>
+              <div
+                class="w-100 mt-5"
+                id="divImgModule"
+              >
+                <div class="d-flex justify-content-center w-100">
+                  <img
+                    width="300px"
+                    height="300px"
+                    src="/assets/addModule-f7FZeJDb.png"
+                    alt="Add a Module"
+                  />
+                </div>
+                <div class="d-flex justify-content-center w-100">
+                  <h2>Add a Module</h2>
+                </div>
+              </div>
               <ul
                 class="pagination paginationModule justify-content-center"
                 id="paginationModule"
@@ -1785,21 +1824,23 @@
                     ?
                   </div>
                   <div class="modal-footer">
-                    <button
-                      type="button"
-                      id="subDeletModule"
-                      class="btn btn-danger"
-                      data-bs-dismiss="modal"
-                    >
-                      Delete Module
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-dark"
-                      data-bs-dismiss="modal"
-                    >
-                      Cancel
-                    </button>
+                    <form class="w-100 was-validated">
+                      <button
+                        type="button"
+                        id="subDeletModule"
+                        class="btn btn-danger"
+                        data-bs-dismiss="modal"
+                      >
+                        Delete Module
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-dark"
+                        data-bs-dismiss="modal"
+                      >
+                        Cancel
+                      </button>
+                    </form>
                   </div>
                 </div>
               </div>
@@ -2193,7 +2234,7 @@
         </div>
         <div
           id="idLoading"
-          class="loading col-10"
+          class="loading"
         >
           <svg
             class="pl"
