@@ -1282,7 +1282,7 @@ class ModuleController extends ApiController
         try {
 
             $sshHelper = new sshHelper($server, $username, $password);
-            $commandRestart = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' status';
+            $commandRestart = $server['path_run_config'] . 'systemctl '  . 'status ' . 'bbdh-' . $module['name'] . 'd';
 
             $output = $sshHelper->restartModule($commandRestart);
 
