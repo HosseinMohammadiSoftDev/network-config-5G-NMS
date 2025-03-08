@@ -203,7 +203,7 @@ class ModuleController extends ApiController
 
       $arrayContent = $this->convertNullKeysToComments($arrayContent);
 
-      $yamlContent = Yaml::dump($arrayContent, 4, 2, Yaml::DUMP_OBJECT);
+      $yamlContent = Spyc::YAMLDump($jsonContent, 4, 2);
 
       $yamlContent = preg_replace('/^(  - .+?):\s*$/m', "$1:", $yamlContent);
 
@@ -212,7 +212,6 @@ class ModuleController extends ApiController
   }
   private function convertNullKeysToComments(array $array)
   {
-    // dd($array);
       foreach ($array as $key => $value) {
           if (is_array($value)) {
               $array[$key] = $this->convertNullKeysToComments($value);
@@ -723,11 +722,11 @@ class ModuleController extends ApiController
             throw new HttpResponseException(response()->json(['msg' => 'You did not specify a configuration address run config'], 422));
 
 
-        // $sshHelper = new sshHelper($server, $username, $password);
+        $sshHelper = new sshHelper($server, $username, $password);
 
             // update module
         $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $server['path_config'] . $moduleName . '.yaml';
-        // $sshHelper->runCommand($commandUpdateFileModule );
+        $sshHelper->runCommand($commandUpdateFileModule );
 
             // restart module
         $commandRestart = $server['path_run_config'] . 'bbdh-' . $moduleName . 'd' . ' restart';

@@ -15,7 +15,7 @@
         "phpseclib/phpseclib": "^3.0",
         "spatie/laravel-activitylog": "^4.9",
         "spatie/laravel-permission": "^6.10",
-        "symfony/yaml": "^7.1"
+        "symfony/yaml": "^7.2"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
