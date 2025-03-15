@@ -9,6 +9,7 @@
         "arcanedev/log-viewer": "^11.0",
         "laravel/framework": "^11.9",
         "laravel/sanctum": "^4.0",
+        "laravel/telescope": "^5.5",
         "laravel/tinker": "^2.9",
         "mustangostang/spyc": "^0.6.3",
         "nwidart/laravel-modules": "^11.1",
