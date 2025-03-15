@@ -934,3 +934,33 @@
 #5 /home/mohammadi/Desktop/5G-back/artisan(13): Illuminate\\Foundation\\Application->handleCommand()
 #6 {main}
 "} 
+[2025-03-15 09:26:00] local.ERROR: There are no commands defined in the "ide-helper" namespace. {"exception":"[object] (Symfony\\Component\\Console\\Exception\\NamespaceNotFoundException(code: 0): There are no commands defined in the \"ide-helper\" namespace. at /home/mohammadi/Desktop/5G-back/vendor/symfony/console/Application.php:660)
+[stacktrace]
+#0 /home/mohammadi/Desktop/5G-back/vendor/symfony/console/Application.php(709): Symfony\\Component\\Console\\Application->findNamespace()
+#1 /home/mohammadi/Desktop/5G-back/vendor/symfony/console/Application.php(284): Symfony\\Component\\Console\\Application->find()
+#2 /home/mohammadi/Desktop/5G-back/vendor/symfony/console/Application.php(193): Symfony\\Component\\Console\\Application->doRun()
+#3 /home/mohammadi/Desktop/5G-back/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(198): Symfony\\Component\\Console\\Application->run()
+#4 /home/mohammadi/Desktop/5G-back/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1235): Illuminate\\Foundation\\Console\\Kernel->handle()
+#5 /home/mohammadi/Desktop/5G-back/artisan(13): Illuminate\\Foundation\\Application->handleCommand()
+#6 {main}
+"} 
+[2025-03-15 09:26:34] local.ERROR: There are no commands defined in the "ide-helper" namespace. {"exception":"[object] (Symfony\\Component\\Console\\Exception\\NamespaceNotFoundException(code: 0): There are no commands defined in the \"ide-helper\" namespace. at /home/mohammadi/Desktop/5G-back/vendor/symfony/console/Application.php:660)
+[stacktrace]
+#0 /home/mohammadi/Desktop/5G-back/vendor/symfony/console/Application.php(709): Symfony\\Component\\Console\\Application->findNamespace()
+#1 /home/mohammadi/Desktop/5G-back/vendor/symfony/console/Application.php(284): Symfony\\Component\\Console\\Application->find()
+#2 /home/mohammadi/Desktop/5G-back/vendor/symfony/console/Application.php(193): Symfony\\Component\\Console\\Application->doRun()
+#3 /home/mohammadi/Desktop/5G-back/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(198): Symfony\\Component\\Console\\Application->run()
+#4 /home/mohammadi/Desktop/5G-back/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1235): Illuminate\\Foundation\\Console\\Kernel->handle()
+#5 /home/mohammadi/Desktop/5G-back/artisan(13): Illuminate\\Foundation\\Application->handleCommand()
+#6 {main}
+"} 
+[2025-03-15 09:26:37] local.ERROR: There are no commands defined in the "ide-helper" namespace. {"exception":"[object] (Symfony\\Component\\Console\\Exception\\NamespaceNotFoundException(code: 0): There are no commands defined in the \"ide-helper\" namespace. at /home/mohammadi/Desktop/5G-back/vendor/symfony/console/Application.php:660)
+[stacktrace]
+#0 /home/mohammadi/Desktop/5G-back/vendor/symfony/console/Application.php(709): Symfony\\Component\\Console\\Application->findNamespace()
+#1 /home/mohammadi/Desktop/5G-back/vendor/symfony/console/Application.php(284): Symfony\\Component\\Console\\Application->find()
+#2 /home/mohammadi/Desktop/5G-back/vendor/symfony/console/Application.php(193): Symfony\\Component\\Console\\Application->doRun()
+#3 /home/mohammadi/Desktop/5G-back/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(198): Symfony\\Component\\Console\\Application->run()
+#4 /home/mohammadi/Desktop/5G-back/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1235): Illuminate\\Foundation\\Console\\Kernel->handle()
+#5 /home/mohammadi/Desktop/5G-back/artisan(13): Illuminate\\Foundation\\Application->handleCommand()
+#6 {main}
+"} 

@@ -725,8 +725,8 @@ class ModuleController extends ApiController
         $sshHelper = new sshHelper($server, $username, $password);
 
             // update module
-        $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $server['path_config'] . $moduleName . '.yaml';
-        $sshHelper->runCommand($commandUpdateFileModule );
+        // $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $server['path_config'] . $moduleName . '.yaml';
+        // $sshHelper->runCommand($commandUpdateFileModule );
 
             // restart module
         $commandRestart = $server['path_run_config'] . 'bbdh-' . $moduleName . 'd' . ' restart';
