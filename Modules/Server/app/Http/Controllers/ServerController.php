@@ -359,7 +359,8 @@ class ServerController extends ApiController
                 'route' => request()->fullUrl(),
                 'method' => 'showConfigModule',
                 'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                'user_role' =>Auth::user()->roles()->pluck('name')->first(),                'server' => $server,
+                'user_role' =>Auth::user()->roles()->pluck('name')->first(),
+                'server' => $server,
             ])
             ->log('The connection to the server was successful');
 

@@ -725,8 +725,8 @@ class ModuleController extends ApiController
         $sshHelper = new sshHelper($server, $username, $password);
 
             // update module
-        // $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $server['path_config'] . $moduleName . '.yaml';
-        // $sshHelper->runCommand($commandUpdateFileModule );
+        $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $server['path_config'] . $moduleName . '.yaml';
+        $sshHelper->runCommand($commandUpdateFileModule );
 
             // restart module
         $commandRestart = $server['path_run_config'] . 'bbdh-' . $moduleName . 'd' . ' restart';
@@ -1160,7 +1160,7 @@ class ModuleController extends ApiController
             $sshHelper = new sshHelper($server, $username, $password);
             $commandRestart = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' start';
 
-            $output = $sshHelper->restartModule($commandRestart);
+            $output = $sshHelper->startModule($commandRestart);
 
             return response()->json(['message' => $output]);
         } catch (HttpResponseException $e) {
@@ -1222,7 +1222,7 @@ class ModuleController extends ApiController
             $sshHelper = new sshHelper($server, $username, $password);
             $commandRestart = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' stop';
 
-            $output = $sshHelper->restartModule($commandRestart);
+            $output = $sshHelper->stopModule($commandRestart);
 
             return response()->json(['message' => $output]);
         } catch (HttpResponseException $e) {
@@ -1282,9 +1282,9 @@ class ModuleController extends ApiController
         try {
 
             $sshHelper = new sshHelper($server, $username, $password);
-            $commandRestart = $server['path_run_config'] . 'systemctl '  . 'status ' . 'bbdh-' . $module['name'] . 'd';
+            $commandRestart = 'systemctl '  . 'status ' . 'bbdh-' . $module['name'] . 'd';
 
-            $output = $sshHelper->restartModule($commandRestart);
+            $output = $sshHelper->statusModule($commandRestart);
 
             return response()->json(['message' => $output]);
         } catch (HttpResponseException $e) {

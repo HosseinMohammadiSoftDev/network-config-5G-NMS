@@ -33,6 +33,9 @@ class AdminSeeder extends Seeder
                 // on or off server
             'VM/status',
 
+                // subscriber
+            'subscriber',
+
                 // monitoring
             'monitoring',
 

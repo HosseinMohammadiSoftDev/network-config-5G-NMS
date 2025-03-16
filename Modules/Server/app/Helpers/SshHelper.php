@@ -60,6 +60,22 @@ class SshHelper
             throw $e;
         }
     }
+    public function getFileContent($command)
+    {
+        $fileContent = $this->ssh->exec($command);
+
+        $this->logActivity('export-file', 'getFileContent', ['command' => $command]);
+
+        return $fileContent;
+    }
+    public function testConnection()
+    {
+        $this->logActivity('connection-test', 'testConnection');
+        return true;
+    }
+
+
+
     public function restartModule($command)
     {
         $output = $this->runCommand($command);
@@ -74,17 +90,46 @@ class SshHelper
 
         return $output;
     }
-    public function getFileContent($command)
+    public function startModule($command)
     {
-        $fileContent = $this->ssh->exec($command);
+        $output = $this->runCommand($command);
 
-        $this->logActivity('export-file', 'getFileContent', ['command' => $command]);
+        if (str_contains($output, 'FATAL') || str_contains($output, 'ERROR')) {
+            $this->logActivity('module-error', 'startModule', ['command' => $command, 'output' => $output]);
+            throw new InvalidArgumentException($output);
+        }
+        else
+            $this->logActivity('module-start', 'startModule');
 
-        return $fileContent;
+
+        return $output;
     }
-    public function testConnection()
+    public function statusModule($command)
     {
-        $this->logActivity('connection-test', 'testConnection');
-        return true;
+        $output = $this->runCommand($command);
+
+        if (str_contains($output, 'FATAL') || str_contains($output, 'ERROR')) {
+            $this->logActivity('module-error', 'statusModule', ['command' => $command, 'output' => $output]);
+            throw new InvalidArgumentException($output);
+        }
+        else
+            $this->logActivity('module-status', 'statusModule');
+
+
+        return $output;
+    }
+    public function stopModule($command)
+    {
+        $output = $this->runCommand($command);
+
+        if (str_contains($output, 'FATAL') || str_contains($output, 'ERROR')) {
+            $this->logActivity('module-error', 'stopModule', ['command' => $command, 'output' => $output]);
+            throw new InvalidArgumentException($output);
+        }
+        else
+            $this->logActivity('module-stop', 'stopModule');
+
+
+        return $output;
     }
 }
