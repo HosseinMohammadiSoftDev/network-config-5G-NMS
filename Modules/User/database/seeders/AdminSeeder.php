@@ -65,6 +65,7 @@ class AdminSeeder extends Seeder
             [
                 'first_name' => 'Admin',
                 'last_name' => 'Admin',
+                'phone' => '09120000000',
                 'password' => Hash::make('password'),
             ],
         );

@@ -27,6 +27,7 @@ class resetPasswordRequest extends FormRequest
             'role' => ['nullable', 'string', 'in:expert,visitor'],
             'first_name' => ['nullable', 'min:3', 'max:256'],
             'last_name' => ['nullable', 'min:3', 'max:256'],
+            'phone' => ['string', 'regex:/^09\d{9}$/', 'unique:users,phone'],
 
 
             'role' => ['nullable', 'string', Rule::exists('roles', 'name'), Rule::notIn('admin')],

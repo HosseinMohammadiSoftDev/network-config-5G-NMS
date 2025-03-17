@@ -11,14 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('system_settings', function (Blueprint $table) {
+        Schema::create('phone_verification_tokens', function (Blueprint $table) {
             $table->id();
-
-            $table->string('zabbix_address')->nullable();
-            $table->string('elk_address')->nullable();
-
-            $table->boolean('is_login_2FA')->default(false);
-
+            $table->string('phone');
+            $table->string('token');
+            $table->timestamp('expired_at');
             $table->timestamps();
         });
     }
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('system_settings');
+        Schema::dropIfExists('phone_verification_tokens');
     }
 };

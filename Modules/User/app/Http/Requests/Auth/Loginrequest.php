@@ -14,9 +14,27 @@ class Loginrequest extends FormRequest
     {
         return [
             'auth_name' => ['required', 'exists:users,auth_name', 'min:3', 'max:255'],
-            'password' => ['required', Password::min(8), 'max:40']
+            'password' => ['required', Password::min(8), 'max:40'],
+            'phone' => ['string', 'exists:users,phone']
         ];
     }
+
+
+
+    public function withVlidator ($validator)
+    {
+        if ($validator->errors()->any())
+            return;
+
+        $validator->after(function ($validator) {
+
+
+        });
+    }
+
+
+
+
 
     /**
      * Determine if the user is authorized to make this request.

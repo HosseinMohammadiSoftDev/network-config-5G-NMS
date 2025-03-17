@@ -15,7 +15,9 @@ class SystemSettings extends Model
      */
     protected $fillable = [
         'elk_address',
-        'zabbix_address'
+        'zabbix_address',
+        'is_login_2FA',
+        'defalte_password_2FA'
     ];
 
     // protected static function newFactory(): SystemSettingsFactory

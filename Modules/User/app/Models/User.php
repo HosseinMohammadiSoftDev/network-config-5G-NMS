@@ -27,10 +27,12 @@ class User extends Authenticatable
         'last_name',
         'auth_name',
         'password',
-        'added_by'
+        'added_by',
+        'phone',
+        'phone_verified_at'
     ];
 
-    protected $guard_name = 'web'; // گارد وب
+    protected $guard_name = 'web';
 
 
     // public function getActivitylogOptions(): LogOptions

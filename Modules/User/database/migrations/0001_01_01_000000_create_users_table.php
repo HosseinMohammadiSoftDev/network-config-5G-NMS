@@ -18,8 +18,12 @@ return new class extends Migration
             $table->string('auth_name')->unique();
             $table->string('password');
 
+            $table->string('phone');
+
             $table->foreignId('added_by')->nullable();
             $table->foreign('added_by')->references('id')->on('users')->onDelete('cascade');
+
+            $table->timestamp('phone_verified_at')->nullable();
 
             $table->softDeletes();
             $table->rememberToken();

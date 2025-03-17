@@ -2,17 +2,27 @@
 
 namespace Modules\User\Http\Controllers;
 
-use App\Http\Controllers\Contract\ApiController;
-use App\Http\Controllers\Controller;
-
 use Illuminate\Http\Request;
+use Modules\User\Models\User;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Controllers\Contract\ApiController;
 use Modules\User\Http\Requests\Auth\Loginrequest;
-use Modules\User\Models\User;
+use Modules\User\Services\PhoneVerificationService;
+use Modules\User\Http\Requests\Phone\LoginPhoneRequest;
+use Modules\User\Http\Requests\Phone\SendLoginPhoneRequest;
+use Modules\User\Http\Requests\Phone\VerifyUserPhoneRequest;
+
 
 class AuthController extends ApiController
 {
+    public function __construct(private PhoneVerificationService $phoneService)
+    {
+
+    }
+
+
     public function login (Loginrequest $request)
     {
         $credentials = $request->validated();
@@ -99,4 +109,53 @@ class AuthController extends ApiController
             return response()->json(['msg' => 'An error occurred while logging out the user']);
         }
     }
+
+
+
+
+
+
+
+        // Phone
+    public function sendPhoneVerification(Request $request)
+    {
+        $this->phoneService->checkPhoneDetail(auth::User(), "sendVerify");
+
+        $template = "Verify";
+        $param1 = rand(100000, 999999); // random code
+        return $this->phoneService->sendVerificationCode($template, $param1, Auth::user()->phone);
+    }
+    public function verifyUserPhone(VerifyUserPhoneRequest $request)
+    {
+        $credentials = $request->validated();
+
+        $this->phoneService->checkPhoneDetail(Auth::user(), "verify");
+
+        return $this->phoneService->verifyPhone(Auth::user(), $credentials['code']);
+    }
+
+
+    public function sendLoginPhone(SendLoginPhoneRequest $request)
+    {
+        $credentials = $request->validated();
+
+        $this->phoneService->checkPhoneIsVerified($credentials['phone']);
+        $this->phoneService->isLoginSent($credentials['phone']);
+
+
+        $template = "PhoneLogin";
+        $param1 = rand(100000, 999999); // random code
+
+        return $this->phoneService->sendVerificationCode($template, $param1, $credentials['phone']);
+    }
+    public function loginPhone(LoginPhoneRequest $request)
+    {
+        $credentials = $request->validated();
+
+        $this->phoneService->checkLoginCode($credentials['phone']);
+
+        return $this->phoneService->login($request->phone, $request->code);
+
+    }
+
 }
