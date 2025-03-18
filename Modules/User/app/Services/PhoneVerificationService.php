@@ -67,7 +67,7 @@ class PhoneVerificationService extends ApiController
     /**
      * Send verification code to a user
      */
-    public function sendVerificationCode($template, $code, $phone)
+    public function sendVerificationCode($template, $code, $phone, $user = null)
     {
        try {
 
@@ -81,7 +81,11 @@ class PhoneVerificationService extends ApiController
             //     $code
             // );
 
-            throw new HttpResponseException(response()->json(['msg' => "The SMS has been sent successfully.", 'code' => $code], 200));
+            throw new HttpResponseException(response()->json([
+                'msg' => "The SMS has been sent successfully.",
+                'code' => $code,
+                'user_id' => $user['id'] ?? null
+            ], 200));
 
        } catch (\Exception $e) {
         //    throw new HttpResponseException(response()->json(['msg' => "SMS sending failed!", 'error' => $e->getMessage()],422));

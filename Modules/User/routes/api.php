@@ -20,6 +20,7 @@ use Modules\User\Http\Controllers\UserController;
 
 
 Route::post('login', [AuthController::class, 'login']);
+Route::post('login-2FA', [AuthController::class, 'login2FA']);
 Route::middleware(['auth:sanctum'])->post('logout', [AuthController::class, 'logout']);
 
 Route::post('send-login-by-phone', [AuthController::class , 'sendLoginPhone']);

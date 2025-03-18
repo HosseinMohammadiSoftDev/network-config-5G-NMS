@@ -4,6 +4,7 @@ namespace Modules\User\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Modules\User\Models\User;
+use Modules\User\Models\PhoneLogin;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -11,6 +12,7 @@ use Modules\Server\Models\SystemSettings;
 use App\Http\Controllers\Contract\ApiController;
 use Modules\User\Http\Requests\Auth\Loginrequest;
 use Modules\User\Services\PhoneVerificationService;
+use Modules\User\Http\Requests\Auth\Login2FARequest;
 use Modules\User\Http\Requests\Phone\LoginPhoneRequest;
 use Modules\User\Http\Requests\Phone\SendLoginPhoneRequest;
 use Modules\User\Http\Requests\Phone\VerifyUserPhoneRequest;
@@ -86,7 +88,7 @@ class AuthController extends ApiController
                 $template = "PhoneLogin";
                 $param1 = rand(100000, 999999); // random code
 
-                return $this->phoneService->sendVerificationCode($template, $param1, $user['phone']);
+                return $this->phoneService->sendVerificationCode($template, $param1, $user['phone'], $user);
             }
     }
     public function logout(Request $request)
@@ -121,6 +123,47 @@ class AuthController extends ApiController
             ->log('An error occurred while logging out the user');
 
             return response()->json(['msg' => 'An error occurred while logging out the user']);
+        }
+    }
+    public function login2FA (Login2FARequest $request)
+    {
+        $credentials = $request->validated();
+
+        $user = User::find($credentials['user_id']);
+
+        $correct_code = PhoneLogin::firstWhere('phone', $user->phone);
+
+        // بررسی صحت کد وارد شده
+        if (!$correct_code || $correct_code->token !== $credentials['code'])
+            return response(['msg' => 'The entered code is incorrect!'], 422);
+
+
+        $user = User::firstWhere('phone', $user->phone);
+        if (!$user)
+            return response(['msg' => 'No user was found with this phone number!'], 404);
+
+
+        try {
+
+            $token = $user->createToken('apiToken')->plainTextToken;
+            $correct_code->delete();
+
+            return $this->respondSuccess('The user has logged in', [
+                'user' => [
+                    'id' => $user->id,
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
+                    'auth_name' => $user->auth_name,
+                    'created_at' => $user->created_at,
+                    'updated_at' => $user->updated_at,
+                    'roles' => $user->getRoleNames(),
+                    'permissions' => $user->getAllPermissions()->pluck('name'),
+                ],
+                'token' => $token,
+            ]);
+
+        } catch (\Exception $e) {
+            return response(['msg' => 'مشکلی در پایگاه داده به وجود آمد!', 'error' => $e->getMessage(), 'code' => '100'], 400);
         }
     }
 

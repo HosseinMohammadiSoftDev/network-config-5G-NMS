@@ -3,6 +3,7 @@
 namespace Modules\User\Http\Requests\Phone;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Modules\Server\Models\SystemSettings;
 
 class LoginPhoneRequest extends FormRequest
 {
@@ -16,6 +17,19 @@ class LoginPhoneRequest extends FormRequest
             'code' => ['required', 'string', 'max:6'],
         ];
     }
+
+
+    public function withValidator ($validator)
+    {
+        $is2FA = SystemSettings::first()->pluck('is_login_2FA');
+
+        $validator->after(function ($validator) use ($is2FA){
+
+            if ($is2FA && !$this->input('phone'))
+                return $validator->errors()->add('validation', '2FA is enabled; a phone number is required.');
+        });
+    }
+
 
     /**
      * Determine if the user is authorized to make this request.
