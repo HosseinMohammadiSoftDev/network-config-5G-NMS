@@ -119,7 +119,6 @@ class AuthController extends ApiController
     {
         $credentials = $request->validated();
 
-        $this->phoneService->checkPhoneIsVerified($credentials['phone']);
         $this->phoneService->isLoginSent($credentials['phone']);
 
 
