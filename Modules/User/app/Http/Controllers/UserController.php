@@ -40,6 +40,7 @@ class UserController extends ApiController
                 'first_name' => $user->first_name,
                 'last_name' => $user->last_name,
                 'auth_name' => $user->auth_name,
+                'phone' => $user->phone,
                 'created_at' => $user->created_at,
                 'updated_at' => $user->updated_at,
                 'roles' => $user->getRoleNames(),
@@ -62,6 +63,7 @@ class UserController extends ApiController
                 'auth_name' => $user['auth_name'],
                 'first_name' => $user['first_name'],
                 'last_name' => $user['last_name'],
+                'phone' => $user['phone'],
                 'added_by' => $user['added_by'],
                 'roles' => $user->getRoleNames(),
                 'permissions' => $user->getAllPermissions()->pluck('name'),
@@ -248,6 +250,7 @@ class UserController extends ApiController
             'password' => $credentials['password'] ?? $user['password'],
             'first_name' => $credentials['first_name'] ?? $user['first_name'],
             'last_name' => $credentials['last_name'] ?? $user['last_name'],
+            'phone' => $credentials['phone'] ?? $user['phone']
         ]);
 
         // edit role user
@@ -278,6 +281,7 @@ class UserController extends ApiController
                 'id' => $user->id,
                 'first_name' => $user->first_name,
                 'last_name' => $user->last_name,
+                'phone' => $user->phone,
                 'auth_name' => $user->auth_name,
                 'created_at' => $user->created_at,
                 'updated_at' => $user->updated_at,
