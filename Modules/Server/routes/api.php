@@ -63,7 +63,7 @@ Route::middleware(['auth:sanctum', 'permission:monitoring|role:admin|expert'])->
 Route::middleware(['auth:sanctum', 'permission:monitoring|role:admin|expert'])->post('add-address', [SystemSettingsController::class,'addOrUpdateAddress']);
 
 Route::middleware(['auth:sanctum', 'role:admin'])->post('set-2FA', [SystemSettingsController::class, 'set2FA']);
-Route::middleware(['auth:sanctum'])->get('get-2FA-status', [SystemSettingsController::class, 'getStatus2FA']);
+Route::get('get-2FA-status', [SystemSettingsController::class, 'getStatus2FA']);
 
 
 Route::get('download-file', function () {
