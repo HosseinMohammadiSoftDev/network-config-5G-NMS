@@ -23,7 +23,7 @@ return new class extends Migration
             $table->foreignId('added_by')->nullable();
             $table->foreign('added_by')->references('id')->on('users')->onDelete('cascade');
 
-            $table->timestamp('phone_verified_at')->nullable();
+            // $table->timestamp('phone_verified_at')->nullable();
 
             $table->softDeletes();
             $table->rememberToken();

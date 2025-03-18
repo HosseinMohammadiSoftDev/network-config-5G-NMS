@@ -114,27 +114,7 @@ class AuthController extends ApiController
 
 
 
-
-
         // Phone
-    public function sendPhoneVerification(Request $request)
-    {
-        $this->phoneService->checkPhoneDetail(auth::User(), "sendVerify");
-
-        $template = "Verify";
-        $param1 = rand(100000, 999999); // random code
-        return $this->phoneService->sendVerificationCode($template, $param1, Auth::user()->phone);
-    }
-    public function verifyUserPhone(VerifyUserPhoneRequest $request)
-    {
-        $credentials = $request->validated();
-
-        $this->phoneService->checkPhoneDetail(Auth::user(), "verify");
-
-        return $this->phoneService->verifyPhone(Auth::user(), $credentials['code']);
-    }
-
-
     public function sendLoginPhone(SendLoginPhoneRequest $request)
     {
         $credentials = $request->validated();

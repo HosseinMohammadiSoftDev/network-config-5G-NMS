@@ -122,29 +122,6 @@ class PhoneVerificationService extends ApiController
     }
 
 
-    /**
-     * Verify user phone
-     */
-    public function verifyPhone(User $user, string $code)
-    {
-        $correct_code = PhoneVerificationToken::firstWhere('phone', $user->phone);
-
-        // اگر کد صحیح نیست
-        if (!$correct_code || $correct_code->token !== $code)
-                throw new HttpResponseException(response(['msg' => 'The entered code is incorrect.!'], 422));
-
-
-        // try {
-            // به‌روزرسانی وضعیت تأیید شماره تلفن
-            $user->update(['phone_verified_at' => now()->toDateTimeString()]);
-
-            $correct_code->delete();
-
-            throw new HttpResponseException(response(['msg' => 'Your phone number has been verified.'], 200));
-        // } catch (\Exception $e) {
-        //     throw new HttpResponseException(response(['msg' => 'مشکلی در پایگاه داده به وجود آمد!', 'error' => $e->getMessage()], 400));
-        // }
-    }
 
 
 
