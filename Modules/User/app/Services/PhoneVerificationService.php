@@ -253,10 +253,8 @@ class PhoneVerificationService extends ApiController
     public function isLoginSent($phone){
         $sent_phone = PhoneLogin::firstWhere('phone', $phone);
 
-        if ($sent_phone){
-            if (!$sent_phone->expired_at >= now()->toDateTimeString())
-                    $sent_phone->delete();
-        }
+        if ($sent_phone)
+            $sent_phone->delete();
     }
 
     public function login(string $phone, string $code)
