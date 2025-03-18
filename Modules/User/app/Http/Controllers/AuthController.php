@@ -7,6 +7,7 @@ use Modules\User\Models\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Modules\Server\Models\SystemSettings;
 use App\Http\Controllers\Contract\ApiController;
 use Modules\User\Http\Requests\Auth\Loginrequest;
 use Modules\User\Services\PhoneVerificationService;
@@ -49,6 +50,7 @@ class AuthController extends ApiController
 
 
         $user->tokens()->delete();
+
         $token = $user->createToken('apiToken')->plainTextToken;
 
             activity('login')
@@ -61,19 +63,31 @@ class AuthController extends ApiController
                 ])
                 ->log('The user logged in with the username and password.');
 
-        return $this->respondSuccess('The user has logged in', [
-            'user' => [
-                'id' => $user->id,
-                'first_name' => $user->first_name,
-                'last_name' => $user->last_name,
-                'auth_name' => $user->auth_name,
-                'created_at' => $user->created_at,
-                'updated_at' => $user->updated_at,
-                'roles' => $user->getRoleNames(),
-                'permissions' => $user->getAllPermissions()->pluck('name'),
-            ],
-            'token' => $token,
-        ]);
+
+        $is2FAEnabled = (bool) SystemSettings::first()->pluck('is_login_2FA');
+            if (!$is2FAEnabled) {
+                return $this->respondSuccess('The user has logged in', [
+                    'user' => [
+                        'id' => $user->id,
+                        'first_name' => $user->first_name,
+                        'last_name' => $user->last_name,
+                        'auth_name' => $user->auth_name,
+                        'created_at' => $user->created_at,
+                        'updated_at' => $user->updated_at,
+                        'roles' => $user->getRoleNames(),
+                        'permissions' => $user->getAllPermissions()->pluck('name'),
+                    ],
+                    'token' => $token,
+                ]);
+            } else {
+                $this->phoneService->isLoginSent($user['phone']);
+
+
+                $template = "PhoneLogin";
+                $param1 = rand(100000, 999999); // random code
+
+                return $this->phoneService->sendVerificationCode($template, $param1, $user['phone']);
+            }
     }
     public function logout(Request $request)
     {
