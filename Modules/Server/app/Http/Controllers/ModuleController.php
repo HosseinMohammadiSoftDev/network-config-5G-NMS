@@ -89,7 +89,12 @@ class ModuleController extends ApiController
         return response()->json([
             'config' => json_decode($currentConfig),
             'serversDetails' => $serversData,
-            'serversIdInModuleName' => $serverIdsInModuleName
+            'serversIdInModuleName' => $serverIdsInModuleName,
+            'moduleDetails' => [
+                'id' => $module['id'],
+                'name' => $module['name'],
+                'type' => $module['type']
+            ]
         ]);
   }
   public function showAllServiseAndModulesInServer ($serverId)

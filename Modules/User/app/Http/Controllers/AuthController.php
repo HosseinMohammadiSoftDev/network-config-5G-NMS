@@ -66,7 +66,8 @@ class AuthController extends ApiController
                 ->log('The user logged in with the username and password.');
 
 
-        $is2FAEnabled = (bool) SystemSettings::first()->pluck('is_login_2FA');
+            $is2FAEnabled = SystemSettings::first()->is_login_2FA;
+
             if (!$is2FAEnabled) {
                 return $this->respondSuccess('The user has logged in', [
                     'user' => [
@@ -130,6 +131,8 @@ class AuthController extends ApiController
         $credentials = $request->validated();
 
         $user = User::find($credentials['user_id']);
+
+        $this->phoneService->checkLoginCode($user['phone']);
 
         $correct_code = PhoneLogin::firstWhere('phone', $user->phone);
 
