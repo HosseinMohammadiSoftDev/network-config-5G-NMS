@@ -46,6 +46,7 @@ use Modules\Server\Http\Requests\Module\DeleteCofigModuleRequest;
 use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
 use Modules\Server\Http\Requests\Module\ExpertModuleFileIsServerRequset;
+use Modules\Server\Http\Requests\SshServer\SshServerRequest;
 use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
 
 class ModuleController extends ApiController
@@ -1331,7 +1332,63 @@ class ModuleController extends ApiController
             ], 422));
         }
     }
+    public function sshServer (SshServerRequest $request)
+    {
+        $validate = $request->validated();
 
+        $server = Server::find($validate['server_id']);
+
+        if ($server['is_down'] == 1)
+            throw new HttpResponseException(response()->json(['msg' => 'this server off'], 422));
+
+        try {
+
+            $sshHelper = new sshHelper($server, $validate['username'], $validate['password']);
+            $command = 'ping ' . $validate['ipـdestination'];
+
+            $output = $sshHelper->runCommand($command);
+
+            return response()->json(['message' => $output]);
+
+        } catch (HttpResponseException $e) {
+            throw $e;
+        } catch (InvalidArgumentException $e) {
+                DB::rollBack();
+
+                $message = $e->getMessage();
+                $message = preg_replace('/\x1b\[[0-9;]*m/', '', $message); // حذف کدهای ANSI
+                $message = preg_replace('/\r?\n.*?\[root@localhost.*?$/', '', $message); // حذف اطلاعات اضافی مربوط به خط فرمان
+
+                preg_match_all('/\b(FATAL|ERROR):\s.*?(?=\s\(.*?\)|$)/m', $message, $matches);
+
+                $formattedMessages = $matches[0] ?? [];
+
+                $separatedMessages = [];
+                foreach ($formattedMessages as $index => $msg) {
+                    $separatedMessages["Error-" . ($index + 1)] = $msg;
+                }
+
+            throw new HttpResponseException(response()->json([
+                'msg' => 'server error!',
+                'error' => [
+                    'type' => 'stop-service-error',
+                    'message' => $separatedMessages
+                ]
+            ], 422));
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            $message = $e->getMessage();
+
+            throw new HttpResponseException(response()->json([
+                'msg' => 'server error!',
+                'error' => [
+                    'type' => 'server-error',
+                    'message' => $message
+                ]
+            ], 422));
+        }
+    }
 
 
 

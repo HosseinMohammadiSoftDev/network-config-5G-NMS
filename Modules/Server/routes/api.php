@@ -45,6 +45,7 @@ Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert']
 Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert'])->post('start-service-config', [ModuleController::class, 'startServiceModule']);
 Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert'])->post('stop-service-config', [ModuleController::class, 'stopServiceModule']);
 Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert'])->post('status-service-config', [ModuleController::class, 'statusServiceModule']);
+Route::middleware(['auth:sanctum', 'role:admin|expert'])->post('ping-ssh', [ModuleController::class, 'sshServer']);
 // Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert'])->post('start-service-config', [ModuleController::class, 'startServiceModule']);
 
 Route::middleware(['auth:sanctum', 'permission:module/update|role:admin|expert'])->post('undo-module-config', [ModuleController::class, 'undoConfigModule']);
