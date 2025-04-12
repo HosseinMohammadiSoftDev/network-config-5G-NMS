@@ -17,11 +17,8 @@ class SystemSettings extends Model
         'elk_address',
         'zabbix_address',
         'is_login_2FA',
-        'defalte_password_2FA'
+        'is_login_sms',
+        'config_connection_sms'
     ];
 
-    // protected static function newFactory(): SystemSettingsFactory
-    // {
-    //     // return SystemSettingsFactory::new();
-    // }
 }

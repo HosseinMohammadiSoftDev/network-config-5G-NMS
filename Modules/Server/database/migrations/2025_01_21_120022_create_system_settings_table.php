@@ -19,6 +19,9 @@ return new class extends Migration
 
             $table->boolean('is_login_2FA')->default(false);
 
+            $table->boolean('is_login_sms')->default(false);
+            $table->text('config_connection_sms')->nullable();
+
             $table->timestamps();
         });
     }

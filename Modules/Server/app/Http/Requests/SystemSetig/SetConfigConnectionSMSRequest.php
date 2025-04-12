@@ -1,11 +1,10 @@
 <?php
 
-namespace Modules\User\Http\Requests\Phone;
+namespace Modules\Server\Http\Requests\SystemSetig;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Modules\Server\Models\SystemSettings;
 
-class SendLoginPhoneRequest extends FormRequest
+class SetConfigConnectionSMSRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -13,7 +12,7 @@ class SendLoginPhoneRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone' => ['required', 'regex:/^09\d{9}$/', 'exists:users,phone'],
+            'connection-data' => ['required', 'array']
         ];
     }
 
@@ -25,11 +24,15 @@ class SendLoginPhoneRequest extends FormRequest
         if ($validator->errors()->any())
             return;
 
+
         $validator->after(function ($validator) {
 
-            $systemSetting = SystemSettings::first();
-                if (!$systemSetting['is_login_sms'])
-                    return $validator->errors()->add('validation', 'login by phone stopped');
+            $requiredKeys = ['url', 'api_key', 'username', 'password', 'sender', 'type'];
+
+            foreach ($requiredKeys as $key)
+                if (!array_key_exists($key, $this->input('connection-data')))
+                    $validator->errors()->add('connection_data', "کلید '$key' باید در JSON وجود داشته باشد.");
+
         });
     }
 

@@ -9,7 +9,7 @@
         "arcanedev/log-viewer": "^11.0",
         "laravel/framework": "^11.9",
         "laravel/sanctum": "^4.0",
-        "laravel/telescope": "^5.5",
+        "laravel/telescope": "^5.7",
         "laravel/tinker": "^2.9",
         "mustangostang/spyc": "^0.6.3",
         "nwidart/laravel-modules": "^11.1",
@@ -58,6 +58,12 @@
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
+        ],
+        "run-app" : [
+            "php artisan module:migrate user",
+            "php artisan module:migrate server",
+            "php artisan module:migrate log",
+            "php artisan db:seed"
         ]
     },
     "extra": {

@@ -6,11 +6,14 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Modules\Server\Http\Requests\SystemSetig\SetConfigConnectionSMSRequest;
 use Modules\Server\Models\SystemSettings;
 use App\Http\Controllers\Contract\ApiController;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Modules\Server\Http\Requests\FA2\Set2FAReqest;
 use Modules\Server\Http\Requests\SystemStinge\AddAddressRequest;
+use Modules\Server\Http\Requests\SystemStinge\SetLoginBySMSRequest;
 
 class SystemSettingsController extends ApiController
 {
@@ -67,5 +70,68 @@ class SystemSettingsController extends ApiController
             DB::rollBack();
                 return response()->json(['success' => false, 'msg' => 'An issue occurred in the application process.'], 422);
         }
+    }
+
+
+
+        // SMS setinge
+    public function setLoginBySMS (SetLoginBySMSRequest $request)
+    {
+        $creadtioanle = $request->validated();
+
+        try {
+            DB::beginTransaction();
+
+            $systemSetting = SystemSettings::first();
+
+                if (!$systemSetting)
+                    $systemSetting = SystemSettings::create($creadtioanle);
+                else
+                    $systemSetting->update([
+                        'is_login_sms' => $creadtioanle['is_login_sms'] ?? $systemSetting['is_login_sms'],
+                    ]);
+
+            DB::commit();
+                return response()->json(['success' => true, 'msg' => 'Settings have been successfully applied.'], 200);
+
+        } catch (Exception $e) {
+            DB::rollBack();
+                return response()->json(['success' => false, 'msg' => 'An issue occurred in the application process.'], 422);
+        }
+    }
+    public function getLoginBySMS ()
+    {
+        return response()->json(SystemSettings::select(['is_login_sms'])->get()->toArray());
+    }
+
+
+    public function setConfigConnectionSMS (SetConfigConnectionSMSRequest $request)
+    {
+        $creadtioanle = $request->validated();
+
+        try {
+            DB::beginTransaction();
+
+            $systemSetting = SystemSettings::first();
+
+                if (!$systemSetting)
+                    $systemSetting = SystemSettings::create($creadtioanle);
+                else
+                    $systemSetting->update([
+                        'config_connection_sms' => Crypt::encrypt($creadtioanle['connection-data']) ?? $systemSetting['config_connection_sms'],
+                    ]);
+
+            DB::commit();
+                return response()->json(['success' => true, 'msg' => 'Settings have been successfully applied.'], 200);
+
+        } catch (Exception $e) {
+            DB::rollBack();
+                return response()->json(['success' => false, 'msg' => 'An issue occurred in the application process.'], 422);
+        }
+    }
+    public function getConfinConnectionSMS ()
+    {
+        $systemSeting = SystemSettings::first();
+            return response()->json(['success' => true, 'data' => Crypt::decrypt($systemSeting['config_connection_sms'])], 200);
     }
 }

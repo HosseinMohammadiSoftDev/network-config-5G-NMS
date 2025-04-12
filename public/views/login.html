@@ -6,31 +6,32 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0"
     />
-    <title>BBDH</title>
+    <title>MCI</title>
     <link
       rel="icon"
       type="image/x-icon"
-      href="/assets/logo%20white-C7adMC3s.png"
+      href="/assets/logo-mci-02%20(1)-DJlpvb5C.svg"
     />
-    <script type="module" crossorigin src="/assets/login-B3UD_NyV.js"></script>
+    <script type="module" crossorigin src="/assets/login-DAkAjxL2.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/useApi-CrkeUblU.js">
     <link rel="modulepreload" crossorigin href="/assets/auth-CIdfLHBs.js">
     <link rel="stylesheet" crossorigin href="/assets/useApi-BHbPscNU.css">
-    <link rel="stylesheet" crossorigin href="/assets/login-Bh_jxOrx.css">
+    <link rel="stylesheet" crossorigin href="/assets/login-DA3qi2AJ.css">
   </head>
   <body>
     <div class="container containerLogin">
       <div class="d-flex justify-content-center align-items-center divLogin">
         <div
+          id="idDivContainer"
           class="bg-body-tertiary rounded-3 d-flex flex-column justify-content-center align-items-center divContainer"
         >
-          <div class="divImg rounded-3 d-flex justify-content-center align-items-center mb-4">
+          <div class="d-flex justify-content-center align-items-center mb-4">
             <img
               class="img pe-3"
-              src="/assets/logo%20white%20with%20logo%20type-CMr13kKU.png"
+              src="/assets/logo-mci-02%20(1)-DJlpvb5C.svg"
             />
           </div>
-          <form class="form">
+          <form class="form" id="loginForm">
             <div class="mb-3">
               <label
                 for="authNmaeLogin"
@@ -41,7 +42,7 @@
                 type="text"
                 class="form-control"
                 name="nameAuthNameLogin"
-                id="authNmaeLogin"
+                id="authNameLogin"
               />
             </div>
             <div class="mb-3">
@@ -57,15 +58,164 @@
                 id="passwordLogin"
               />
             </div>
+            <div id="inputPhoneNumber"></div>
+            <div
+              id="otp-input"
+              class="mb-3 OTP"
+            >
+              <input
+                type="number"
+                id="1"
+                step="1"
+                min="0"
+                max="9"
+                autocomplete="no"
+                pattern="\d*"
+              />
+              <input
+                type="number"
+                id="2"
+                step="1"
+                min="0"
+                max="9"
+                autocomplete="no"
+                pattern="\d*"
+              />
+              <input
+                type="number"
+                id="3"
+                step="1"
+                min="0"
+                max="9"
+                autocomplete="no"
+                pattern="\d*"
+              />
+              <input
+                type="number"
+                id="4"
+                step="1"
+                min="0"
+                max="9"
+                autocomplete="no"
+                pattern="\d*"
+              />
+              <input
+                type="number"
+                id="5"
+                step="1"
+                min="0"
+                max="9"
+                autocomplete="no"
+                pattern="\d*"
+              />
+              <input
+                type="number"
+                id="6"
+                step="1"
+                min="0"
+                max="9"
+                autocomplete="no"
+                pattern="\d*"
+              />
+            </div>
+            <input
+              type="hidden"
+              name="otp"
+            />
+            <div
+              class="OTP mb-3"
+              id="idDivReload"
+            >
+              <button
+                id="idButtonReload"
+                class="p-0 text-white bg-primary rounded-2 buttonReload"
+              >
+                <span class="textReload">Resend</span>
+
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  fill="currentColor"
+                  class="bi bi-arrow-clockwise"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"
+                  />
+                  <path
+                    d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"
+                  />
+                </svg>
+              </button>
+              <h6
+                class="mb-0 ms-3 d-flex align-items-center"
+                id="time"
+              >
+                02:00
+              </h6>
+            </div>
             <a
               id="loginBtn"
               class="btn btn-primary w-100"
               role="button"
               >Log In</a
             >
+            <div id="divPhoneNumberLogin"></div>
           </form>
+          <div id="loginPhoneNumber"></div>
+        </div>
+        <div class="box bg-body-tertiary" id="boxCaptcha">
+          <div
+            class="box-CAPTCHA"
+            id="box-CAPTCHA"
+          >
+            <div
+              class="CAPTCHA"
+              id="CAPTCHA"
+            ></div>
+            <button
+              class="reload p-0"
+              id="reloadCaptcha"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="25"
+                height="25"
+                fill="currentColor"
+                class="bi bi-arrow-clockwise text-dark"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"
+                />
+                <path
+                  d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"
+                />
+              </svg>
+            </button>
+            <input
+              type="text"
+              id="input"
+              placeholder="Type CAPTCHA Here"
+              maxlength="6"
+            />
+            <div
+              id="wrong"
+              style="margin-left: 10px; color: #f00"
+            ></div>
+            <button
+              class="submit"
+              id="submit"
+            >
+              Submit
+            </button>
+          </div>
         </div>
       </div>
+
       <div
         id="idLoading"
         class="loading col-12"

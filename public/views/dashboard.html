@@ -16,18 +16,20 @@
       rel="stylesheet"
     />
 
-    <title>BBDH</title>
+    <title id="title">MCI</title>
     <link
+      id="favIcon"
       rel="icon"
       type="image/x-icon"
-      href="/assets/logo%20white-C7adMC3s.png"
+      href="/assets/logo-mci-02%20(1)-DJlpvb5C.svg"
     />
     <script src="/node_modules/jquery/dist/jquery.min.js"></script>
-    <script type="module" crossorigin src="/assets/dashboard-DcEk3sFL.js"></script>
+    <script type="module" crossorigin src="/assets/dashboard-C7mSf9-G.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/useApi-CrkeUblU.js">
+    <link rel="modulepreload" crossorigin href="/assets/jquery-DJaEtHRJ.js">
     <link rel="modulepreload" crossorigin href="/assets/auth-CIdfLHBs.js">
     <link rel="stylesheet" crossorigin href="/assets/useApi-BHbPscNU.css">
-    <link rel="stylesheet" crossorigin href="/assets/dashboard-DG1E3ZHd.css">
+    <link rel="stylesheet" crossorigin href="/assets/dashboard-BFofo07i.css">
   </head>
   <body id="body">
     <div class="container-fluid">
@@ -47,345 +49,607 @@
             <span></span>
             <span></span>
           </div>
-          <div class="mb-3">
-            <img
-              class="w-100 h-50 pe-3"
-              src="/assets/Untitled-3-2-8x-Lm6.png"
-              alt="logo"
-            />
-          </div>
-          <div class="bg-warning rounded-4 text-center">
-            <div class="pt-2">
-              <span class="fs-6 text-dark">User Name:</span>
-              <span
-                class="fs-5 text-dark"
-                id="userName"
-              ></span>
-            </div>
-            <div class="mt-3 pb-2">
-              <span class="fs-6 text-dark">Your Role:</span>
-              <span
-                class="fs-5 text-dark"
-                id="role"
-              ></span>
-            </div>
-          </div>
-
-          <!-- Accordion Menu -->
-          <div
-            class="accordion nav-pills"
-            id="v-pills-tab"
-            role="tablist"
-            aria-orientation="vertical"
-          >
-            <!-- App Management Item -->
-            <div class="accordion-item bg-transparent border-0">
-              <h2 class="accordion-header my-3">
-                <button
-                  class="clickTab styleButton border-0 active ActiveMenuClick ActiveMenuScroll activeMenu menus1"
-                  data-id="1"
-                  id="v-servers-tab"
-                  data-bs-toggle="pill"
-                  data-bs-target="#v-servers-home"
-                  type="button"
-                  role="tab"
-                  aria-controls="v-servers-home"
-                  aria-selected="true"
-                >
-                  <span class="ms-2">Server Settings</span>
-                </button>
-              </h2>
-            </div>
-
-            <div class="accordion-item bg-transparent border-0">
-              <h2 class="accordion-header my-3">
-                <button
-                  class="clickTab styleButton border-0 ActiveMenuClick ActiveMenuScroll collapsed menus5"
-                  data-id="5"
-                  type="button"
-                  id="v-module-tab"
-                  role="tab"
-                  data-bs-toggle="pill"
-                  data-bs-target="#v-module"
-                  aria-controls="v-module"
-                  aria-selected="false"
-                >
-                  <span class="ms-2">Modules</span>
-                </button>
-              </h2>
-            </div>
-
-            <div class="accordion-item bg-transparent border-0">
-              <h2 class="accordion-header my-3">
-                <button
-                  class="styleButton border-0 ActiveMenuClick collapsed menus2"
-                  data-id="2"
-                  type="button"
-                  id="v-userManagement"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#collapseAppManagement"
-                  aria-expanded="false"
-                  aria-controls="collapseAppManagement"
-                >
-                  <span class="ms-2">User Management</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    fill="currentColor"
-                    class="bi bi-caret-right-fill"
-                    viewBox="0 0 16 16"
-                  >
-                    <path
-                      d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"
-                    />
-                  </svg>
-                </button>
-              </h2>
+          <div class="divMenu">
+            <div class="mb-lg-3">
               <div
-                id="collapseAppManagement"
-                class="accordion-collapse collapse"
+                class="backLogo w-100 d-flex justify-content-center align-items-center"
+                id="backLogo"
               >
-                <div class="accordion-body p-0">
-                  <div
-                    id="class-access-level"
-                    class="ms-3 mb-3 d-flex"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="10"
-                      height="10"
-                      fill="currentColor"
-                      class="bi bi-circle-fill iconSubMenu1"
-                      viewBox="0 0 16 16"
-                    >
-                      <circle
-                        cx="8"
-                        cy="8"
-                        r="8"
-                      />
-                    </svg>
-                    <button
-                      class="clickTab styleButton border-0 subMenuClick subMenu subMenu1"
-                      data-id="1"
-                      id="v-access-levels-tab"
-                      data-bs-toggle="pill"
-                      data-bs-target="#v-access-levels"
-                      type="button"
-                      role="tab"
-                      aria-controls="v-access-levels"
-                      aria-selected="false"
-                    >
-                      Access Levels
-                    </button>
-                  </div>
-                  <div class="ms-3 d-flex">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="10"
-                      height="10"
-                      fill="currentColor"
-                      class="bi bi-circle-fill iconSubMenu2"
-                      viewBox="0 0 16 16"
-                    >
-                      <circle
-                        cx="8"
-                        cy="8"
-                        r="8"
-                      />
-                    </svg>
-                    <button
-                      class="clickTab styleButton border-0 subMenuClick subMenu subMenu2"
-                      data-id="2"
-                      id="v-users-tab"
-                      data-bs-toggle="pill"
-                      data-bs-target="#v-users"
-                      type="button"
-                      role="tab"
-                      aria-controls="v-users"
-                      aria-selected="false"
-                    >
-                      Users
-                    </button>
-                  </div>
-                </div>
+                <img
+                  id="logo"
+                  class="w-75 my-3"
+                  src="/assets/logo-mci-02%20(1)-DJlpvb5C.svg"
+                  alt="logo"
+                />
+              </div>
+            </div>
+            <div class="bgSpecifications">
+              <div class="pt-2 ps-xxl-4 ps-xl-2">
+                <span class="username fontDateUserRespansive">Username:</span>
+                <span
+                  id="userName"
+                  class="fontDateUserRespansive"
+                ></span>
+              </div>
+              <div class="mt-lg-3 pb-lg-4 pb-3 ps-xxl-4 ps-xl-2">
+                <span class="yourRole fontDateUserRespansive">Your Role:</span>
+                <span
+                  id="role"
+                  class="fontDateUserRespansive"
+                ></span>
               </div>
             </div>
 
-            <!-- <div class="accordion-item bg-transparent border-0">
-              <h2 class="accordion-header my-3">
-                <button
-                  class="styleButton border-0 ActiveMenuClick collapsed menus6"
-                  data-id="6"
-                  type="button"
-                  id="v-Subscribers"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#collapseAppSubscribers"
-                  aria-expanded="false"
-                  aria-controls="collapseAppSubscribers"
-                >
-                  <span class="ms-2">Subscribers</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    fill="currentColor"
-                    class="bi bi-caret-right-fill"
-                    viewBox="0 0 16 16"
+            <!-- Accordion Menu -->
+            <div
+              class="accordion nav-pills"
+              id="v-pills-tab"
+              role="tablist"
+              aria-orientation="vertical"
+            >
+              <!-- App Management Item -->
+              <div class="accordion-item bg-transparent border-0">
+                <h2 class="accordion-header my-lg-3">
+                  <button
+                    class="clickTab styleButton border-0 active ActiveMenuClick ActiveMenuScroll fontDateUserRespansive paddingZero activeMenu menus1"
+                    data-id="1"
+                    id="v-servers-tab"
+                    data-bs-toggle="pill"
+                    data-bs-target="#v-servers-home"
+                    type="button"
+                    role="tab"
+                    aria-controls="v-servers-home"
+                    aria-selected="true"
                   >
-                    <path
-                      d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"
-                    />
-                  </svg>
-                </button>
-              </h2>
-              <div
-                id="collapseAppSubscribers"
-                class="accordion-collapse collapse"
-              >
-                <div class="accordion-body p-0">
-                  <div class="ms-3 mb-3 d-flex">
+                    <span class="ms-xxl-2">Server Settings</span>
+                  </button>
+                </h2>
+              </div>
+
+              <div class="accordion-item bg-transparent border-0">
+                <h2 class="accordion-header my-lg-3">
+                  <button
+                    class="clickTab styleButton border-0 ActiveMenuClick ActiveMenuScroll fontDateUserRespansive paddingZero collapsed menus5"
+                    data-id="5"
+                    type="button"
+                    id="v-module-tab"
+                    role="tab"
+                    data-bs-toggle="pill"
+                    data-bs-target="#v-module"
+                    aria-controls="v-module"
+                    aria-selected="false"
+                  >
+                    <span class="ms-xxl-2">Modules</span>
+                  </button>
+                </h2>
+              </div>
+
+              <div class="accordion-item bg-transparent border-0">
+                <h2 class="accordion-header my-lg-3 mb-2">
+                  <button
+                    class="styleButton border-0 ActiveMenuClick fontDateUserRespansive paddingZero collapsed menus2"
+                    data-id="2"
+                    type="button"
+                    id="v-userManagement"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapseAppManagement"
+                    aria-expanded="false"
+                    aria-controls="collapseAppManagement"
+                  >
+                    <span class="ms-xxl-2">User Management</span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      width="10"
-                      height="10"
+                      width="16"
+                      height="16"
                       fill="currentColor"
-                      class="bi bi-circle-fill iconSubMenu3"
+                      class="bi bi-caret-right-fill"
                       viewBox="0 0 16 16"
                     >
-                      <circle
-                        cx="8"
-                        cy="8"
-                        r="8"
+                      <path
+                        d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"
                       />
                     </svg>
-                    <button
-                      class="clickTab styleButton border-0 subMenuClick subMenu subMenu3"
-                      data-id="3"
-                      id="v-List-tab"
-                      data-bs-toggle="pill"
-                      data-bs-target="#v-List"
-                      type="button"
-                      role="tab"
-                      aria-controls="v-List"
-                      aria-selected="false"
+                  </button>
+                </h2>
+                <div
+                  id="collapseAppManagement"
+                  class="accordion-collapse collapse"
+                >
+                  <div class="accordion-body p-0">
+                    <div
+                      id="class-access-level"
+                      class="ms-3 mb-lg-3 mb-2 d-flex"
                     >
-                      List
-                    </button>
-                  </div>
-                  <div class="ms-3 d-flex">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="10"
-                      height="10"
-                      fill="currentColor"
-                      class="bi bi-circle-fill iconSubMenu4"
-                      viewBox="0 0 16 16"
-                    >
-                      <circle
-                        cx="8"
-                        cy="8"
-                        r="8"
-                      />
-                    </svg>
-                    <button
-                      class="clickTab styleButton border-0 subMenuClick subMenu subMenu4"
-                      data-id="4"
-                      id="v-New-tab"
-                      data-bs-toggle="pill"
-                      data-bs-target="#v-New"
-                      type="button"
-                      role="tab"
-                      aria-controls="v-New"
-                      aria-selected="false"
-                    >
-                      New
-                    </button>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="10"
+                        height="10"
+                        fill="currentColor"
+                        class="bi bi-circle-fill iconSubMenu1"
+                        viewBox="0 0 16 16"
+                      >
+                        <circle
+                          id="circleOne"
+                          cx="8"
+                          cy="8"
+                          r="8"
+                        />
+                      </svg>
+                      <button
+                        class="clickTab styleButton border-0 subMenuClick fontDateUserRespansive paddingX subMenu subMenu1"
+                        data-id="1"
+                        id="v-access-levels-tab"
+                        data-bs-toggle="pill"
+                        data-bs-target="#v-access-levels"
+                        type="button"
+                        role="tab"
+                        aria-controls="v-access-levels"
+                        aria-selected="false"
+                      >
+                        Access Levels
+                      </button>
+                    </div>
+                    <div class="ms-3 d-flex">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="10"
+                        height="10"
+                        fill="currentColor"
+                        class="bi bi-circle-fill iconSubMenu2"
+                        viewBox="0 0 16 16"
+                      >
+                        <circle
+                          id="circleTwo"
+                          cx="8"
+                          cy="8"
+                          r="8"
+                        />
+                      </svg>
+                      <button
+                        class="clickTab styleButton border-0 subMenuClick fontDateUserRespansive paddingX subMenu subMenu2"
+                        data-id="2"
+                        id="v-users-tab"
+                        data-bs-toggle="pill"
+                        data-bs-target="#v-users"
+                        type="button"
+                        role="tab"
+                        aria-controls="v-users"
+                        aria-selected="false"
+                      >
+                        Users
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div> -->
 
-            <div class="accordion-item bg-transparent border-0">
-              <h2 class="accordion-header my-3">
-                <button
-                  class="clickTab styleButton border-0 ActiveMenuClick ActiveMenuScroll collapsed menus3"
-                  data-id="3"
-                  type="button"
-                  id="V-monitoring-tab"
-                  data-bs-toggle="pill"
-                  data-bs-target="#v-monitoring"
-                  aria-controls="v-monitoring"
-                  aria-expanded="false"
-                >
-                  <span class="ms-2">Monitoring</span>
-                </button>
-              </h2>
-            </div>
-
-            <div class="accordion-item bg-transparent border-0">
-              <h2 class="accordion-header my-3">
-                <button
-                  class="clickTab styleButton border-0 ActiveMenuClick ActiveMenuScroll collapsed menus4"
-                  data-id="4"
-                  type="button"
-                  id="v-log-tab"
-                  role="tab"
-                  data-bs-toggle="pill"
-                  data-bs-target="#v-log"
-                  aria-controls="v-log"
-                  aria-selected="false"
-                >
-                  <span class="ms-2">Log</span>
-                </button>
-              </h2>
-            </div>
-
-            <div class="accordion-item bg-transparent border-0">
-              <h2 class="accordion-header my-3">
-                <button
-                  class="clickTab styleButton border-0 ActiveMenuClick ActiveMenuScroll collapsed menus6"
-                  data-id="6"
-                  type="button"
-                  id="v-subscribers-tab"
-                  role="tab"
-                  data-bs-toggle="pill"
-                  data-bs-target="#v-subscribers"
-                  aria-controls="v-subscribers"
-                  aria-selected="false"
-                >
-                  <span class="ms-2">Subscribers</span>
-                </button>
-              </h2>
-            </div>
-
-            <div class="divLogout">
-              <a
-                href="../views/login.html"
-                class="logout-link"
+              <div
+                class="accordion-item bg-transparent border-0"
+                id="menuSubscribers"
               >
-                Log Out
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  fill="currentColor"
-                  class="bi bi-door-open-fill"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M1.5 15a.5.5 0 0 0 0 1h13a.5.5 0 0 0 0-1H13V2.5A1.5 1.5 0 0 0 11.5 1H11V.5a.5.5 0 0 0-.57-.495l-7 1A.5.5 0 0 0 3 1.5V15zM11 2h.5a.5.5 0 0 1 .5.5V15h-1zm-2.5 8c-.276 0-.5-.448-.5-1s.224-1 .5-1 .5.448.5 1-.224 1-.5 1"
-                  />
-                </svg>
-              </a>
+                <h2 class="accordion-header my-lg-3">
+                  <button
+                    class="clickTab styleButton border-0 ActiveMenuClick ActiveMenuScroll fontDateUserRespansive paddingZero collapsed menus6"
+                    data-id="6"
+                    type="button"
+                    id="v-subscribers-tab"
+                    role="tab"
+                    data-bs-toggle="pill"
+                    data-bs-target="#v-subscribers"
+                    aria-controls="v-subscribers"
+                    aria-selected="false"
+                  >
+                    <span class="ms-xxl-2">Subscribers</span>
+                  </button>
+                </h2>
+              </div>
+
+              <div
+                class="accordion-item bg-transparent border-0"
+                id="tabPing"
+              >
+                <h2 class="accordion-header my-lg-3">
+                  <button
+                    class="clickTab styleButton border-0 ActiveMenuClick ActiveMenuScroll fontDateUserRespansive paddingZero collapsed menus7"
+                    data-id="7"
+                    type="button"
+                    id="v-ping-tab"
+                    role="tab"
+                    data-bs-toggle="pill"
+                    data-bs-target="#v-ping"
+                    aria-controls="v-ping"
+                    aria-selected="false"
+                  >
+                    <span class="ms-xxl-2">Ping</span>
+                  </button>
+                </h2>
+              </div>
+
+              <div class="accordion-item bg-transparent border-0">
+                <h2 class="accordion-header my-lg-3">
+                  <button
+                    class="clickTab styleButton border-0 ActiveMenuClick ActiveMenuScroll fontDateUserRespansive paddingZero collapsed menus3"
+                    data-id="3"
+                    type="button"
+                    id="V-monitoring-tab"
+                    data-bs-toggle="pill"
+                    data-bs-target="#v-monitoring"
+                    aria-controls="v-monitoring"
+                    aria-expanded="false"
+                  >
+                    <span class="ms-xxl-2">Monitoring</span>
+                  </button>
+                </h2>
+              </div>
+
+              <div class="accordion-item bg-transparent border-0">
+                <h2 class="accordion-header paddingHeaderLog my-lg-3">
+                  <button
+                    class="clickTab styleButton border-0 ActiveMenuClick ActiveMenuScroll fontDateUserRespansive paddingZero collapsed menus4"
+                    data-id="4"
+                    type="button"
+                    id="v-log-tab"
+                    role="tab"
+                    data-bs-toggle="pill"
+                    data-bs-target="#v-log"
+                    aria-controls="v-log"
+                    aria-selected="false"
+                  >
+                    <span class="ms-xxl-2">Log</span>
+                  </button>
+                </h2>
+              </div>
+
+              <div class="divLogout align-items-center">
+                <div class="logOut">
+                  <a
+                    id="idLogout"
+                    class="logout-link fontDateUserRespansive"
+                  >
+                    Log Out
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      fill="currentColor"
+                      class="bi bi-door-open-fill"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M1.5 15a.5.5 0 0 0 0 1h13a.5.5 0 0 0 0-1H13V2.5A1.5 1.5 0 0 0 11.5 1H11V.5a.5.5 0 0 0-.57-.495l-7 1A.5.5 0 0 0 3 1.5V15zM11 2h.5a.5.5 0 0 1 .5.5V15h-1zm-2.5 8c-.276 0-.5-.448-.5-1s.224-1 .5-1 .5.448.5 1-.224 1-.5 1"
+                      />
+                    </svg>
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </nav>
 
         <div
-          class="tab-content col-10 mr-auto pageDashbord"
+          class="tab-content col-12 col-md-10 mr-auto pageDashbord"
           id="v-pills-tabContent"
         >
+          <div class="iconMenuHamber">
+            <button
+              class="btn p-1 mt-2 ms-2"
+              type="button"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#offcanvasWithBothOptions"
+              aria-controls="offcanvasWithBothOptions"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="27"
+                height="27"
+                fill="currentColor"
+                class="bi bi-list"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <!--menu respansive-->
+          <!--menu respansive-->
+          <!--menu respansive-->
+          <div
+            class="offcanvas offcanvas-start divMenuHumber"
+            data-bs-scroll="true"
+            tabindex="-1"
+            id="offcanvasWithBothOptions"
+            aria-labelledby="offcanvasWithBothOptionsLabel"
+          >
+            <div class="offcanvas-header">
+              <h5
+                class="offcanvas-title text-white"
+                id="offcanvasWithBothOptionsLabel"
+              >
+                Menu
+              </h5>
+              <button
+                type="button"
+                class="btn-close bg-white opacity-100"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"
+                id="closeOffcanvas"
+              ></button>
+            </div>
+            <div class="offcanvas-body">
+              <div class="mb-3">
+                <div
+                  class="backLogo w-100 d-flex justify-content-center align-items-center"
+                  id="backLogo"
+                >
+                  <img
+                    id="logo"
+                    class="w-75 my-3"
+                    src="/assets/logo-mci-02%20(1)-DJlpvb5C.svg"
+                    alt="logo"
+                  />
+                </div>
+              </div>
+              <div class="bgSpecifications text-white">
+                <div class="pt-2 ps-4">
+                  <span class="username">Username:</span>
+                  <span id="userName"></span>
+                </div>
+                <div class="mt-3 pb-4 ps-4">
+                  <span class="yourRole">Your Role:</span>
+                  <span id="role"></span>
+                </div>
+              </div>
+
+              <div
+                class="accordion nav-pills"
+                id="v-pills-tab"
+                role="tablist"
+                aria-orientation="vertical"
+              >
+                <!-- App Management Item -->
+                <div class="accordion-item bg-transparent border-0">
+                  <h2 class="accordion-header my-3">
+                    <button
+                      class="clickTab styleButton border-0 active ActiveMenuClick ActiveMenuScroll activeMenu menus1"
+                      data-id="1"
+                      id="v-servers-tab"
+                      data-bs-toggle="pill"
+                      data-bs-target="#v-servers-home"
+                      type="button"
+                      role="tab"
+                      aria-controls="v-servers-home"
+                      aria-selected="true"
+                    >
+                      <span class="ms-2">Server Settings</span>
+                    </button>
+                  </h2>
+                </div>
+
+                <div class="accordion-item bg-transparent border-0">
+                  <h2 class="accordion-header my-3">
+                    <button
+                      class="clickTab styleButton border-0 ActiveMenuClick ActiveMenuScroll collapsed menus5"
+                      data-id="5"
+                      type="button"
+                      id="v-module-tab"
+                      role="tab"
+                      data-bs-toggle="pill"
+                      data-bs-target="#v-module"
+                      aria-controls="v-module"
+                      aria-selected="false"
+                    >
+                      <span class="ms-2">Modules</span>
+                    </button>
+                  </h2>
+                </div>
+
+                <div class="accordion-item bg-transparent border-0">
+                  <h2 class="accordion-header my-3">
+                    <button
+                      class="styleButton border-0 ActiveMenuClick collapsed menus2"
+                      data-id="2"
+                      type="button"
+                      id="v-userManagement"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapseAppManagement"
+                      aria-expanded="false"
+                      aria-controls="collapseAppManagement"
+                    >
+                      <span class="ms-2">User Management</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        class="bi bi-caret-right-fill"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"
+                        />
+                      </svg>
+                    </button>
+                  </h2>
+                  <div
+                    id="collapseAppManagement"
+                    class="accordion-collapse collapse"
+                  >
+                    <div class="accordion-body p-0">
+                      <div
+                        id="class-access-level"
+                        class="ms-3 mb-3 d-flex"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="10"
+                          height="10"
+                          fill="currentColor"
+                          class="bi bi-circle-fill iconSubMenu1"
+                          viewBox="0 0 16 16"
+                        >
+                          <circle
+                            cx="8"
+                            cy="8"
+                            r="8"
+                          />
+                        </svg>
+                        <button
+                          class="clickTab styleButton border-0 subMenuClick subMenu subMenu1"
+                          data-id="1"
+                          id="v-access-levels-tab"
+                          data-bs-toggle="pill"
+                          data-bs-target="#v-access-levels"
+                          type="button"
+                          role="tab"
+                          aria-controls="v-access-levels"
+                          aria-selected="false"
+                        >
+                          Access Levels
+                        </button>
+                      </div>
+                      <div class="ms-3 d-flex">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="10"
+                          height="10"
+                          fill="currentColor"
+                          class="bi bi-circle-fill iconSubMenu2"
+                          viewBox="0 0 16 16"
+                        >
+                          <circle
+                            cx="8"
+                            cy="8"
+                            r="8"
+                          />
+                        </svg>
+                        <button
+                          class="clickTab styleButton border-0 subMenuClick subMenu subMenu2"
+                          data-id="2"
+                          id="v-users-tab"
+                          data-bs-toggle="pill"
+                          data-bs-target="#v-users"
+                          type="button"
+                          role="tab"
+                          aria-controls="v-users"
+                          aria-selected="false"
+                        >
+                          Users
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  class="accordion-item bg-transparent border-0"
+                  id="menuSubscribers"
+                >
+                  <h2 class="accordion-header my-3">
+                    <button
+                      class="clickTab styleButton border-0 ActiveMenuClick ActiveMenuScroll collapsed menus6"
+                      data-id="6"
+                      type="button"
+                      id="v-subscribers-tab"
+                      role="tab"
+                      data-bs-toggle="pill"
+                      data-bs-target="#v-subscribers"
+                      aria-controls="v-subscribers"
+                      aria-selected="false"
+                    >
+                      <span class="ms-2">Subscribers</span>
+                    </button>
+                  </h2>
+                </div>
+
+                <div
+                  class="accordion-item bg-transparent border-0"
+                  id="tabPing"
+                >
+                  <h2 class="accordion-header my-3">
+                    <button
+                      class="clickTab styleButton border-0 ActiveMenuClick ActiveMenuScroll collapsed menus7"
+                      data-id="7"
+                      type="button"
+                      id="v-ping-tab"
+                      role="tab"
+                      data-bs-toggle="pill"
+                      data-bs-target="#v-ping"
+                      aria-controls="v-ping"
+                      aria-selected="false"
+                    >
+                      <span class="ms-2">Ping</span>
+                    </button>
+                  </h2>
+                </div>
+
+                <div class="accordion-item bg-transparent border-0">
+                  <h2 class="accordion-header my-3">
+                    <button
+                      class="clickTab styleButton border-0 ActiveMenuClick ActiveMenuScroll collapsed menus3"
+                      data-id="3"
+                      type="button"
+                      id="V-monitoring-tab"
+                      data-bs-toggle="pill"
+                      data-bs-target="#v-monitoring"
+                      aria-controls="v-monitoring"
+                      aria-expanded="false"
+                    >
+                      <span class="ms-2">Monitoring</span>
+                    </button>
+                  </h2>
+                </div>
+
+                <div class="accordion-item bg-transparent border-0">
+                  <h2 class="accordion-header my-3">
+                    <button
+                      class="clickTab styleButton border-0 ActiveMenuClick ActiveMenuScroll collapsed menus4"
+                      data-id="4"
+                      type="button"
+                      id="v-log-tab"
+                      role="tab"
+                      data-bs-toggle="pill"
+                      data-bs-target="#v-log"
+                      aria-controls="v-log"
+                      aria-selected="false"
+                    >
+                      <span class="ms-2">Log</span>
+                    </button>
+                  </h2>
+                </div>
+
+                <div class="align-items-center">
+                  <div class="logOut">
+                    <a
+                      id="idLogout"
+                      class="logout-link"
+                    >
+                      Log Out
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        fill="currentColor"
+                        class="bi bi-door-open-fill"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M1.5 15a.5.5 0 0 0 0 1h13a.5.5 0 0 0 0-1H13V2.5A1.5 1.5 0 0 0 11.5 1H11V.5a.5.5 0 0 0-.57-.495l-7 1A.5.5 0 0 0 3 1.5V15zM11 2h.5a.5.5 0 0 1 .5.5V15h-1zm-2.5 8c-.276 0-.5-.448-.5-1s.224-1 .5-1 .5.448.5 1-.224 1-.5 1"
+                        />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!--menu respansive-->
+          <!--menu respansive-->
+          <!--menu respansive-->
+
           <!-- Main Dashboard Content -->
           <div
             class="tab-pane fade show active"
@@ -395,16 +659,18 @@
             tabindex="0"
           >
             <main class="col-md-12 dashboard-content">
-              <div
+              <!-- <div
                 class="d-flex justify-content-between align-items-center mb-4 flex-wrap"
-              ></div>
+              ></div> -->
               <div>
-                <h2 class="mb-3">Dashbord</h2>
+                <h2 class="mb-3 textDashbord">Dashbord</h2>
               </div>
 
               <div class="card-main mb-4">
-                <h3>Settings Management</h3>
-                <p>Configuration and View of 4G/5G Core and RAN Settings</p>
+                <h3 class="textSettingBox">Settings Management</h3>
+                <p class="textTitleBox">
+                  Configuration and View of 4G/5G Core and RAN Settings
+                </p>
                 <button
                   type="button"
                   class="btn btn-primary"
@@ -733,8 +999,8 @@
               </div>
             </div>
 
-              <!-- Modal -->
-              <div
+            <!-- Modal -->
+            <div
               class="modal fade"
               id="playServer"
               tabindex="-1"
@@ -762,20 +1028,20 @@
                   <div class="modal-footer">
                     <form class="w-100 was-validated">
                       <button
-                      type="button"
-                      id="playClick"
-                      class="btn btn-primary"
-                      data-bs-dismiss="modal"
-                    >
-                      I am sure
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-danger"
-                      data-bs-dismiss="modal"
-                    >
-                      Cancel
-                    </button>
+                        type="button"
+                        id="playClick"
+                        class="btn btn-primary"
+                        data-bs-dismiss="modal"
+                      >
+                        I am sure
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-danger"
+                        data-bs-dismiss="modal"
+                      >
+                        Cancel
+                      </button>
                     </form>
                   </div>
                 </div>
@@ -969,7 +1235,7 @@
             tabindex="0"
           >
             <table class="table table-striped">
-              <thead>
+              <tbody>
                 <tr>
                   <th scope="col">
                     <svg
@@ -1020,12 +1286,10 @@
                   </th>
                   <td>
                     <div class="dropdown">
-                      <p class="mb-2">full access</p>
+                      <p class="mt-2 mb-0">full access</p>
                     </div>
                   </td>
                 </tr>
-              </thead>
-              <tbody>
                 <tr>
                   <th scope="col">
                     <svg
@@ -1208,6 +1472,26 @@
                         </div>
                         <div
                           class="mb-3"
+                          id="divPhoneNumber"
+                        >
+                          <label
+                            for="phoneNumber"
+                            class="form-label"
+                            >Phone Number
+                          </label>
+                          <input
+                            class="form-control"
+                            id="phoneNumber"
+                            minlength="11"
+                            maxlength="11"
+                            type="text"
+                            name="namePhoneNumber"
+                            aria-label="default input example"
+                            required
+                          />
+                        </div>
+                        <div
+                          class="mb-3"
                           id="divPasswordAddUser"
                         >
                           <label
@@ -1311,7 +1595,12 @@
               <div class="modal-dialog">
                 <div class="modal-content">
                   <div class="modal-header">
-                    <h5 class="modal-title">More Access Level</h5>
+                    <h5
+                      class="modal-title text-danger"
+                      id="accessLevelUser"
+                    >
+                      More Access Level
+                    </h5>
                     <button
                       type="button"
                       class="btn-close"
@@ -1422,6 +1711,23 @@
                           </label>
                           <div id="divAccessLevelEdit"></div>
                         </div>
+                        <div
+                          class="mb-3"
+                          id="divPhoneNumberEdit"
+                        >
+                          <label
+                            for="phoneNumberEditUser"
+                            class="form-label"
+                            >Phone Number
+                          </label>
+                          <input
+                            class="form-control"
+                            id="phoneNumberEditUser"
+                            type="text"
+                            name="namePhoneNumberEditUser"
+                            aria-label="default input example"
+                          />
+                        </div>
                         <div class="mb-3">
                           <label
                             for="passwordEditUser"
@@ -1507,130 +1813,79 @@
               </div>
             </div>
 
-            <table
-              class="table table-bordered table-striped text-center mt-3"
-              id="usersTable"
-            >
-              <div class="mt-3">
-                <button
-                  type="button"
-                  id="addUserModal"
-                  class="btn btn-primary"
-                  data-bs-toggle="modal"
-                  data-bs-target="#modalAddUser"
-                >
-                  Add User<svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    fill="currentColor"
-                    class="bi bi-person-fill ms-2"
-                    viewBox="0 0 16 16"
+            <div class="d-flex justify-content-between w-100">
+              <div>
+                <div class="mt-3">
+                  <button
+                    type="button"
+                    id="addUserModal"
+                    class="btn btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalAddUser"
                   >
-                    <path
-                      d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"
-                    />
-                  </svg>
-                </button>
+                    Add User<svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      fill="currentColor"
+                      class="bi bi-person-fill ms-2"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
-              <thead>
-                <tr>
-                  <th scope="col">Row</th>
-                  <th scope="col">First Name</th>
-                  <th scope="col">Last Name</th>
-                  <th scope="col">Username</th>
-                  <th scope="col">Role</th>
-                  <th scope="col">Access Level</th>
-                  <th scope="col">Edit</th>
-                  <th scope="col">Delete</th>
-                </tr>
-              </thead>
-              <tbody id="tBody"></tbody>
-            </table>
+              <div
+                class="d-flex"
+                id="toggle2FA"
+              >
+                <h2 class="mb-0 me-3 mt-1 d-flex align-items-center">2FA</h2>
+                <div class="mt-3">
+                  <label class="switch">
+                    <input
+                      type="checkbox"
+                      class="inputToggle"
+                      id="idInputToggle"
+                    />
+                    <span class="slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="divTableResponsive">
+              <div
+                id="tableResponsiveUser"
+                class="table-responsive"
+              >
+                <table
+                  class="table table-bordered table-striped text-center mt-3"
+                  id="usersTable"
+                >
+                  <thead>
+                    <tr>
+                      <th scope="col">Row</th>
+                      <th scope="col">First Name</th>
+                      <th scope="col">Last Name</th>
+                      <th scope="col">Username</th>
+                      <th scope="col">Role</th>
+                      <th scope="col">Access Level</th>
+                      <th scope="col">Edit</th>
+                      <th scope="col">Delete</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tBody"></tbody>
+                </table>
+              </div>
+            </div>
             <nav>
               <ul
                 class="pagination paginationUser justify-content-center"
                 id="paginationUser"
               ></ul>
             </nav>
-
-            <!-- <div
-              class="modal fade"
-              id="modalAccessLevel"
-              data-bs-backdrop="static"
-              data-bs-keyboard="false"
-              tabindex="-1"
-              aria-labelledby="staticBackdropLabel"
-              aria-hidden="true"
-            >
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <div class="modal-body">
-                    <div
-                      class="container-fluid formEdit d-flex justify-content-center align-items-center"
-                    >
-                      <form class="w-100 was-validated">
-                        <div class="mb-3">
-                          <p>
-                            id:
-                            <span
-                              id="idD"
-                              class="text-danger"
-                            ></span>
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          class="btn btn-danger"
-                          data-bs-dismiss="modal"
-                        >
-                          Cancel
-                        </button>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div> -->
-
-            <!-- <div
-              class="modal fade"
-              id="modalAccessLevel"
-              data-bs-backdrop="static"
-              data-bs-keyboard="false"
-              tabindex="-1"
-              aria-labelledby="staticBackdropLabel"
-              aria-hidden="true"
-            >
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <div class="modal-body">
-                    <div
-                      class="container-fluid formEdit d-flex justify-content-center align-items-center"
-                    >
-                      <form class="w-100 was-validated">
-                        <div class="mb-3">
-                          <p>
-                            id:
-                            <span
-                              id="idD"
-                              class="text-danger"
-                            ></span>
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          class="btn btn-danger"
-                          data-bs-dismiss="modal"
-                        >
-                          Cancel
-                        </button>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div> -->
             <!-- Modal -->
             <div
               class="modal fade"
@@ -1681,39 +1936,79 @@
             </div>
           </div>
 
-          <!-- <div
-            class="tab-pane fade"
-            id="v-List"
-            role="tabpanel"
-            aria-labelledby="v-List-tab"
-            tabindex="0"
-          >
-            <div>
-              <iframe
-                src="http://localhost:3000/subscribers/all"
-                width="100%"
-                height="700px"
-                style="border: none"
-              ></iframe>
-            </div>
-          </div>
-
           <div
             class="tab-pane fade"
-            id="v-New"
+            id="v-ping"
             role="tabpanel"
-            aria-labelledby="v-New-tab"
+            aria-labelledby="v-ping-tab"
             tabindex="0"
           >
-            <div>
-              <iframe
-                src="http://localhost:3000/subscribers/new"
-                width="100%"
-                height="700px"
-                style="border: none"
-              ></iframe>
+            <div class="d-flex flex-column justify-content-center">
+              <div class="mt-5 d-flex align-items-center">
+                <h2 class="textHeaderPing ms-3">Ping</h2>
+              </div>
+              <hr class="w-75" />
+              <div class="d-flex flex-column w-50 m-auto mt-4">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6>Server:</h6>
+                  <select
+                    class="my-2 inputPing w-75"
+                    id="serverIdPing"
+                  ></select>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6>IP:</h6>
+                  <input
+                    type="text"
+                    placeholder="ServerIP"
+                    class="my-2 inputPing w-75"
+                    id="ipServerPing"
+                  />
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6>Username:</h6>
+                  <input
+                    type="text"
+                    placeholder="UserName"
+                    class="my-2 inputPing w-75"
+                    id="userNamePassword"
+                  />
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6>Password:</h6>
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    class="my-2 inputPing w-75"
+                    id="passwordPing"
+                  />
+                </div>
+                <div class="d-flex justify-content-center mt-3">
+                  <button
+                    id="submitPing"
+                    class="my-2 bg-primary rounded-2 fs-5 py-2 px-3 w-25"
+                  >
+                    <div
+                      class="loaderPing me-2"
+                      id="loaderPing"
+                    ></div>
+                    Ping
+                  </button>
+                </div>
+              </div>
+              <hr
+                class="mt-4"
+                id="hrPing"
+              />
+              <div class="p-4 mt-2">
+                <h4 id="resultPing">Result:</h4>
+                <p
+                  id="pingResponse"
+                  class="px-5"
+                ></p>
+              </div>
             </div>
-          </div> -->
+          </div>
 
           <div
             class="tab-pane fade"
@@ -1726,12 +2021,12 @@
               <li class="nav-item">
                 <button
                   class="nav-link active"
-                  id="zobbix"
+                  id="zabbix"
                   aria-current="page"
                   data-bs-toggle="tab"
                   data-bs-target="#tab1"
                 >
-                  Zobbix
+                  Zabbix
                 </button>
               </li>
               <li class="nav-item">
@@ -1752,7 +2047,7 @@
                 id="tab1"
               >
                 <iframe
-                  id="IframeZobbix"
+                  id="IframeZabbix"
                   class="w-100 iframe_one"
                   src="demo_iframe.htm"
                   name="iframe_a"
@@ -1762,7 +2057,7 @@
                   <input
                     type="text"
                     id="url_input_a"
-                    placeholder="Enter URL for iframe Zobbix"
+                    placeholder="Enter URL for iframe zabbix"
                     class="form-control mb-2 w-50"
                   />
                   <button
@@ -1802,6 +2097,7 @@
               </div>
             </div>
           </div>
+
           <div
             class="tab-pane fade"
             id="v-log"
@@ -1891,51 +2187,60 @@
                 />
               </svg>
             </button>
-            <table class="table table-bordered table-striped text-center mt-3">
-              <thead>
-                <tr>
-                  <th
-                    scope="col"
-                    class="fs-5"
-                  >
-                    Row
-                  </th>
-                  <th
-                    scope="col"
-                    class="fs-5"
-                  >
-                    Module Name
-                  </th>
-                  <th
-                    scope="col"
-                    class="fs-5"
-                  >
-                    Servers
-                  </th>
-                  <th
-                    scope="col"
-                    class="fs-5"
-                  >
-                    Type
-                  </th>
-                  <th
-                    id="thEditModule"
-                    scope="col"
-                    class="fs-5"
-                  >
-                    Edit
-                  </th>
-                  <th
-                    id="thRemoveModule"
-                    scope="col"
-                    class="fs-5"
-                  >
-                    Delete
-                  </th>
-                </tr>
-              </thead>
-              <tbody id="tBody3"></tbody>
-            </table>
+            <div class="divTableResponsive">
+              <div
+                id="tableResponsive"
+                class="table-responsive"
+              >
+                <table
+                  class="table table-bordered table-striped text-center mt-3"
+                >
+                  <thead>
+                    <tr>
+                      <th
+                        scope="col"
+                        class="fs-5"
+                      >
+                        Row
+                      </th>
+                      <th
+                        scope="col"
+                        class="fs-5"
+                      >
+                        Module Name
+                      </th>
+                      <th
+                        scope="col"
+                        class="fs-5"
+                      >
+                        Servers
+                      </th>
+                      <th
+                        scope="col"
+                        class="fs-5"
+                      >
+                        Type
+                      </th>
+                      <th
+                        id="thEditModule"
+                        scope="col"
+                        class="fs-5"
+                      >
+                        Edit
+                      </th>
+                      <th
+                        id="thRemoveModule"
+                        scope="col"
+                        class="fs-5 thTable"
+                      >
+                        Delete
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="tBody3"></tbody>
+                </table>
+              </div>
+            </div>
             <nav>
               <div
                 class="w-100 mt-5"
@@ -2409,7 +2714,7 @@
         <!-- <div id="content"></div> -->
         <div
           id="idLoading"
-          class="loading col-10"
+          class="loading col-md-10 col-12"
         >
           <svg
             class="pl"

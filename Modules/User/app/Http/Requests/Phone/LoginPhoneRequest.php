@@ -27,6 +27,10 @@ class LoginPhoneRequest extends FormRequest
 
             if ($is2FA && !$this->input('phone'))
                 return $validator->errors()->add('validation', '2FA is enabled; a phone number is required.');
+
+            $systemSetting = SystemSettings::first();
+                if (!$systemSetting['is_login_sms'])
+                    return $validator->errors()->add('validation', 'login by phone stopped');
         });
     }
 
