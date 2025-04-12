@@ -76,60 +76,19 @@ class SshHelper
 
 
 
-    public function restartModule($command)
+    public function runCommandModule($command, $typeCommand, $method)
     {
         $output = $this->runCommand($command);
 
         if (str_contains($output, 'FATAL') || str_contains($output, 'ERROR')) {
-            $this->logActivity('module-error', 'restartModule', ['command' => $command, 'output' => $output]);
+            $this->logActivity('module-error', $method, ['command' => $command, 'output' => $output]);
             throw new InvalidArgumentException($output);
         }
         else
-            $this->logActivity('module-restart', 'restartModule');
+            $this->logActivity($typeCommand, $method);
 
 
         return $output;
     }
-    public function startModule($command)
-    {
-        $output = $this->runCommand($command);
 
-        if (str_contains($output, 'FATAL') || str_contains($output, 'ERROR')) {
-            $this->logActivity('module-error', 'startModule', ['command' => $command, 'output' => $output]);
-            throw new InvalidArgumentException($output);
-        }
-        else
-            $this->logActivity('module-start', 'startModule');
-
-
-        return $output;
-    }
-    public function statusModule($command)
-    {
-        $output = $this->runCommand($command);
-
-        if (str_contains($output, 'FATAL') || str_contains($output, 'ERROR')) {
-            $this->logActivity('module-error', 'statusModule', ['command' => $command, 'output' => $output]);
-            throw new InvalidArgumentException($output);
-        }
-        else
-            $this->logActivity('module-status', 'statusModule');
-
-
-        return $output;
-    }
-    public function stopModule($command)
-    {
-        $output = $this->runCommand($command);
-
-        if (str_contains($output, 'FATAL') || str_contains($output, 'ERROR')) {
-            $this->logActivity('module-error', 'stopModule', ['command' => $command, 'output' => $output]);
-            throw new InvalidArgumentException($output);
-        }
-        else
-            $this->logActivity('module-stop', 'stopModule');
-
-
-        return $output;
-    }
 }

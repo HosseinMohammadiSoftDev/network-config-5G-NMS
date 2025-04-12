@@ -38,29 +38,33 @@ class ServerController extends ApiController
 
     public function showAllServers (Request $request)
     {
-        $servers = Server::all();
-
-        return $this->respondSuccess('Your server list', $servers);
+        return $this->respondSuccess('Your server list',Server::all());
     }
 
+
+    private function givePermissionServerToRoles ()
+    {
+        $permission = Permission::firstOrCreate(['name' => "server/{$server->name}", 'guard_name' => 'web']);
+
+            $roles = Role::whereIn('name', ['expert'])->get();
+            foreach ($roles as $role) {
+                $users = $role->users;
+                foreach ($users as $user)
+                    $user->givePermissionTo($permission);
+            };
+
+                // delete cache permission
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+    }
     public function createServer (CreateServerRequest $request)
     {
-        $server = Server::create($request->validated());
+        $credentials = $request->validated();
 
         try {
             DB::beginTransaction();
 
-            $permission = Permission::firstOrCreate(['name' => "server/{$server->name}", 'guard_name' => 'web']);
-
-            // $roles = Role::whereIn('name', ['expert'])->get();
-            // foreach ($roles as $role) {
-            //     $users = $role->users;
-            //     foreach ($users as $user)
-            //         $user->givePermissionTo($permission);
-            // };
-
-                // delete cache permission
-            app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+                $server = Server::create($credentials);
+                    // $this->givePermissionServerToRoles();
 
             activity('create-server')
                 ->causedBy(Auth::user())
@@ -78,11 +82,11 @@ class ServerController extends ApiController
             );
 
             DB::commit();
-            return $this->respondCreated('A new server has been created', $server);
+                return $this->respondCreated('A new server has been created', $server);
 
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json(['msg' => $e->getMessage()],422);
+                return response()->json(['msg' => $e->getMessage()],422);
         }
     }
     public function editServer (EditServerReqest $request)
@@ -116,31 +120,12 @@ class ServerController extends ApiController
 
 
             DB::commit();
-            return response()->json(['msg' => 'this server updated', 'server' => $server, 'oldNameServer' => $serverOldName]);
+                return response()->json(['msg' => 'this server updated', 'server' => $server, 'oldNameServer' => $serverOldName]);
+
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['msg' => $e->getMessage()],422);
+                return response()->json(['msg' => $e->getMessage()],422);
         }
-    }
-
-
-    public function deleteAllModuleServer ($server, $host,$username, $password, $path)
-    {
-        $moduleNames = $server->modules->pluck('name');
-
-
-
-                // ssh connection
-        $command = 'rm -f' . $path . $module['name'] . '.yaml';
-        SshHelper::runSshCommand($host, $username, $password, $command);
-
-
-        foreach ($moduleNames as $moduleName)
-        {
-            $command = 'echo "' . addslashes($yamlContent) . '" > ' . $path . $module['name'] . '.yaml';
-            SshHelper::runSshCommand($host, $username, $password, $command);
-        }
-
     }
     public function deleteServer (DeleteServerReqest $request)
     {
@@ -148,70 +133,21 @@ class ServerController extends ApiController
 
         $server = Server::find($credentials['server_id']);
 
-        $host = $server['ip'];
-        $username = $request->input('auth_name');
-        $password = $request->input('password');
-        $path = $request->input('path') ?? 'bbdh-2.6.6-noCg/install/etc/bbdh/';
-
 
         try {
                 DB::beginTransaction();
 
-                // delete all module server in VPS
-            // $this->deleteAllModuleServer($server, $host, $username, $password, $path);
-
                 // validate user authName and Password in delete server
             $user = User::whereRaw('BINARY auth_name = ?', [$credentials['auth_name']])->first();
-            if (!$user || !Hash::check($credentials['password'], $user->password)) {
+            if (!$user || !Hash::check($credentials['password'], $user->password))
+                return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
 
-                activity('auth-name-or-passord-wrong')
-                    ->causedBy(Auth::user())
-                    ->event('login')
-                    ->withProperties([
-                        'type-log' => 'app',
-                        'route' => request()->fullUrl(),
-                        'method' => 'login',
-                        'auth-name' => $credentials['auth_name'],
-                        'password' => $credentials['password'],
-                        'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                        'user_role' =>Auth::user()->roles()->pluck('name')->first(),
-                    ])
-                    ->log('The user entered an incorrect email or password during login.');
 
-                    return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
-
-            }
 
             $server->delete();
             Permission::where('name', "server/{$server->name}")->delete();
 
                 DB::commit();
-        } catch (Exception $e) {
-                DB::rollBack();
-
-            activity('exption-delete-all-module-server')
-            ->causedBy(Auth::user())
-            ->performedOn($server)
-            ->event('delete')
-            ->withProperties([
-                'type-log' => 'server',
-                'route' => request()->fullUrl(),
-                'method' => 'deleteServer',
-                'server' => $server,
-                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                'user_role' =>Auth::user()->roles()->pluck('name')->first(),            ])
-            ->log('An issue occurred while deleting all server modules');
-        }
-
-
-
-        Log::channel('daily')->info('The server was successfully deleted', [
-            'type-log' => 'server',
-            'route' => request()->fullUrl(),
-            'method' => 'deleteServer',
-            'user' => Auth::user(),
-            'server' => $server,
-        ]);
 
         activity('delete-server')
             ->causedBy(Auth::user())
@@ -227,6 +163,22 @@ class ServerController extends ApiController
         ->log('The server was successfully deleted');
 
         return $this->respondSuccess('The server was successfully deleted', $server);
+    } catch (Exception $e) {
+        DB::rollBack();
+
+            activity('exption-delete-all-module-server')
+            ->causedBy(Auth::user())
+            ->performedOn($server)
+            ->event('delete')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'method' => 'deleteServer',
+                'server' => $server,
+                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                'user_role' =>Auth::user()->roles()->pluck('name')->first(),            ])
+            ->log('An issue occurred while deleting all server modules');
+        }
     }
 
 
@@ -237,22 +189,12 @@ class ServerController extends ApiController
 
         $server = Server::find($credentials['server_id']);
 
-        if ($server['is_down'] == 1)
+        if ($server['is_down'] == Server::OFF)
             return response()->json(['The server is turned off', 422]);
 
 
-        $server->update(['is_down' => 1]);
+        $server->update(['is_down' => Server::OFF]);
         $server->save();
-
-
-
-        Log::channel('daily')->info('The server has been turned off', [
-            'type-log' => 'server',
-            'route' => request()->fullUrl(),
-            'method' => 'serverStart',
-            'user' => Auth::user(),
-            'server' => $server,
-        ]);
 
 
         activity('server-stop')
@@ -278,23 +220,12 @@ class ServerController extends ApiController
 
         $server = Server::find($credentials['server_id']);
 
-        if ($server['is_down'] == 0)
+        if ($server['is_down'] == Server::ON)
             return response()->json(['The server is turned on', 422]);
 
 
-        $server->update(['is_down' => 0]);
+        $server->update(['is_down' => Server::ON]);
         $server->save();
-
-
-
-
-        Log::channel('daily')->info('The server has been turned on', [
-            'type-log' => 'server',
-            'route' => request()->fullUrl(),
-            'method' => 'serverStart',
-            'user' => Auth::user(),
-            'server' => $server,
-        ]);
 
 
         activity('server-start')
@@ -342,7 +273,7 @@ class ServerController extends ApiController
 
 
                 // is stop server
-        if ($server['is_down'] == 1)
+        if ($server['is_down'] == Server::OFF)
             return response()->json(['msg' => 'this off server'], 403);
 
 

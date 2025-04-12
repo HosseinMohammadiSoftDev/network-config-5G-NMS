@@ -26,9 +26,8 @@ class UserController extends ApiController
 
     public function getMe ()
     {
-        $user = User::find(Auth::id());
         $serverPermissions = Permission::where('name', 'like', 'server/%')->pluck('name')->toArray();
-        $userPermissions = $user->permissions()->whereIn('name', $serverPermissions)->pluck('name')->toArray();
+        $userPermissions = Auth::user()->permissions()->whereIn('name', $serverPermissions)->pluck('name')->toArray();
         $modifiedArray = array_map(fn($item) => str_replace("server/", "", $item), $userPermissions);
 
         $serverIds = Server::whereIn('name', $modifiedArray)->pluck('id');
@@ -36,15 +35,15 @@ class UserController extends ApiController
 
         return $this->respondSuccess('The user was successfully displayed', [
             'user' => [
-                'id' => $user->id,
-                'first_name' => $user->first_name,
-                'last_name' => $user->last_name,
-                'auth_name' => $user->auth_name,
-                'phone' => $user->phone,
-                'created_at' => $user->created_at,
-                'updated_at' => $user->updated_at,
-                'roles' => $user->getRoleNames(),
-                'permissions' => $user->getAllPermissions()->pluck('name'),
+                'id' => Auth::user()->id,
+                'first_name' => Auth::user()->first_name,
+                'last_name' => Auth::user()->last_name,
+                'auth_name' => Auth::user()->auth_name,
+                'phone' => Auth::user()->phone,
+                'created_at' => Auth::user()->created_at,
+                'updated_at' => Auth::user()->updated_at,
+                'roles' => Auth::user()->getRoleNames(),
+                'permissions' => Auth::user()->getAllPermissions()->pluck('name'),
                 'permissionServerIds' => $serverIds
             ],
         ]);
@@ -199,19 +198,6 @@ class UserController extends ApiController
 
         } catch (\Exception $e) {
                 DB::rollBack();
-
-                activity('add-member')
-                    ->causedBy(Auth::user())
-                    ->event('create-member')
-                    ->withProperties([
-                        'route' => request()->fullUrl(),
-                        'method' => 'addMember',
-                        'member' => $credentials,
-                        'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                        'user_role' =>Auth::user()->roles()->pluck('name')->first(),
-                    ])
-                ->log('An issue occurred during the process');
-
             throw $e;
         }
     }

@@ -13,6 +13,10 @@ class Server extends Model
 {
     use HasFactory;
 
+
+    const OFF = 1;
+    const ON = 0;
+
     /**
      * The attributes that are mass assignable.
      */

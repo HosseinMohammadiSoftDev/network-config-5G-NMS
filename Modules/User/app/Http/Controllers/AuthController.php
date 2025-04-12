@@ -16,7 +16,7 @@ use Modules\User\Http\Requests\Auth\Login2FARequest;
 use Modules\User\Http\Requests\Phone\LoginPhoneRequest;
 use Modules\User\Http\Requests\Phone\SendLoginPhoneRequest;
 use Modules\User\Http\Requests\Phone\VerifyUserPhoneRequest;
-
+use Modules\User\Transformers\Auth\LoginResource;
 
 class AuthController extends ApiController
 {
@@ -32,28 +32,13 @@ class AuthController extends ApiController
 
         $user = User::whereRaw('BINARY auth_name = ?', [$credentials['auth_name']])->first();
 
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
-
-            activity('auth-name-or-passord-wrong')
-                ->causedBy(Auth::user())
-                ->event('login')
-                ->withProperties([
-                    'type-log' => 'app',
-                    'route' => request()->fullUrl(),
-                    'method' => 'login',
-                    'auth-name' => $credentials['auth_name'],
-                    'password' => $credentials['password']
-                ])
-                ->log('The user entered an incorrect email or password during login.');
-
-                return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
-
-        }
+        if (!$user || !Hash::check($credentials['password'], $user->password))
+            return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
 
 
         $user->tokens()->delete();
-
         $token = $user->createToken('apiToken')->plainTextToken;
+
 
             activity('login')
                 ->causedBy(Auth::user())
@@ -63,7 +48,7 @@ class AuthController extends ApiController
                     'method' => 'login',
                     'user' => $user,
                 ])
-                ->log('The user logged in with the username and password.');
+            ->log('The user logged in with the username and password.');
 
 
             $is2FAEnabled = SystemSettings::first()->is_login_2FA;
@@ -111,18 +96,8 @@ class AuthController extends ApiController
             ->log('The user has logged out of their account');
 
             return $this->respondSuccess('The user has logged out of their account', ['user' => $user]);
+
         } catch (\Exception $e) {
-
-            activity('logout')
-                ->causedBy(Auth::user())
-                ->event('logout')
-                ->withProperties([
-                    'route' => request()->fullUrl(),
-                    'method' => 'logout',
-                    'error' => $e->getMessage()
-                ])
-            ->log('An error occurred while logging out the user');
-
             return response()->json(['msg' => 'An error occurred while logging out the user']);
         }
     }
@@ -166,7 +141,7 @@ class AuthController extends ApiController
             ]);
 
         } catch (\Exception $e) {
-            return response(['msg' => 'مشکلی در پایگاه داده به وجود آمد!', 'error' => $e->getMessage(), 'code' => '100'], 400);
+            return response(['success' => true, 'There was a problem with the program process.'], 400);
         }
     }
 

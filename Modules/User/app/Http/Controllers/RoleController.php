@@ -47,13 +47,9 @@ class RoleController extends ApiController
 
         return $this->respondSuccess('List of all roles with access', $roles);
     }
-
-
     public function showAllPermissions ()
     {
-        $moduleName = Permission::all()->pluck('name');
-
-        return $this->respondSuccess('List of all permissions', $moduleName);
+        return $this->respondSuccess('List of all permissions', Permission::all()->pluck('name'));
     }
 
 
@@ -66,9 +62,7 @@ class RoleController extends ApiController
 
         $user->givePermissionTo($permissionName);
 
-        return response()->json([
-            'message' => 'Permission was successfully added to the user'
-        ]);
+        return response()->json(['message' => 'Permission was successfully added to the user']);
     }
     public function removePermissionFromUser(AddPermissionToUser $request   )
     {
@@ -79,8 +73,6 @@ class RoleController extends ApiController
 
         $user->revokePermissionTo($permissionName);
 
-        return response()->json([
-            'message' =>'The user\'s permission was successfully removed'
-        ]);
+        return response()->json(['message' =>'The user\'s permission was successfully removed']);
     }
 }
