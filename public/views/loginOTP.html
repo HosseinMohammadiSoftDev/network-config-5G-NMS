@@ -12,57 +12,42 @@
       rel="icon"
       type="image/x-icon"
     />
-    <script type="module" crossorigin src="/assets/login-Dxkxhgtu.js"></script>
+    <script type="module" crossorigin src="/assets/loginOTP-DJqF78VK.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/logo white-CEz9GIPI.js">
-    <link rel="modulepreload" crossorigin href="/assets/auth-CIdfLHBs.js">
     <link rel="modulepreload" crossorigin href="/assets/logo white with logo type-DxDuxsjp.js">
     <link rel="stylesheet" crossorigin href="/assets/logo white-BHbPscNU.css">
-    <link rel="stylesheet" crossorigin href="/assets/login-DuT57hJQ.css">
+    <link rel="stylesheet" crossorigin href="/assets/loginOTP-DMzMebYf.css">
   </head>
   <body>
     <div class="container containerLogin">
       <div class="d-flex justify-content-center align-items-center divLogin">
         <div
-          id="idDivContainer"
           class="bg-body-tertiary rounded-3 d-flex flex-column justify-content-center align-items-center divContainer"
+          id="idDivContainer"
         >
-          <div id="backLogo" class="d-flex justify-content-center align-items-center mb-4">
+          <div
+            id="backLogoOTP"
+            class="d-flex justify-content-center align-items-center mb-4"
+          >
             <img
               id="logo"
               class="img pe-3"
             />
           </div>
-          <form
-            class="form"
-            id="loginForm"
-          >
+          <form class="form">
             <div class="mb-3">
               <label
-                for="authNmaeLogin"
+                for="phoneNamber"
                 class="form-label"
-                >User Name</label
+                >Phone Number</label
               >
               <input
                 type="text"
                 class="form-control"
-                name="nameAuthNameLogin"
-                id="authNameLogin"
+                name="namePhoneNamber"
+                id="phoneNamber"
               />
             </div>
-            <div class="mb-3">
-              <label
-                for="passwordLogin"
-                class="form-label"
-                >Password
-              </label>
-              <input
-                type="password"
-                class="form-control"
-                name="namePasswordLogin"
-                id="passwordLogin"
-              />
-            </div>
-            <div id="inputPhoneNumber"></div>
             <div
               id="otp-input"
               class="mb-3 OTP"
@@ -161,14 +146,18 @@
               </h6>
             </div>
             <a
-              id="loginBtn"
-              class="btn btn-primary w-100"
+              id="loginPhoneBtn"
+              class="btn btn-success w-100"
               role="button"
-              >Log In</a
+              >Sending a one-time password</a
             >
-            <div id="divPhoneNumberLogin"></div>
+            <a
+              id="login"
+              class="btn btn-success w-100"
+              role="button"
+              >Login</a
+            >
           </form>
-          <div id="loginPhoneNumber"></div>
         </div>
         <div
           class="box bg-body-tertiary"
@@ -204,10 +193,10 @@
               </svg>
             </button>
             <input
-              type="text"
-              id="input"
-              placeholder="Type CAPTCHA Here"
-              maxlength="6"
+            type="text"
+            id="input"
+            placeholder="Type CAPTCHA Here"
+            maxlength="6"
             />
             <p class="ms-2 p-0">Case sensitive</p>
             <div
@@ -223,7 +212,6 @@
           </div>
         </div>
       </div>
-
       <div
         id="idLoading"
         class="loading col-12"
