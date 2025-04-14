@@ -36,7 +36,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::middleware(['permission:user|role:admin'])->post('add-member', [UserController::class, 'addMember']);
     Route::middleware(['permission:user|role:admin'])->post('edit_member', [UserController::class, 'editMember']);
-    Route::middleware(['permission:user|role:admin'])->delete('delete-member-Accountpa /{UserID}', [UserController::class, 'deleteAccountMember']);
+    Route::middleware(['permission:user|role:admin'])->delete('delete-member-Account/{UserId}', [UserController::class, 'deleteAccountMember']);
 
     Route::middleware(['role:admin|visitor|expert'])->get('show-all-roles', [RoleController::class, 'showAllRolesPermissions']);
     Route::middleware(['role:admin|visitor|expert'])->get('show-all-permission', [RoleController::class, 'showAllPermissions']);

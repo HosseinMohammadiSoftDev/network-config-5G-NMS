@@ -2,16 +2,18 @@
 
 namespace Modules\Server\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Modules\User\Models\User;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 // use Modules\Server\Database\Factories\ServerFactory;
 
 class Server extends Model
 {
-    use HasFactory;
+    use HasFactory, HasRoles;
 
 
     const OFF = 1;
@@ -28,6 +30,9 @@ class Server extends Model
         'is_down',
         'config'
     ];
+
+
+    protected $guard_name = 'web';
 
 
     // public function getActivitylogOptions(): LogOptions
@@ -51,4 +56,8 @@ class Server extends Model
         ->withPivot('initial_config', 'previous_config', 'current_config');
     }
 
+    public function users ()
+    {
+        return $this->hasMany(User::class);
+    }
 }

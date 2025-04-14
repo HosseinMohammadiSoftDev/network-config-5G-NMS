@@ -2,13 +2,15 @@
 
 namespace Modules\User\Http\Requests\User;
 
+use Illuminate\Validation\Rule;
 use Modules\Server\Models\Server;
 use Modules\User\Models\Permission;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\ValidationException;
 
-class AddMemberRequest extends FormRequest
+class EditMemberRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -16,16 +18,31 @@ class AddMemberRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'first_name' => ['required', 'string', 'max:191', 'min:3'],
-            'last_name' => ['required', 'string', 'max:191', 'min:3'],
-            'auth_name' => ['required', 'string', 'unique:users,auth_name', 'min:3', 'max:255'],
-            'phone' => ['required', 'string', 'regex:/^09\d{9}$/', 'unique:users,phone'],
-            'role' => ['required', 'in:visitor,expert'],
-            'permission_name' => ['nullable', 'array'],
-            'permission_name.*' => ['required', 'string', 'exists:permissions,name'],
-            'password' => ['required', Password::min(8), 'confirmed', 'max:60'],
+            'user_id' => ['required', 'integer', 'exists:users,id'],
 
-            'server_id' => ['required', 'integer', 'exists:servers,id']
+            'auth_name' => ['nullable',
+            'string',
+            // 'unique:users,auth_name',
+            Rule::unique('users', 'auth_name')->ignore($this->user_id, 'id'),
+            'min:3',
+            'max:60'],
+
+            'password' => ['nullable', Password::min(8), 'max:40', 'confirmed'],
+            'role' => ['nullable', 'string', 'in:expert,visitor'],
+            'first_name' => ['nullable', 'min:3', 'max:256'],
+            'last_name' => ['nullable', 'min:3', 'max:256'],
+
+            'phone' => [
+                'string',
+                'regex:/^09\d{9}$/',
+                Rule::unique('users', 'phone')->ignore($this->user_id, 'id')
+            ],
+
+            'role' => ['nullable', 'string', Rule::exists('roles', 'name'), Rule::notIn('admin')],
+            'permission_name' => ['nullable', 'array'],
+            'permission_name.*' =>  ['required', 'string', 'exists:permissions,name'],
+
+            'server_id' => ['integer', 'exists:servers,id']
         ];
     }
 
@@ -33,7 +50,7 @@ class AddMemberRequest extends FormRequest
 
 
 
-    public function ValidationServerPermission ($server, $permissionNames)
+    private function validationServerPermission ($server, $permissionNames)
     {
         $serverPermissionsRequest = array_filter(
             $permissionNames,
@@ -46,15 +63,17 @@ class AddMemberRequest extends FormRequest
                     throw ValidationException::withMessages(['validation' => ['You cannot give a user access to servers that you do not have access to.']]);
 
     }
-    public function validationUserPermission ($permissionNames)
+    private function validationUserPermission ($permissionNames)
     {
+        if (Auth::user()->hasRole('admin') && !Auth::user()->hasRole('admin'))
+            throw ValidationException::withMessages(['validation' => ['You cannot edit admin']]);
+
         $serverPermissions = Permission::where('name', 'like', 'server/%')->pluck('name')->toArray();
         if (! $serverPermissions)
             throw ValidationException::withMessages(['validation' => ['server permission empity']]);
 
-        if (empty($permissionNames) || empty(array_intersect($permissionNames, $serverPermissions))) {
+        if (empty(array_intersect($permissionNames, $serverPermissions)))
             throw ValidationException::withMessages(['validation' => ['At least one server-related permission is required']]);
-        }
 
     }
     public function withValidator ($validator)
@@ -62,9 +81,8 @@ class AddMemberRequest extends FormRequest
         if ($validator->errors()->any())
             return;
 
-
             $server = Server::find($this->input('server_id'));
-        $validator->after(function ($validator) use($server) {
+        $validator->after(function ($validator) use ($server) {
 
             $permissionNames = $this->input('permission_name') ?? null;
 
@@ -76,6 +94,7 @@ class AddMemberRequest extends FormRequest
 
         });
     }
+
 
 
 

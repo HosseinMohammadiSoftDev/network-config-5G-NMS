@@ -1010,7 +1010,7 @@ class ModuleController extends ApiController
 
 
         // service module
-    private function runCommandModuleToServer ($validate, $command, server $server, module $module, $typeCommand, $method)
+    private function runCommandModuleToServer ($validate, $command, server $server, $typeCommand, $method)
     {
         $username = $validate['username'];
         $password = $validate['password'];
@@ -1076,7 +1076,7 @@ class ModuleController extends ApiController
         $module = Module::find($validate['module_id']);
 
             $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' restart';;
-                return $this->runCommandModuleToServer($validate, $command, $server, $module ,'restartModel', 'restartServiceModule');
+                return $this->runCommandModuleToServer($validate, $command, $server,'restartModel', 'restartServiceModule');
     }
     public function startServiceModule (restartServiceModuleRequest $request)
     {
@@ -1086,7 +1086,7 @@ class ModuleController extends ApiController
         $module = Module::find($validate['module_id']);
 
             $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' start';
-                return $this->runCommandModuleToServer($validate, $command, $server, $module,  'startModule', 'startServiceModule');
+                return $this->runCommandModuleToServer($validate, $command, $server, 'startModule', 'startServiceModule');
     }
     public function stopServiceModule (restartServiceModuleRequest $request)
     {
@@ -1096,7 +1096,7 @@ class ModuleController extends ApiController
         $module = Module::find($validate['module_id']);
 
             $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' stop';
-                return $this->runCommandModuleToServer($validate, $command, $server, $module, 'stopModule', 'stopServiceModule');
+                return $this->runCommandModuleToServer($validate, $command, $server,'stopModule', 'stopServiceModule');
     }
     public function statusServiceModule (restartServiceModuleRequest $request)
     {
@@ -1106,7 +1106,7 @@ class ModuleController extends ApiController
         $module = Module::find($validate['module_id']);
 
             $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' status';
-                return $this->runCommandModuleToServer($validate, $command, $server, $module,'statusModule', 'statusServiceModule');
+                return $this->runCommandModuleToServer($validate, $command, $server, 'statusModule', 'statusServiceModule');
     }
     public function pingServer (SshServerRequest $request)
     {
@@ -1118,7 +1118,7 @@ class ModuleController extends ApiController
         $module = Module::find($validate['module_id']);
 
         $command = 'ping ' . $validate['ipـdestination'];
-            return $this->runCommandModuleToServer($validate, $command, $server, $module,'pingServer', 'pingServer');
+            return $this->runCommandModuleToServer($validate, $command, $server,'pingServer', 'pingServer');
     }
 
 

@@ -42,16 +42,19 @@ class ServerController extends ApiController
     }
 
 
-    private function givePermissionServerToRoles ()
+    public function giveRoleServerToServer ($role, $server, $permission)
     {
-        $permission = Permission::firstOrCreate(['name' => "server/{$server->name}", 'guard_name' => 'web']);
-
-            $roles = Role::whereIn('name', ['expert'])->get();
-            foreach ($roles as $role) {
-                $users = $role->users;
-                foreach ($users as $user)
-                    $user->givePermissionTo($permission);
-            };
+        $role->syncPermissions($permission);
+            $server->assignRole($role);
+    }
+    private function givePermissionServerToRoleUsers ($permission)
+    {
+        $roles = Role::whereIn('name', ['expert'])->get();
+        foreach ($roles as $role) {
+            $users = $role->users;
+            foreach ($users as $user)
+                $user->givePermissionTo($permission);
+        };
 
                 // delete cache permission
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
@@ -64,7 +67,12 @@ class ServerController extends ApiController
             DB::beginTransaction();
 
                 $server = Server::create($credentials);
-                    // $this->givePermissionServerToRoles();
+                    $permission = Permission::firstOrCreate(['name' => "server/{$server->name}", 'guard_name' => 'web']);
+                        $role = Role::firstOrCreate(['name' => "server/{$server->name}", 'guard_name' => 'web']);
+
+                            // $this->givePermissionServerToRoleUsers($permission);
+                            $this->giveRoleServerToServer($role, $server, $permission);
+
 
             activity('create-server')
                 ->causedBy(Auth::user())
@@ -82,7 +90,7 @@ class ServerController extends ApiController
             );
 
             DB::commit();
-                return $this->respondCreated('A new server has been created', $server);
+                return $this->respondCreated('A new server has been created', data: $server);
 
         } catch (Exception $e) {
             DB::rollBack();

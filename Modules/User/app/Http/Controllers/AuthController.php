@@ -3,20 +3,23 @@
 namespace Modules\User\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Modules\User\Models\Role;
 use Modules\User\Models\User;
+use Modules\Server\Models\Server;
 use Modules\User\Models\PhoneLogin;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Modules\Server\Models\SystemSettings;
 use App\Http\Controllers\Contract\ApiController;
+use Illuminate\Validation\ValidationException;
 use Modules\User\Http\Requests\Auth\Loginrequest;
+use Modules\User\Transformers\Auth\LoginResource;
 use Modules\User\Services\PhoneVerificationService;
 use Modules\User\Http\Requests\Auth\Login2FARequest;
 use Modules\User\Http\Requests\Phone\LoginPhoneRequest;
 use Modules\User\Http\Requests\Phone\SendLoginPhoneRequest;
 use Modules\User\Http\Requests\Phone\VerifyUserPhoneRequest;
-use Modules\User\Transformers\Auth\LoginResource;
 
 class AuthController extends ApiController
 {
@@ -26,6 +29,17 @@ class AuthController extends ApiController
     }
 
 
+
+    private function validateLoginDevice (User $user)
+    {
+        $server = Server::find($user['server_id']);
+
+            if (request()->ip() !== $server['ip'])
+                throw ValidationException::withMessages(['validation' => ['Your IP is different from the server on which your account is registered.']]);
+
+            if ($server['is_down'])
+                throw ValidationException::withMessages(['validation' => ['server is off']]);
+    }
     public function login (Loginrequest $request)
     {
         $credentials = $request->validated();
@@ -34,6 +48,9 @@ class AuthController extends ApiController
 
         if (!$user || !Hash::check($credentials['password'], $user->password))
             return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
+
+        if (!$user->hasRole(Role::ADMIN))
+            $this->validateLoginDevice($user);
 
 
         $user->tokens()->delete();
@@ -51,7 +68,7 @@ class AuthController extends ApiController
             ->log('The user logged in with the username and password.');
 
 
-            $is2FAEnabled = SystemSettings::first()->is_login_2FA;
+            $is2FAEnabled = SystemSettings::first()?->is_login_2FA;
 
             if (!$is2FAEnabled) {
                 return $this->respondSuccess('The user has logged in', [

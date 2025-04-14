@@ -19,23 +19,6 @@ class Loginrequest extends FormRequest
         ];
     }
 
-
-
-    public function withVlidator ($validator)
-    {
-        if ($validator->errors()->any())
-            return;
-
-        $validator->after(function ($validator) {
-
-
-        });
-    }
-
-
-
-
-
     /**
      * Determine if the user is authorized to make this request.
      */

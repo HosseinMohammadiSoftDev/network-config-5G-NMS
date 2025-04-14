@@ -3,14 +3,15 @@
 namespace Modules\User\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Modules\Server\Models\Server;
 use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Notifications\Notifiable;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
@@ -29,6 +30,7 @@ class User extends Authenticatable
         'password',
         'added_by',
         'phone',
+        'server_id'
         // 'phone_verified_at'
     ];
 
@@ -59,5 +61,19 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+
+
+        // server scope
+    public function server ()
+    {
+        return $this->belongsTo(Server::class);
+    }
+    public function serverPermission ()
+    {
+        return $this->server?->getAllPermissions()
+            ?->map(fn ($permission) => $permission->name)
+            ?? collect();
     }
 }
