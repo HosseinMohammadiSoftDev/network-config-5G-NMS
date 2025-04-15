@@ -1115,9 +1115,12 @@ class ModuleController extends ApiController
             // return response()->json(['message' => "ping 192.168.19.79\r\n\u001b[?2004l\rPING 192.168.19.79 (192.168.19.79) 56(84) bytes of data.\r\n64 bytes from 192.168.19.79: icmp_seq=1 ttl=64 time=0.558 ms\r\n64 bytes from 192.168.19.79: icmp_seq=2 ttl=64 time=0.383 ms\r\n64 bytes from 192.168.19.79: icmp_seq=3 ttl=64 time=0.387 ms\r\n64 bytes from 192.168.19.79: icmp_seq=4 ttl=64 time=0.384 ms\r\n64 bytes from 192.168.19.79: icmp_seq=5 ttl=64 time=0.424 ms\r\n64 bytes from 192.168.19.79: icmp_seq=6 ttl=64 time=0.383 ms\r\n64 bytes from 192.168.19.79: icmp_seq=7 ttl=64 time=0.509 ms\r\n64 bytes from 192.168.19.79: icmp_seq=8 ttl=64 time=0.407 ms\r\n64 bytes from 192.168.19.79: icmp_seq=9 ttl=64 time=0.455 ms\r\n64 bytes from 192.168.19.79: icmp_seq=10 ttl=64 time=0.359 ms\r\n"]);
 
         $server = server::find($validate['server_id']);
-        $module = Module::find($validate['module_id']);
 
-        $command = 'ping ' . $validate['ipـdestination'];
+        $validate['interface'] ?? null
+            ? $command = 'ping ' . '-I ' . $validate['interface'] . ' ' . $validate['ipـdestination']
+            : $command = 'ping ' . $validate['ipـdestination'];
+
+
             return $this->runCommandModuleToServer($validate, $command, $server,'pingServer', 'pingServer');
     }
 
