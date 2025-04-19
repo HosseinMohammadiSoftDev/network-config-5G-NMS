@@ -25,7 +25,7 @@ class AddMemberRequest extends FormRequest
             'permission_name.*' => ['required', 'string', 'exists:permissions,name'],
             'password' => ['required', Password::min(8), 'confirmed', 'max:60'],
 
-            'server_id' => ['required', 'integer', 'exists:servers,id']
+            'server_id' => ['integer', 'exists:servers,id']
         ];
     }
 

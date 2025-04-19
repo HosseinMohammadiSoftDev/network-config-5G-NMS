@@ -78,4 +78,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // motherboard
     Route::get('get-motherboard', [SystemSettingsController::class, 'getMotherboard']);
 
+    Route::middleware(['role:admin'])->post('set-orginal-VM-ip',[SystemSettingsController::class, 'setOrginalVMIp']);
+    Route::get('get-orginal-vm-ip', [SystemSettingsController::class, 'getOrginalVMIp']);
+
 });

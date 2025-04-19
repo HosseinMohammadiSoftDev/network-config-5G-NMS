@@ -21,6 +21,8 @@ use Modules\User\Http\Requests\Phone\LoginPhoneRequest;
 use Modules\User\Http\Requests\Phone\SendLoginPhoneRequest;
 use Modules\User\Http\Requests\Phone\VerifyUserPhoneRequest;
 
+use function PHPUnit\Framework\isNull;
+
 class AuthController extends ApiController
 {
     public function __construct(private PhoneVerificationService $phoneService)
@@ -32,13 +34,23 @@ class AuthController extends ApiController
 
     private function validateLoginDevice (User $user)
     {
-        $server = Server::find($user['server_id']);
+        $server = Server::find($user?->server_id);
 
-            if (request()->ip() !== $server['ip'])
-                throw ValidationException::withMessages(['validation' => ['Your IP is different from the server on which your account is registered.']]);
+            if ($server) {
+                if (request()->ip() !== $server['ip'])
+                    throw ValidationException::withMessages(['validation' => ['Your IP is different from the server on which your account is registered.']]);
 
-            if ($server['is_down'])
-                throw ValidationException::withMessages(['validation' => ['server is off']]);
+                if ($server['is_down'])
+                    throw ValidationException::withMessages(['validation' => ['server is off']]);
+
+            } else {
+                $systemSettings = SystemSettings::first()?->orginal_vm_ip ;
+                    if (!$systemSettings)
+                        throw ValidationException::withMessages(['validation' => ['no set dafalte VM ip']]);
+
+                if (request()->ip() !== $systemSettings['orginal_vm_ip ']);
+                    throw ValidationException::withMessages(['validation' => ['Your IP is different from the orginal server ip on which your account is registered.']]);
+            }
     }
     public function login (Loginrequest $request)
     {

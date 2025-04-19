@@ -16,6 +16,7 @@ use Modules\Server\Http\Requests\FA2\Set2FAReqest;
 use Modules\Server\Http\Requests\SystemStinge\AddAddressRequest;
 use Modules\Server\Http\Requests\SystemStinge\SetLoginBySMSRequest;
 use Modules\Server\Http\Requests\SystemSetig\SetConfigConnectionSMSRequest;
+use Modules\Server\Http\Requests\SystemSettinge\SetOrgainalVMIpRequest;
 
 class SystemSettingsController extends ApiController
 {
@@ -161,6 +162,44 @@ class SystemSettingsController extends ApiController
     {
         return SystemSettings::first()->config_connection_sms ?? null
             ? response()->json(['success' => true, 'data' => Crypt::decrypt(SystemSettings::first()->config_connection_sms)], 200)
+            : response()->json(['success' => true, 'msg' => 'no content']);
+    }
+
+
+
+
+
+
+
+        // motherboard method
+    public function setOrginalVMIp (SetOrgainalVMIpRequest $request)
+    {
+        $creadtioanle = $request->validated();
+
+        try {
+            DB::beginTransaction();
+
+            $systemSetting = SystemSettings::first();
+
+                if (!$systemSetting)
+                    $systemSetting = SystemSettings::create($creadtioanle);
+                else
+                    $systemSetting->update([
+                        'orginal_vm_ip' => $creadtioanle['orginal_vm_ip'] ?? $systemSetting['orginal_vm_ip'],
+                    ]);
+
+            DB::commit();
+                return response()->json(['success' => true, 'msg' => 'Settings have been successfully applied.'], 200);
+
+        } catch (Exception $e) {
+            DB::rollBack();
+                return response()->json(['success' => false, 'msg' => 'An issue occurred in the application process.'], 422);
+        }
+    }
+    public function getOrginalVMIp ()
+    {
+        return SystemSettings::first()->orginal_vm_ip ?? null
+            ? response()->json(['success' => true, 'data' => SystemSettings::first()->orginal_vm_ip], 200)
             : response()->json(['success' => true, 'msg' => 'no content']);
     }
 }
