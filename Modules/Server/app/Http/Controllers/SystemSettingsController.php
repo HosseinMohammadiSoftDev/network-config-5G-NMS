@@ -69,10 +69,10 @@ class SystemSettingsController extends ApiController
 
         $address = SystemSettings::first();
 
-            if (!$address)
-                $address = SystemSettings::create($creadtioanle);
-            else
-                $address->update($creadtioanle);
+            !$address
+                ? $address = SystemSettings::create($creadtioanle)
+                : $address->update($creadtioanle);
+
 
         return response()->json(['msg' => 'save address successfuly', 'address' => $address], 200);
     }
@@ -85,12 +85,11 @@ class SystemSettingsController extends ApiController
 
             $systemSetting = SystemSettings::first();
 
-                if (!$systemSetting)
-                    $systemSetting = SystemSettings::create($creadtioanle);
-                else
-                    $systemSetting->update([
-                        'is_login_2FA' => $creadtioanle['is_login_2FA'] ?? $systemSetting['is_login_2FA'],
-                    ]);
+                !$systemSetting
+                    ? $systemSetting = SystemSettings::create($creadtioanle)
+                    : $systemSetting->update(['is_login_2FA'
+                        => $creadtioanle['is_login_2FA'] ?? $systemSetting['is_login_2FA']]);
+
 
             DB::commit();
                 return response()->json(['success' => true, 'msg' => 'Settings have been successfully applied.'], 200);
@@ -113,12 +112,11 @@ class SystemSettingsController extends ApiController
 
             $systemSetting = SystemSettings::first();
 
-                if (!$systemSetting)
-                    $systemSetting = SystemSettings::create($creadtioanle);
-                else
-                    $systemSetting->update([
-                        'is_login_sms' => $creadtioanle['is_login_sms'] ?? $systemSetting['is_login_sms'],
-                    ]);
+                !$systemSetting
+                    ? $systemSetting = SystemSettings::create($creadtioanle)
+                    : $systemSetting->update(['is_login_sms'
+                        => $creadtioanle['is_login_sms'] ?? $systemSetting['is_login_sms']]);
+
 
             DB::commit();
                 return response()->json(['success' => true, 'msg' => 'Settings have been successfully applied.'], 200);
@@ -143,12 +141,11 @@ class SystemSettingsController extends ApiController
 
             $systemSetting = SystemSettings::first();
 
-                if (!$systemSetting)
-                    $systemSetting = SystemSettings::create($creadtioanle);
-                else
-                    $systemSetting->update([
-                        'config_connection_sms' => Crypt::encrypt($creadtioanle['connection-data']) ?? $systemSetting['config_connection_sms'],
-                    ]);
+                !$systemSetting
+                    ? $systemSetting = SystemSettings::create($creadtioanle)
+                    : $systemSetting->update(['config_connection_sms'
+                        => Crypt::encrypt($creadtioanle['connection-data']) ?? $systemSetting['config_connection_sms']]);
+
 
             DB::commit();
                 return response()->json(['success' => true, 'msg' => 'Settings have been successfully applied.'], 200);
@@ -181,12 +178,11 @@ class SystemSettingsController extends ApiController
 
             $systemSetting = SystemSettings::first();
 
-                if (!$systemSetting)
-                    $systemSetting = SystemSettings::create($creadtioanle);
-                else
-                    $systemSetting->update([
-                        'orginal_vm_ip' => $creadtioanle['orginal_vm_ip'] ?? $systemSetting['orginal_vm_ip'],
-                    ]);
+                !$systemSetting
+                    ? $systemSetting = SystemSettings::create($creadtioanle)
+                    : $systemSetting->update(['orginal_vm_ip'
+                        => $creadtioanle['orginal_vm_ip'] ?? $systemSetting['orginal_vm_ip']]);
+
 
             DB::commit();
                 return response()->json(['success' => true, 'msg' => 'Settings have been successfully applied.'], 200);

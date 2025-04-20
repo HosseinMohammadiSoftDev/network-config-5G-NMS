@@ -19,7 +19,7 @@ use function PHPUnit\Framework\isEmpty;
 
 class UserController extends ApiController
 {
-     protected $paginationService;
+    protected $paginationService;
     public function __construct(PaginationService $paginationService)
     {
         $this->paginationService = $paginationService;
@@ -66,6 +66,7 @@ class UserController extends ApiController
                 'first_name' => $user['first_name'],
                 'last_name' => $user['last_name'],
                 'phone' => $user['phone'],
+                'server_id' => $user['server_id'] ?? null,
                 'added_by' => $user['added_by'],
                 'roles' => $user->getRoleNames(),
                 'permissions' => $user->getAllPermissions()->pluck('name'),

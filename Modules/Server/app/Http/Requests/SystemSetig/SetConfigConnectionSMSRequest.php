@@ -27,7 +27,7 @@ class SetConfigConnectionSMSRequest extends FormRequest
 
         $validator->after(function ($validator) {
 
-            $requiredKeys = ['url', 'api_key', 'username', 'password', 'sender', 'type'];
+            $requiredKeys = ['username', 'password', 'special_number'];
 
             foreach ($requiredKeys as $key)
                 if (!array_key_exists($key, $this->input('connection-data')))

@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\User\App\Services;
+namespace Modules\User\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
@@ -26,8 +26,9 @@ class SunwaysmsService
         try {
 
             $response = Http::withHeaders([
-                'Content-type' => 'text/xml; charser=utf-8',
-                'SOAPAction'    => 'http://tempuri.org/GetCredit',
+                'Content-Type' => 'text/xml; charset=utf-8',
+                'SOAPAction' => 'http://tempuri.org/GetCredit',
+                'Accept' => 'text/xml',
             ])
                 ->withBody($xml, 'text/xml')
                 ->post($this->endpoint);
