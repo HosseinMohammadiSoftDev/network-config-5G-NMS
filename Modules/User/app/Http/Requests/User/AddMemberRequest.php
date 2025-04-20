@@ -41,9 +41,14 @@ class AddMemberRequest extends FormRequest
         );
 
 
-        foreach ($serverPermissionsRequest as $permission)
-            if (!in_array($permission, $server->getAllPermissions()->pluck('name')->toArray()))
-                    throw ValidationException::withMessages(['validation' => ['You cannot give a user access to servers that you do not have access to.']]);
+        // foreach ($serverPermissionsRequest as $permission)
+        //     if (!in_array($permission, $server->getAllPermissions()->pluck('name')->toArray()))
+        //             throw ValidationException::withMessages(['validation' => ['You cannot give a user access to servers that you do not have access to.']]);
+
+        if ($serverPermissionsRequest)
+            throw ValidationException::withMessages(['validation' => ['not set server permission to create user to motherboard']]);
+
+        $this->merge(['serverPermission' => 'server/' . $server['name']]);
 
     }
     public function validationUserPermission ($permissionNames)
@@ -68,9 +73,11 @@ class AddMemberRequest extends FormRequest
 
             $permissionNames = $this->input('permission_name') ?? null;
 
-            $this->validationUserPermission($permissionNames);
 
-            $this->validationServerPermission($server, $permissionNames);
+            $this->input('server_id')
+                ? $this->validationServerPermission($server, $permissionNames)
+                : $this->validationUserPermission($permissionNames);
+
 
             $this->merge(['permissionNames' => $permissionNames]);
 

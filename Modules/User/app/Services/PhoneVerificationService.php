@@ -10,7 +10,10 @@ use Modules\User\Models\PhoneResetPassword;
 use Modules\User\Models\PhoneVerificationToken;
 use App\Http\Controllers\Contract\ApiController;
 use Illuminate\Http\Exceptions\HttpResponseException;
-
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Validation\ValidationException;
+use Modules\Server\Models\SystemSettings;
+use Modules\User\App\Services\SunwaysmsService;
 
 class PhoneVerificationService extends ApiController
 {
@@ -80,6 +83,27 @@ class PhoneVerificationService extends ApiController
             //     $template,
             //     $code
             // );
+
+
+
+                    // SMS panle SunwaysmsService SOAP SERVICE
+            // $connectionData = SystemSettings::first()->connection_data ?? null
+            //     ? Crypt::decrypt(SystemSettings::first()->connection_data)
+            //     : throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
+
+            //     if ($connectionData) {
+            //         $sunwaysmsService = new SunwaysmsService(
+            //             $connectionData['username'],
+            //             $connectionData['password'],
+            //             $connectionData['specialNumber']
+            //         );
+
+            //         $sunwaysmsService->sendMessage($phone, $code);
+
+            //     } else
+            //         throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
+
+
 
             throw new HttpResponseException(response()->json([
                 'msg' => "The SMS has been sent successfully.",

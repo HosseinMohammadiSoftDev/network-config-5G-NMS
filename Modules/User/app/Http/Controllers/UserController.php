@@ -173,6 +173,12 @@ class UserController extends ApiController
                 $this->assignRoleAndPermissionsToExpert($user, $role, $request['permissionNames']);
 
 
+
+            if ($request['serverPermission'])
+                    $user->givePermissionTo($request['serverPermission']);
+
+
+
                 activity('add-member')
                     ->causedBy(Auth::user())
                     ->event('create-member')

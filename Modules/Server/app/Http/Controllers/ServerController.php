@@ -38,7 +38,19 @@ class ServerController extends ApiController
 
     public function showAllServers (Request $request)
     {
-        return $this->respondSuccess('Your server list',Server::all());
+        $serverPermissionsRequest = array_filter(
+            Auth::user()->getAllPermissions()->pluck('name')->toArray(),
+            fn($permission) => str_starts_with($permission, 'server/')
+        );
+
+        $serverPermissionsRequest = array_map(
+            fn($permission) => str_replace('server/', '', $permission),
+            $serverPermissionsRequest
+        );
+
+        return Auth::user()->hasRole('admin')
+            ? $this->respondSuccess('Your server list',Server::all())
+            : $this->respondSuccess('Your server list', Server::whereIn('name', $serverPermissionsRequest)->get());
     }
 
 
