@@ -2,7 +2,6 @@
 
 namespace Modules\Server\Http\Controllers;
 
-use Modules\Server\Http\Requests\Module\restartServiceModuleRequest;
 use Spyc;
 use Exception;
 use RuntimeException;
@@ -15,6 +14,7 @@ use Modules\Server\Models\Module;
 use Modules\Server\Models\Server;
 use PHPUnit\Event\Code\Throwable;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\Yaml\Dumper;
 use Illuminate\Support\Facades\Log;
 use Modules\User\Models\Permission;
 use App\Http\Controllers\Controller;
@@ -26,17 +26,25 @@ use Illuminate\Support\Facades\Storage;
 use Modules\Server\Helpers\JsonUpdater;
 use Spatie\Activitylog\Models\Activity;
 use Modules\User\Services\PaginationService;
+use Symfony\Component\Serializer\Serializer;
 use Illuminate\Routing\Controllers\Middleware;
 use App\Http\Controllers\Contract\ApiController;
 use Illuminate\Validation\UnauthorizedException;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Modules\Server\Http\Requests\EditModuleRequest;
+use Symfony\Component\Yaml\Exception\ParseException;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Modules\Server\Http\Requests\Modules\ShowAllModules;
 use PharIo\Version\UnsupportedVersionConstraintException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\Serializer\Encoder\DecoderInterface;
+use Symfony\Component\Serializer\Encoder\EncoderInterface;
 use Modules\Server\Http\Requests\Server\UploadModuleRequest;
+use Modules\Server\Http\Requests\SshServer\SshServerRequest;
 use Modules\Server\Http\Requests\Modules\deleteModuleRequest;
 use Modules\Server\Http\Requests\Modules\CreateModulesRequest;
 use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
@@ -45,8 +53,8 @@ use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
 use Modules\Server\Http\Requests\Module\DeleteCofigModuleRequest;
 use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
+use Modules\Server\Http\Requests\Module\restartServiceModuleRequest;
 use Modules\Server\Http\Requests\Module\ExpertModuleFileIsServerRequset;
-use Modules\Server\Http\Requests\SshServer\SshServerRequest;
 use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
 
 class ModuleController extends ApiController
@@ -192,42 +200,56 @@ class ModuleController extends ApiController
 
 
         // convet format
-  private function parseYamlWithSpyc(UploadedFile $file)
-  {
-      $filePath = $file->getPathname();
-      $jsonContent = Spyc::YAMLLoad($filePath);
+    private function parseYamlToArray(UploadedFile $file)
+    {
+        try {
 
-      return $jsonContent;
-  }
-  private function convertJsonToYaml($jsonContent)
-  {
-      $arrayContent = json_decode($jsonContent, true);
+            $yamlContent = file_get_contents($file->getRealPath());
+                if (!$yamlContent)
+                    throw new \Exception('YAML file is empty or unreadable.');
 
-      if (json_last_error() !== JSON_ERROR_NONE)
-        throw new HttpResponseException(response()->json(['msg' => 'error in convert json to yaml'], 422));
+            $parsedArray = Yaml::parse($yamlContent);
+                if (!is_array($parsedArray))
+                    throw new \Exception('Invalid YAML structure.');
 
-      $arrayContent = $this->convertNullKeysToComments($arrayContent);
+            return $parsedArray;
 
-      $yamlContent = Spyc::YAMLDump($jsonContent, 4, 2);
+        } catch (ParseException $e) {
+            throw ValidationException::withMessages(['error' => 'YAML Parse Error', 'message' => $e->getMessage()]);
+        } catch (\Exception $e) {
+            throw ValidationException::withMessages(['error' => 'General Error', 'message' => $e->getMessage()]);
+        }
+    }
+    private function convertJsonToYaml($jsonContent)
+    {
+        $arrayContent = json_decode($jsonContent, true, 512, JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
 
-      $yamlContent = preg_replace('/^(  - .+?):\s*$/m', "$1:", $yamlContent);
+        if (json_last_error() !== JSON_ERROR_NONE)
+            throw new HttpResponseException(response()->json(['msg' => 'error in convert json to yaml'], 422));
 
-      $yamlContent = preg_replace('/[\'\"\/\\\]/', '', $yamlContent);
-      return $yamlContent;
-  }
-  private function convertNullKeysToComments(array $array)
-  {
-      foreach ($array as $key => $value) {
-          if (is_array($value)) {
-              $array[$key] = $this->convertNullKeysToComments($value);
-          } elseif ($value === null || $value === "" || $value === '') {
-              $array["# $key"] = null;
-              unset($array[$key]);
-          }
-      }
+        $arrayContent = $this->convertNullKeysToComments($arrayContent);
 
-      return $array;
-  }
+        $yamlContent = yaml::dump($arrayContent, 10,2);
+
+        // $yamlContent = preg_replace('/^(\s*)-\s*/m', '$1', $yamlContent);
+        $yamlContent = preg_replace('/^(\s*)-\s*/m', '$1- ', $yamlContent);
+
+        return $yamlContent;
+
+    }
+    private function convertNullKeysToComments(array $array)
+    {
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $array[$key] = $this->convertNullKeysToComments($value);
+            } elseif ($value === null || $value === "" || $value === '') {
+                $array["# $key"] = null;
+                unset($array[$key]);
+            }
+        }
+
+        return $array;
+    }
 
 
 
@@ -237,26 +259,13 @@ class ModuleController extends ApiController
 
     try {
 
-        $yamlContent = $this->parseYamlWithSpyc($file);
+        $arrayContent = $this->parseYamlToArray($file);
 
     } catch (Exception $e) {
-
-        activity('file-format-to-json-error')
-          ->causedBy(Auth::user())
-          ->event('upload-module-file')
-          ->withProperties([
-              'type-log' => 'server',
-              'route' => request()->fullUrl(),
-              'method' => 'uploadModuleFile',
-              'error' => $e->getMessage(),
-              'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-              'user_role' =>Auth::user()->roles()->pluck('name')->first(),          ])
-        ->log('An issue occurred while converting the file format to JSON');
-
-        return response()->json(['msg' => 'An issue occurred while converting the file format to JSON: ' . $e->getMessage()], 400);
+        throw $e;
     }
 
-    $jsonContent = json_encode($yamlContent, JSON_PRETTY_PRINT);
+    $jsonContent = json_encode($arrayContent, JSON_PRETTY_PRINT);
 
     return $jsonContent;
 
@@ -267,7 +276,6 @@ class ModuleController extends ApiController
     $serverIds = $creadtional['server_id'];
 
     $jsonContent = $this->uploadModuleFile($request->file('config_file'));
-    $jsonContent = json_encode(json_decode($jsonContent, true), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
     $yamlContent = $this->convertJsonToYaml($jsonContent);
 
@@ -333,7 +341,8 @@ class ModuleController extends ApiController
                     'type-log' => 'server',
                     'route' => request()->fullUrl(),
                     'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                    'user_role' =>Auth::user()->roles()->pluck('name')->first(),                    'method' => 'createModule',
+                    'user_role' =>Auth::user()->roles()->pluck('name')->first(),
+                    'method' => 'createModule',
                     'module' => [
                         'name' => $creadtional['name'],
                         'type' => $creadtional['type'],
@@ -699,7 +708,7 @@ class ModuleController extends ApiController
         ]);
 
 
-        return json_encode($data, true);
+        return json_encode($data);
     }
     public function updateConfigModule(UpdateConfigModuleRequest $request)
     {
@@ -715,7 +724,7 @@ class ModuleController extends ApiController
 
 
         // delete config module
-    private function deleteConfigInDatabase ($moduleId, $pathConfig, $server)
+        private function deleteConfigInDatabase ($moduleId, $pathConfig, $server)
     {
         $module = Module::find($moduleId);
 
@@ -980,7 +989,7 @@ class ModuleController extends ApiController
             $sshHelper = new sshHelper($server, $validation['username'], $validation['password']);
             $output = $sshHelper->getFileContent($command);
 
-                    // هدر های ارسال فایل به عنوان فایل دانلودی برای مرورگر
+                // defalte headers
             return response($output, 200, [
                 'Content-Type' => 'application/octet-stream',
                 'Content-Disposition' => "attachment; filename={$module->name}.yaml",

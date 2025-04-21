@@ -61,6 +61,7 @@ class SunwaysmsService
 
     protected function parseGetCreditResponse(string $body): ?string
     {
+        dd($body);
         try {
 
             $xml = simplexml_load_string($body);
