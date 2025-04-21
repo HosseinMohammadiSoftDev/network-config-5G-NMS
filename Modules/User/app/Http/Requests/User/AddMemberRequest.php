@@ -4,6 +4,7 @@ namespace Modules\User\Http\Requests\User;
 
 use Modules\Server\Models\Server;
 use Modules\User\Models\Permission;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\ValidationException;
@@ -39,6 +40,7 @@ class AddMemberRequest extends FormRequest
             $permissionNames,
             fn($permission) => str_starts_with($permission, 'server/')
         );
+
 
 
         // foreach ($serverPermissionsRequest as $permission)

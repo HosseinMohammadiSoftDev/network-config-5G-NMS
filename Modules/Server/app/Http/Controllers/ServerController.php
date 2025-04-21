@@ -38,6 +38,7 @@ class ServerController extends ApiController
 
     public function showAllServers (Request $request)
     {
+
         $serverPermissionsRequest = array_filter(
             Auth::user()->getAllPermissions()->pluck('name')->toArray(),
             fn($permission) => str_starts_with($permission, 'server/')
@@ -51,6 +52,7 @@ class ServerController extends ApiController
         return Auth::user()->hasRole('admin')
             ? $this->respondSuccess('Your server list',Server::all())
             : $this->respondSuccess('Your server list', Server::whereIn('name', $serverPermissionsRequest)->get());
+
     }
 
 

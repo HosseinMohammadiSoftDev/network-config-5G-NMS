@@ -62,7 +62,7 @@ class AuthController extends ApiController
             return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
 
         if (!$user->hasRole(Role::ADMIN))
-            $this->validateLoginDevice($user);
+            //$this->validateLoginDevice($user);
 
 
         $user->tokens()->delete();

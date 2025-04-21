@@ -15,7 +15,6 @@ use Illuminate\Validation\ValidationException;
 use Modules\Server\Models\SystemSettings;
 use Modules\User\Services\SunwaysmsService;
 
-
 class PhoneVerificationService extends ApiController
 {
 
@@ -94,6 +93,27 @@ class PhoneVerificationService extends ApiController
                 } else
                     throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
 
+
+
+
+
+
+                    // SMS panle SunwaysmsService SOAP SERVICE
+            $connectionData = SystemSettings::first()->connection_data ?? null
+                ? Crypt::decrypt(SystemSettings::first()->connection_data)
+                : throw ValidationException::withMessages(['validation' => [گ]]);
+
+                if ($connectionData) {
+                    $sunwaysmsService = new SunwaysmsService(
+                        $connectionData['username'],
+                        $connectionData['password'],
+                        $connectionData['specialNumber']
+                    );
+
+                    $sunwaysmsService->sendMessage($phone, $code);
+
+                } else
+                    throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
 
 
 
