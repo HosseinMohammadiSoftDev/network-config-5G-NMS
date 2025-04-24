@@ -254,139 +254,160 @@ class ModuleController extends ApiController
 
 
         // create New Module And Upload File .Yaml Convert to Json Upload To database
-  private function uploadModuleFile ($file)
-  {
+    private function uploadModuleFile ($file)
+    {
 
-    try {
+        try {
 
-        $arrayContent = $this->parseYamlToArray($file);
+            $arrayContent = $this->parseYamlToArray($file);
 
-    } catch (Exception $e) {
-        throw $e;
-    }
-
-    $jsonContent = json_encode($arrayContent, JSON_PRETTY_PRINT);
-
-    return $jsonContent;
-
-  }
-  public function createModule (CreateModulesRequest $request)
-  {
-    $creadtional = $request->validated();
-    $serverIds = $creadtional['server_id'];
-
-    $jsonContent = $this->uploadModuleFile($request->file('config_file'));
-
-    $yamlContent = $this->convertJsonToYaml($jsonContent);
-
-    if (is_array($jsonContent) || is_object($jsonContent))
-        return $jsonContent;
-
-    $failedServers = [];
-    $createdModules = [];
-
-
-    try {
-        DB::beginTransaction();
-
-        $module = Module::create([
-            'name' => $creadtional['name'],
-            'type' => $creadtional['type'],
-        ]);
-
-
-        foreach ($serverIds as $serverId) {
-            $server = Server::find($serverId);
-                // check permission
-            $this->chackPermissionModule($server);
-
-            if (!$server)
-                $failedServers[] = $serverId;
-
-            if ($server && $server['is_down'] == 1)
-                return response()->json(['msg'=> 'server is off', 'server' => $server], 422);
-
-                $module->servers()->syncWithoutDetaching([
-                    $serverId => [
-                        'current_config' => $jsonContent,
-                        'initial_config' => $jsonContent
-                    ]
-                ]);
-
-
-            $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
-                $creadtional['name'], $yamlContent, $server);
-
-
-        $module->servers()->syncWithoutDetaching([$serverId]);
-
-            $createdModules[] = [
-                'server' => [
-                    'server_id' => $server['id'],
-                    'server_name' => $server['name'],
-                    'server_ip' => $server['ip']
-                ],
-                'module' => [
-                    'module_id' => $module['id'],
-                    'module_name' => $module['name'],
-                    'module_type' => $module['type']
-                ]
-            ];
-
-            activity('create-module')
-                ->causedBy(Auth::user())
-                ->performedOn(Module::latest()->first())
-                ->event('create-module')
-                ->withProperties([
-                    'type-log' => 'server',
-                    'route' => request()->fullUrl(),
-                    'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                    'user_role' =>Auth::user()->roles()->pluck('name')->first(),
-                    'method' => 'createModule',
-                    'module' => [
-                        'name' => $creadtional['name'],
-                        'type' => $creadtional['type'],
-                        'server_id' => $serverId,
-                    ],
-                    'server' => $server
-                ])
-                ->log('A new module has been created');
+        } catch (Exception $e) {
+            throw $e;
         }
 
-        if (!empty($failedServers))
-            return response()->json(['msg' => 'An issue occurred while adding the module to the server', 'server-faild' => $failedServers], 422);
+        $jsonContent = json_encode($arrayContent, JSON_PRETTY_PRINT);
 
-        DB::commit();
+        return $jsonContent;
 
-        return $this->respondCreated('The module was successfully created on the servers',  [
-            'created_modules' => $createdModules
-        ]);
-
-    } catch (Exception $e) {
-        DB::rollBack();
-            throw $e;
     }
-  }
-  public function deleteModule (deleteModuleRequest $request)
-  {
-    $validated = $request->validated();
-    $module = Module::find($validated['module_id']);
+    public function createModule (CreateModulesRequest $request)
+    {
+        $creadtional = $request->validated();
+        $serverIds = $creadtional['server_id'];
 
-    $serverModule =  $module->servers()->get();
-    if (!$serverModule) {
+        $jsonContent = $this->uploadModuleFile($request->file('config_file'));
+
+        $yamlContent = $this->convertJsonToYaml($jsonContent);
+
+        if (is_array($jsonContent) || is_object($jsonContent))
+            return $jsonContent;
+
+        $failedServers = [];
+        $createdModules = [];
+
+
+        try {
+            DB::beginTransaction();
+
+            $module = Module::create([
+                'name' => $creadtional['name'],
+                'type' => $creadtional['type'],
+            ]);
+
+
+            foreach ($serverIds as $serverId) {
+                $server = Server::find($serverId);
+                    // check permission
+                $this->chackPermissionModule($server);
+
+                if (!$server)
+                    $failedServers[] = $serverId;
+
+                if ($server && $server['is_down'] == 1)
+                    return response()->json(['msg'=> 'server is off', 'server' => $server], 422);
+
+                    $module->servers()->syncWithoutDetaching([
+                        $serverId => [
+                            'current_config' => $jsonContent,
+                            'initial_config' => $jsonContent
+                        ]
+                    ]);
+
+
+                $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
+                    $creadtional['name'], $yamlContent, $server);
+
+
+            $module->servers()->syncWithoutDetaching([$serverId]);
+
+                $createdModules[] = [
+                    'server' => [
+                        'server_id' => $server['id'],
+                        'server_name' => $server['name'],
+                        'server_ip' => $server['ip']
+                    ],
+                    'module' => [
+                        'module_id' => $module['id'],
+                        'module_name' => $module['name'],
+                        'module_type' => $module['type']
+                    ]
+                ];
+
+                activity('create-module')
+                    ->causedBy(Auth::user())
+                    ->performedOn(Module::latest()->first())
+                    ->event('create-module')
+                    ->withProperties([
+                        'type-log' => 'server',
+                        'route' => request()->fullUrl(),
+                        'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                        'user_role' =>Auth::user()->roles()->pluck('name')->first(),
+                        'method' => 'createModule',
+                        'module' => [
+                            'name' => $creadtional['name'],
+                            'type' => $creadtional['type'],
+                            'server_id' => $serverId,
+                        ],
+                        'server' => $server
+                    ])
+                    ->log('A new module has been created');
+            }
+
+            if (!empty($failedServers))
+                return response()->json(['msg' => 'An issue occurred while adding the module to the server', 'server-faild' => $failedServers], 422);
+
+            DB::commit();
+
+            return $this->respondCreated('The module was successfully created on the servers',  [
+                'created_modules' => $createdModules
+            ]);
+
+        } catch (Exception $e) {
+            DB::rollBack();
+                throw $e;
+        }
+    }
+    public function deleteModule (deleteModuleRequest $request)
+    {
+        $validated = $request->validated();
+        $module = Module::find($validated['module_id']);
+
+        $serverModule =  $module->servers()->get();
+        if (!$serverModule) {
+            $module->delete();
+            return response()->json(['msg' => 'Module Deleted', 'module' => $module]);
+        }
+
+
+        foreach ($serverModule as $server)
+            $this->chackPermissionModule($server);
+
+
         $module->delete();
+
+
+        activity('create-module')
+        ->causedBy(Auth::user())
+        ->performedOn(Module::latest()->first())
+        ->event('create-module')
+        ->withProperties([
+            'type-log' => 'server',
+            'route' => request()->fullUrl(),
+            'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+            'user_role' =>Auth::user()->roles()->pluck('name')->first(),
+            'method' => 'createModule',
+            'module' => [
+                'name' => $module['name'],
+                'type' => $module['type'],
+                'server_id' => $serverModule,
+            ],
+            'server' => $server
+        ])
+        ->log('A new module has been created');
+
+
         return response()->json(['msg' => 'Module Deleted', 'module' => $module]);
     }
-
-
-    foreach ($serverModule as $server)
-        $this->chackPermissionModule($server);
-
-
-    $module->delete();
-
-    return response()->json(['msg' => 'Module Deleted', 'module' => $module]);
-  }
 
 
 
@@ -467,6 +488,7 @@ class ModuleController extends ApiController
                 'user_role' =>Auth::user()->roles()->pluck('name')->first(),
                 'changes' => $change,
                 'server' => $server,
+                'server_id' => $server->id,
                 'module_id' => $module['id'],
                 'module_name' => $module['name'],
                 'module_type' => $module['type'],
@@ -655,8 +677,8 @@ class ModuleController extends ApiController
     private function sendConfigToServer($username, $password, $moduleName, $yamlContent, $server)
     {
         // is down server
-            if ($server['is_down'] == 1)
-                throw new HttpResponseException(response()->json(['msg' => 'this server: ' . $server['name'] .' is off'], 422));
+        if ($server['is_down'] == 1)
+            throw new HttpResponseException(response()->json(['msg' => 'this server: ' . $server['name'] .' is off'], 422));
 
         if (!$server['path_config'])
             throw new HttpResponseException(response()->json(['msg' => 'You did not specify a configuration address config'], 422));
@@ -724,7 +746,7 @@ class ModuleController extends ApiController
 
 
         // delete config module
-        private function deleteConfigInDatabase ($moduleId, $pathConfig, $server)
+    private function deleteConfigInDatabase ($moduleId, $pathConfig, $server)
     {
         $module = Module::find($moduleId);
 
@@ -1008,7 +1030,8 @@ class ModuleController extends ApiController
                 'method' => 'expertModuleFileIsServer',
                 'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
                 'user_role' =>Auth::user()->roles()->pluck('name')->first(),                'module' => $module,
-                'command' => $command
+                'command' => $command,
+                'server_id' => $server?->id
             ])
             ->log('The configuration values have been changed');
 
@@ -1033,7 +1056,7 @@ class ModuleController extends ApiController
 
             $sshHelper = new sshHelper($server, $username, $password);
 
-            $output = $sshHelper->runCommandModule($command, $typeCommand, $method);
+            $output = $sshHelper->runCommandModule($command, $typeCommand, $method, $server);
 
             return response()->json(['message' => $output]);
 
@@ -1191,6 +1214,7 @@ class ModuleController extends ApiController
                     'user_role' =>Auth::user()->roles()->pluck('name')->first(),                    'module_id' => $module['id'],
                     'module_name' => $module['name'],
                     'module_type'=> $module['type'],
+                    'server_id' => $server?->id
                 ])
             ->log('The module configuration has been reverted to the previous step');
 
@@ -1251,6 +1275,7 @@ class ModuleController extends ApiController
                 'module_id' => $module['id'],
                 'module_name' => $module['name'],
                 'module_type' => $module['type'],
+                'server_id' => $server?->id
             ])
         ->log('The module configuration has been reverted to its initial state');
 

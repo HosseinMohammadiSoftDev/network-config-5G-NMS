@@ -70,22 +70,23 @@ class SshHelper
     }
     public function testConnection()
     {
-        $this->logActivity('connection-test', 'testConnection');
         return true;
     }
 
 
 
-    public function runCommandModule($command, $typeCommand, $method)
+    public function runCommandModule($command, $typeCommand, $method, $server)
     {
         $output = $this->runCommand($command);
 
         if (str_contains($output, 'FATAL') || str_contains($output, 'ERROR')) {
-            $this->logActivity('module-error', $method, ['command' => $command, 'output' => $output]);
+            $this->logActivity('module-error', $method,
+                ['command' => $command, 'output' => $output, 'server_id' => $server?->id]);
             throw new InvalidArgumentException($output);
         }
         else
-            $this->logActivity($typeCommand, $method);
+            $this->logActivity($typeCommand, $method,
+                ['command' => $command, 'output' => $output, 'server_id' => $server?->id]);
 
 
         return $output;

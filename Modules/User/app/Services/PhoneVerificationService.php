@@ -3,17 +3,20 @@
 namespace Modules\User\Services;
 
 
+
+use Modules\User\Services\SMSService;
 use Modules\User\Models\User;
 use Modules\User\Models\PhoneLogin;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
+use Modules\Server\Models\SystemSettings;
 use Modules\User\Models\PhoneResetPassword;
+use Modules\User\Services\SunwaysmsService;
+use Illuminate\Validation\ValidationException;
 use Modules\User\Models\PhoneVerificationToken;
 use App\Http\Controllers\Contract\ApiController;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Validation\ValidationException;
-use Modules\Server\Models\SystemSettings;
-use Modules\User\Services\SunwaysmsService;
+
 
 class PhoneVerificationService extends ApiController
 {
@@ -78,20 +81,33 @@ class PhoneVerificationService extends ApiController
 
 
                     // SMS panle SunwaysmsService SOAP SERVICE
-            $connectionData = SystemSettings::first()->config_connection_sms ?? null
-                ? Crypt::decrypt(SystemSettings::first()->config_connection_sms)
-                : throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
+            // $connectionData = SystemSettings::first()->config_connection_sms ?? null
+                // ? Crypt::decrypt(SystemSettings::first()->config_connection_sms)
+                // : throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
 
-                if ($connectionData) {
-                    $sunwaysmsService = new SunwaysmsService(
-                        $connectionData['username'],
-                        $connectionData['password'],
-                        $connectionData['special_number']
-                    );
-                    $sunwaysmsService->sendMessage($phone, $code);
+                    // SOAP SERVICE
+                // if ($connectionData) {
+                //     $sunwaysmsService = new SunwaysmsService(
+                //         $connectionData['username'],
+                //         $connectionData['password'],
+                //         $connectionData['special_number']
+                //     );
+                //     $sunwaysmsService->sendMessage($phone, $code);
 
-                } else
-                    throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
+                //     // HTTP SERVICE
+                // $smsService = new SMSService();
+                // $smsService->sendMessage(
+                //     $connectionData['username'],
+                //     $connectionData['password'],
+                //     [$phone],
+                //     $code,
+                //     '09303380391',
+                //     false,
+                //     [$code]
+                // );
+
+                // } else
+                //     throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
 
 
             throw new HttpResponseException(response()->json([

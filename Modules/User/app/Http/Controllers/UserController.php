@@ -43,6 +43,7 @@ class UserController extends ApiController
                 'last_name' => Auth::user()->last_name,
                 'auth_name' => Auth::user()->auth_name,
                 'phone' => Auth::user()->phone,
+                'server_id' => Auth::user()?->server_id,
                 'created_at' => Auth::user()->created_at,
                 'updated_at' => Auth::user()->updated_at,
                 'roles' => Auth::user()->getRoleNames(),
@@ -229,6 +230,10 @@ class UserController extends ApiController
                 // edit role user
             if (isset($credentials['role']))
                 $user->syncRoles([$credentials['role']]);
+
+                // server permission
+            if ($request['serverPermission'])
+                $user->givePermissionTo($request['serverPermission']);
 
 
                 // logout user

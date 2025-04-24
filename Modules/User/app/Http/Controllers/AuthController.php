@@ -62,7 +62,7 @@ class AuthController extends ApiController
             return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
 
         if (!$user->hasRole(Role::ADMIN))
-            //$this->validateLoginDevice($user);
+            // $this->validateLoginDevice($user);
 
 
         $user->tokens()->delete();
@@ -70,16 +70,16 @@ class AuthController extends ApiController
 
 
             activity('login')
+            ->event('login')
                 ->causedBy(Auth::user())
-                ->event('login')
                 ->withProperties([
                     'route' => request()->fullUrl(),
                     'method' => 'login',
                     'user' => $user,
                 ])
-            ->log('The user logged in with the username and password.');
 
 
+                ->log('The user logged in with the username and password.');
             $is2FAEnabled = SystemSettings::first()?->is_login_2FA;
 
             if (!$is2FAEnabled) {

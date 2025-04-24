@@ -52,16 +52,25 @@ class EditMemberRequest extends FormRequest
 
     private function validationServerPermission ($server, $permissionNames)
     {
+            // assessing permission to motherboard server
         $serverPermissionsRequest = array_filter(
             $permissionNames,
             fn($permission) => str_starts_with($permission, 'server/')
         );
 
+        if ($serverPermissionsRequest)
+            throw ValidationException::withMessages(['validation' => ['not set server permission to create user to motherboard']]);
 
-        foreach ($serverPermissionsRequest as $permission)
-            if (!in_array($permission, $server->getAllPermissions()->pluck('name')->toArray()))
-                    throw ValidationException::withMessages(['validation' => ['You cannot give a user access to servers that you do not have access to.']]);
 
+            // chacke send permission unauthorized
+        $arrayUnauthorizedPermission = ['VM/create', 'VM/update', 'VM/delete', 'VM/status'];
+
+        if(!empty(array_intersect($arrayUnauthorizedPermission, $permissionNames)))
+            throw ValidationException::withMessages(['validation' => ['permission Unauthorized to give User motherboard. You cannot grant server administrative access to this user.']]);
+
+
+
+        $this->merge(['serverPermission' => 'server/' . $server['name']]);
     }
     private function validationUserPermission ($permissionNames)
     {
@@ -86,9 +95,10 @@ class EditMemberRequest extends FormRequest
 
             $permissionNames = $this->input('permission_name') ?? null;
 
-            $this->validationUserPermission($permissionNames);
+            $this->input('server_id')
+                ? $this->validationServerPermission($server, $permissionNames)
+                : $this->validationUserPermission($permissionNames);
 
-            $this->validationServerPermission($server, $permissionNames);
 
             $this->merge(['permissionNames' => $permissionNames]);
 

@@ -97,6 +97,7 @@ class ServerController extends ApiController
                     'route' => request()->fullUrl(),
                     'method' => 'createServer',
                     'server' => $server,
+                    'server_id' => $server?->id,
                     'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
                     'user_role' =>Auth::user()->roles()->pluck('name')->first(),
                 ])
@@ -135,6 +136,7 @@ class ServerController extends ApiController
                 'route' => request()->fullUrl(),
                 'method' => 'editServer',
                 'server' => $server,
+                'server_id' => $server?->id,
                 'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
                 'user_role' =>Auth::user()->roles()->pluck('name')->first(),
             ])
@@ -180,6 +182,7 @@ class ServerController extends ApiController
                 'route' => request()->fullUrl(),
                 'method' => 'deleteServer',
                 'server' => $server,
+                'server_id' => $server?->id,
                 'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
                 'user_role' =>Auth::user()->roles()->pluck('name')->first(),            ])
         ->log('The server was successfully deleted');
@@ -197,6 +200,7 @@ class ServerController extends ApiController
                 'route' => request()->fullUrl(),
                 'method' => 'deleteServer',
                 'server' => $server,
+                'server' => $server?->id,
                 'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
                 'user_role' =>Auth::user()->roles()->pluck('name')->first(),            ])
             ->log('An issue occurred while deleting all server modules');
@@ -228,6 +232,7 @@ class ServerController extends ApiController
                 'route' => request()->fullUrl(),
                 'method' => 'serverStart',
                 'server' => $server,
+                'server_id' => $server?->id,
                 'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
                 'user_role' =>Auth::user()->roles()->pluck('name')->first(),            ])
         ->log('The server was turned off');
@@ -259,6 +264,7 @@ class ServerController extends ApiController
                 'route' => request()->fullUrl(),
                 'method' => 'serverStart',
                 'server' => $server,
+                'server_id' => $server?->id,
                 'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
                 'user_role' =>Auth::user()->roles()->pluck('name')->first(),            ])
         ->log('The server has been turned on');
@@ -304,9 +310,9 @@ class ServerController extends ApiController
                 // $sshHelper = new sshHelper($server, $creadtional['username'], $creadtional['password']);
                 // $sshHelper->testConnection();
 
-            activity('server-connection')
+            activity('test-connection')
             ->causedBy(Auth::user())
-            ->event('successful-connection')
+            ->event('test-connection')
             ->withProperties([
                 'type-log' => 'server',
                 'route' => request()->fullUrl(),
@@ -314,6 +320,7 @@ class ServerController extends ApiController
                 'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
                 'user_role' =>Auth::user()->roles()->pluck('name')->first(),
                 'server' => $server,
+                'server_id' => $server?->id
             ])
             ->log('The connection to the server was successful');
 

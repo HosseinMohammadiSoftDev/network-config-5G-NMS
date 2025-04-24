@@ -36,19 +36,24 @@ class AddMemberRequest extends FormRequest
 
     public function ValidationServerPermission ($server, $permissionNames)
     {
+                // assessing permission to motherboard server
         $serverPermissionsRequest = array_filter(
             $permissionNames,
             fn($permission) => str_starts_with($permission, 'server/')
         );
 
-
-
-        // foreach ($serverPermissionsRequest as $permission)
-        //     if (!in_array($permission, $server->getAllPermissions()->pluck('name')->toArray()))
-        //             throw ValidationException::withMessages(['validation' => ['You cannot give a user access to servers that you do not have access to.']]);
-
         if ($serverPermissionsRequest)
             throw ValidationException::withMessages(['validation' => ['not set server permission to create user to motherboard']]);
+
+
+
+            // chacke send permission unauthorized
+        $arrayUnauthorizedPermission = ['VM/create', 'VM/update', 'VM/delete', 'VM/status'];
+
+            if(!empty(array_intersect($arrayUnauthorizedPermission, $permissionNames)))
+                throw ValidationException::withMessages(['validation' => ['permission Unauthorized to give User motherboard. You cannot grant server administrative access to this user.']]);
+
+
 
         $this->merge(['serverPermission' => 'server/' . $server['name']]);
 
