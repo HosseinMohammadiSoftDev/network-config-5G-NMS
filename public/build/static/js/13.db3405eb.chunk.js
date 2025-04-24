@@ -1,2 +1,3316 @@
-(this["webpackJsonpvuexy-react-admin-dashboard"]=this["webpackJsonpvuexy-react-admin-dashboard"]||[]).push([[13],{479:function(e,t,n){"use strict";n.d(t,"l",(function(){return c})),n.d(t,"k",(function(){return s})),n.d(t,"j",(function(){return l})),n.d(t,"m",(function(){return o})),n.d(t,"i",(function(){return r})),n.d(t,"h",(function(){return d})),n.d(t,"g",(function(){return b})),n.d(t,"c",(function(){return u})),n.d(t,"b",(function(){return j})),n.d(t,"e",(function(){return m})),n.d(t,"d",(function(){return v})),n.d(t,"f",(function(){return p})),n.d(t,"a",(function(){return O}));var a=n(21),i=n(635),c=function(e){return 0===Object.keys(e).length},s=function(){return JSON.parse(localStorage.getItem("userData"))},l=function(e){if("admin"===e)return i.a},o=function(e){return Object(a.a)(Object(a.a)({},e),{},{colors:Object(a.a)(Object(a.a)({},e.colors),{},{primary25:"07274E1a",primary:"#07274E",neutral10:"#07274E",neutral20:"#ededed",neutral30:"#ededed"})})},r=[{label:"OPc",value:0},{label:"OP",value:1}],d=[{label:"bps",value:0},{label:"Kbps",value:1},{label:"Mbps",value:2},{label:"Gbps",value:3},{label:"Tbps",value:4}],b=[{label:"SERVICE_GRANTED",value:0},{label:"OPERATOR_DETERMINED_BARRING",value:1}],u=[{label:"(0) All Packet Oriented Services Barred",value:0},{label:"(1) Roamer Access HPLMN-AP Barred",value:1},{label:"(2) Roamer Access to VPLMN-AP Barred",value:2},{label:"(3) Barring of all outgoing calls",value:3},{label:"(4) Barring of all outgoing international calls",value:4},{label:"(5) Barring of all outgoing international calls except those directed to the home",value:5},{label:"(6) Barring of all outgoing inter-zonal calls",value:6},{label:"(7) Barring of all outgoing inter-zonal calls except those directed to the home PLMN country",value:7},{label:"(8) Barring of all outgoing international calls except those directed to the home PLMN country and Barring of all outgoing inter-zonal calls",value:8}],j=[{label:"IPv4",value:1},{label:"IPv6",value:2},{label:"IPv4v6",value:3}],m=[{label:"1",value:1},{label:"2",value:2},{label:"3",value:3},{label:"4",value:4},{label:"65",value:65},{label:"66",value:66},{label:"67",value:67},{label:"71",value:71},{label:"72",value:72},{label:"73",value:73},{label:"74",value:74},{label:"75",value:75},{label:"76",value:76},{label:"5",value:5},{label:"6",value:6},{label:"7",value:7},{label:"8",value:8},{label:"9",value:9},{label:"69",value:69},{label:"70",value:70},{label:"79",value:79},{label:"80",value:80},{label:"82",value:82},{label:"83",value:83},{label:"84",value:84},{label:"85",value:85},{label:"86",value:86}],v=[{label:"1",value:1},{label:"2",value:2},{label:"3",value:3},{label:"4",value:4},{label:"5",value:5},{label:"6",value:6},{label:"7",value:7},{label:"8",value:8},{label:"9",value:9},{label:"10",value:10},{label:"11",value:11},{label:"12",value:12},{label:"13",value:13},{label:"14",value:14},{label:"15",value:15}],p=[{label:"Disabled",value:1},{label:"Enabled",value:2}],O=[{label:"Downlink",value:1},{label:"Uplink",value:2}]},480:function(e,t,n){"use strict";n.d(t,"a",(function(){return l}));var a=n(135),i=n(1),c=n(139),s=n(136),l=function(){var e=Object(s.c)(),t=Object(s.d)((function(e){return e.layout}));return Object(i.useEffect)((function(){var e,n=window.document.body;(e=n.classList).remove.apply(e,Object(a.a)(n.classList)),"light"!==t.skin&&n.classList.add({dark:"dark-layout",bordered:"bordered-layout","semi-dark":"semi-dark-layout"}[t.skin])}),[t.skin]),{skin:t.skin,setSkin:function(t){e(Object(c.l)(t))}}}},536:function(e,t,n){"use strict";n.d(t,"a",(function(){return c}));var a=n(136),i=n(139),c=function(){var e=Object(a.c)(),t=Object(a.d)((function(e){return e.layout})),n=function(t){e(Object(i.e)(t))};if(window){var c=1200;window.innerWidth<c&&n("vertical"),window.addEventListener("resize",(function(){window.innerWidth<=c&&"vertical"!==t.lastLayout&&"vertical"!==t.layout&&n("vertical"),window.innerWidth>=c&&t.lastLayout!==t.layout&&n(t.lastLayout)}))}return{layout:t.layout,setLayout:n,lastLayout:t.lastLayout,setLastLayout:function(t){e(Object(i.d)(t))}}}},551:function(e,t,n){"use strict";var a=n(16),i=n(9),c=n(1),s=n(480),l=n(2),o=n.n(l),r=n(11);t.a=function(){var e=Object(c.useState)(!1),t=Object(a.a)(e,2),n=t[0],l=t[1],d=Object(s.a)().skin;return Object(c.useEffect)((function(){return l(!0),function(){return l(!1)}}),[]),n?Object(r.jsx)("div",{className:o()("blank-page",{"dark-layout":"dark"===d}),children:Object(r.jsx)("div",{className:"app-content content",children:Object(r.jsx)("div",{className:"content-wrapper",children:Object(r.jsx)("div",{className:"content-body",children:Object(r.jsx)(i.b,{})})})})}):null}},635:function(e,t,n){"use strict";n.d(t,"a",(function(){return rt})),n.d(t,"b",(function(){return ut}));var a=n(21),i=n(135),c=n(1),s=n(551),l=n(9),o=n(16),r=n(136),d=n(139),b=n(2),u=n.n(b),j=n(564),m=n(96),v=n(22),p=n(485),O=n(479),x=n(552),h=n(553),f=n(533),k=n.n(f),g=(n(643),n(11)),L=function(e){var t=e.skin,n=e.isRtl,a=e.layout,i=e.setSkin,s=e.setIsRtl,l=e.isHidden,r=e.setLayout,d=e.navbarType,b=e.footerType,j=e.transition,v=e.navbarColor,f=e.setIsHidden,L=e.contentWidth,y=e.menuCollapsed,w=e.setLastLayout,N=e.setTransition,C=e.setNavbarType,T=e.setFooterType,S=e.setNavbarColor,z=e.setContentWidth,A=e.setMenuCollapsed,E=Object(c.useState)(!1),P=Object(o.a)(E,2),M=P[0],I=P[1],B=function(e){e.preventDefault(),I(!M)},R=[{value:"fadeIn",label:"Fade"},{value:"fadeInLeft",label:"Fade In Left"},{value:"zoomIn",label:"Zoom In"},{value:"none",label:"None"}],D=R.find((function(e){return e.value===j}));return Object(g.jsxs)("div",{className:u()("customizer d-none d-md-block",{open:M}),children:[Object(g.jsx)("a",{href:"/",className:"customizer-toggle d-flex align-items-center justify-content-center",onClick:B,children:Object(g.jsx)(x.a,{size:14,className:"spinner"})}),Object(g.jsxs)(k.a,{className:"customizer-content",options:{wheelPropagation:!1},children:[Object(g.jsxs)("div",{className:"customizer-header px-2 pt-1 pb-0 position-relative",children:[Object(g.jsx)("h4",{className:"mb-0",children:"Theme Customizer"}),Object(g.jsx)("p",{className:"m-0",children:"Customize & Preview in Real Time"}),Object(g.jsx)("a",{href:"/",className:"customizer-close",onClick:B,children:Object(g.jsx)(h.a,{})})]}),Object(g.jsx)("hr",{}),Object(g.jsxs)("div",{className:"px-2",children:[Object(g.jsxs)("div",{className:"mb-2",children:[Object(g.jsx)("p",{className:"fw-bold",children:"Skin"}),Object(g.jsx)("div",{className:"d-flex",children:function(){var e=[{name:"light",label:"Light",checked:"light"===t},{name:"bordered",label:"Bordered",checked:"bordered"===t},{name:"dark",label:"Dark",checked:"dark"===t},{name:"semi-dark",label:"Semi Dark",checked:"semi-dark"===t}];return e.map((function(t,n){var c=n!==e.length-1;return"horizontal"===a&&"semi-dark"===t.name?null:Object(g.jsxs)("div",{className:u()("form-check",{"mb-2 me-1":c}),children:[Object(g.jsx)(m.u,{type:"radio",id:t.name,checked:t.checked,onChange:function(){return i(t.name)}}),Object(g.jsx)(m.v,{className:"form-check-label",for:t.name,children:t.label})]},n)}))}()})]}),Object(g.jsxs)("div",{className:"mb-2",children:[Object(g.jsx)("p",{className:"fw-bold",children:"Content Width"}),Object(g.jsxs)("div",{className:"d-flex",children:[Object(g.jsxs)("div",{className:"form-check me-1",children:[Object(g.jsx)(m.u,{type:"radio",id:"full-width",checked:"full"===L,onChange:function(){return z("full")}}),Object(g.jsx)(m.v,{className:"form-check-label",for:"full-width",children:"Full Width"})]}),Object(g.jsxs)("div",{className:"form-check",children:[Object(g.jsx)(m.u,{id:"boxed",type:"radio",checked:"boxed"===L,onChange:function(){return z("boxed")}}),Object(g.jsx)(m.v,{className:"form-check-label",for:"boxed",children:"Boxed"})]})]})]}),Object(g.jsx)("div",{className:"form-switch mb-2 ps-0",children:Object(g.jsxs)("div",{className:"d-flex",children:[Object(g.jsx)("p",{className:"fw-bold me-auto mb-0",children:"RTL"}),Object(g.jsx)(m.u,{type:"switch",id:"rtl",name:"RTL",checked:n,onChange:function(){return s(!n)}})]})}),Object(g.jsx)("div",{className:"mb-2",children:Object(g.jsxs)("div",{className:"d-flex justify-content-between align-items-center",children:[Object(g.jsx)("p",{className:"fw-bold mb-0",children:"Router Transition"}),Object(g.jsx)(p.a,{theme:O.m,className:"react-select",classNamePrefix:"select",defaultValue:R[0],value:D,options:R,isClearable:!1,onChange:function(e){var t=e.value;return N(t)}})]})})]}),Object(g.jsx)("hr",{}),Object(g.jsxs)("div",{className:"px-2",children:[Object(g.jsx)("p",{className:"fw-bold",children:"Menu Layout"}),Object(g.jsx)("div",{className:"mb-2",children:Object(g.jsxs)("div",{className:"d-flex align-items-center",children:[Object(g.jsxs)("div",{className:"form-check me-1",children:[Object(g.jsx)(m.u,{type:"radio",id:"vertical-layout",checked:"vertical"===a,onChange:function(){r("vertical"),w("vertical")}}),Object(g.jsx)(m.v,{className:"form-check-label",for:"vertical-layout",children:"Vertical"})]}),Object(g.jsxs)("div",{className:"form-check",children:[Object(g.jsx)(m.u,{type:"radio",id:"horizontal-layout",checked:"horizontal"===a,onChange:function(){r("horizontal"),w("horizontal")}}),Object(g.jsx)(m.v,{className:"form-check-label",for:"horizontal-layout",children:"Horizontal"})]})]})}),"horizontal"!==a?Object(g.jsx)("div",{className:"form-switch mb-2 ps-0",children:Object(g.jsxs)("div",{className:"d-flex align-items-center",children:[Object(g.jsx)("p",{className:"fw-bold me-auto mb-0",children:"Menu Collapsed"}),Object(g.jsx)(m.u,{type:"switch",id:"menu-collapsed",name:"menu-collapsed",checked:y,onChange:function(){return A(!y)}})]})}):null,Object(g.jsx)("div",{className:"form-switch mb-2 ps-0",children:Object(g.jsxs)("div",{className:"d-flex align-items-center",children:[Object(g.jsx)("p",{className:"fw-bold me-auto mb-0",children:"Menu Hidden"}),Object(g.jsx)(m.u,{type:"switch",id:"menu-hidden",name:"menu-hidden",checked:l,onChange:function(){return f(!l)}})]})})]}),Object(g.jsx)("hr",{}),Object(g.jsxs)("div",{className:"px-2",children:["horizontal"!==a?Object(g.jsxs)("div",{className:"mb-2",children:[Object(g.jsx)("p",{className:"fw-bold",children:"Navbar Color"}),Object(g.jsx)("ul",{className:"list-inline unstyled-list",children:["white","primary","secondary","success","danger","info","warning","dark"].map((function(e){return Object(g.jsx)("li",{className:u()("color-box bg-".concat(e),{selected:v===e,border:"white"===e}),onClick:function(){return S(e)}},e)}))})]}):null,Object(g.jsxs)("div",{className:"mb-2",children:[Object(g.jsxs)("p",{className:"fw-bold",children:["horizontal"===a?"Menu":"Navbar"," Type"]}),Object(g.jsx)("div",{className:"d-flex",children:function(){var e=[{name:"floating",label:"Floating",checked:"floating"===d},{name:"sticky",label:"Sticky",checked:"sticky"===d},{name:"static",label:"Static",checked:"static"===d},{name:"hidden",label:"Hidden",checked:"hidden"===d}];return e.map((function(t,n){var i=n!==e.length-1;return"horizontal"===a&&"hidden"===t.name?null:Object(g.jsxs)("div",{className:u()("form-check",{"mb-2 me-1":i}),children:[Object(g.jsx)(m.u,{type:"radio",id:t.name,checked:t.checked,onChange:function(){return C(t.name)}}),Object(g.jsx)(m.v,{className:"form-check-label",for:t.name,children:t.label})]},n)}))}()})]})]}),Object(g.jsx)("hr",{}),Object(g.jsx)("div",{className:"px-2",children:Object(g.jsxs)("div",{className:"mb-2",children:[Object(g.jsx)("p",{className:"fw-bold",children:"Footer Type"}),Object(g.jsx)("div",{className:"d-flex",children:function(){var e=[{name:"sticky",label:"Sticky",checked:"sticky"===b},{name:"static",label:"Static",checked:"static"===b},{name:"hidden",label:"Hidden",checked:"hidden"===b}];return e.map((function(t,n){var a=n!==e.length-1;return Object(g.jsxs)("div",{className:u()("form-check",{"mb-2 me-1":a}),children:[Object(g.jsx)(m.u,{type:"radio",checked:t.checked,id:"footer-".concat(t.name),onChange:function(){return T(t.name)}}),Object(g.jsx)(m.v,{className:"form-check-label",for:"footer-".concat(t.name),children:t.label})]},n)}))}()})]})})]})]})},y=n(138),w=["showOffset","scrollBehaviour","children"],N=function(e){var t=e.showOffset,n=e.scrollBehaviour,i=e.children,s=Object(y.a)(e,w),l=Object(c.useState)(!1),r=Object(o.a)(l,2),d=r[0],b=r[1];Object(c.useEffect)((function(){window&&window.addEventListener("scroll",(function(){window.pageYOffset>=t?b(!0):b(!1)}))}),[]);return d&&Object(g.jsx)("div",Object(a.a)(Object(a.a)({className:"scroll-to-top",onClick:function(){window.scroll({top:0,behavior:n})}},s),{},{children:i}))},C=N;N.defaultProps={scrollBehaviour:"smooth"};var T=function(){return Object(g.jsx)("p",{className:"clearfix mb-0",children:Object(g.jsxs)("span",{className:"float-md-start d-block d-md-inline-block mt-25",children:["COPYRIGHT \xa9 ",(new Date).getFullYear()," ",Object(g.jsx)("a",{href:"#",target:"_blank",rel:"noopener noreferrer",children:"Open5GS"}),Object(g.jsx)("span",{className:"d-none d-sm-inline-block",children:", All rights Reserved"})]})})},S=(n(559),n(560),n(134)),z=(n(484),n(570),n(592)),A=n(31),E=(n(20),n(561),n(653),n(654),n(147)),P=function(e){var t=e.setMenuVisibility,n=Object(c.useState)(""),a=Object(o.a)(n,2),i=(a[0],a[1],Object(c.useState)(!1)),s=Object(o.a)(i,2),l=(s[0],s[1],Object(r.c)());Object(r.d)((function(e){return e.navbar}));Object(c.useEffect)((function(){l(Object(E.b)())}),[]);return Object(g.jsx)(c.Fragment,{children:Object(g.jsx)("ul",{className:"navbar-nav d-xl-none",children:Object(g.jsx)(m.A,{className:"mobile-menu me-auto",children:Object(g.jsx)(m.B,{className:"nav-menu-main menu-toggle hidden-xs is-active",onClick:function(){return t(!0)},children:Object(g.jsx)(z.a,{className:"ficon"})})})})})},M=function(e){e.skin,e.setSkin;var t=e.setMenuVisibility;return Object(g.jsx)(c.Fragment,{children:Object(g.jsx)("div",{className:"bookmark-wrapper d-flex align-items-center",children:Object(g.jsx)(P,{setMenuVisibility:t})})})},I=n(575),B=n(571),R=n(480),D=function(e){var t=e.menuCollapsed,n=e.setMenuCollapsed,a=e.setMenuVisibility,i=e.setGroupOpen,s=e.menuHover,l=Object(R.a)().skin,o=Object(O.k)();Object(c.useEffect)((function(){!s&&t&&i([])}),[s,t]);var r=function(){return t?Object(g.jsx)(B.a,{size:20,"data-tour":"toggle-icon",className:"".concat("dark"==l?"text-white":"text-primary"," toggle-icon d-none d-xl-block"),onClick:function(){return n(!1)}}):Object(g.jsx)(I.a,{size:20,"data-tour":"toggle-icon",className:"".concat("dark"==l?"text-white":"text-primary"," toggle-icon d-none d-xl-block"),onClick:function(){return n(!0)}})};return Object(g.jsx)("div",{className:"navbar-header",children:Object(g.jsxs)("ul",{className:"nav navbar-nav flex-row",children:[Object(g.jsx)("li",{className:"nav-item me-auto",children:Object(g.jsx)(S.c,{to:o?Object(O.j)(o.role):"/",className:"navbar-brand",children:Object(g.jsx)("h2",{className:"brand-text mb-0",children:"Dashboard"})})}),Object(g.jsx)("li",{className:"nav-item nav-toggle",children:Object(g.jsxs)("div",{className:"nav-link modern-nav-toggle cursor-pointer",children:[Object(g.jsx)(r,{}),Object(g.jsx)(h.a,{onClick:function(){return a(!1)},className:"toggle-icon icon-x d-block d-xl-none",size:20})]})})]})})},F=n(896),G=function(e){var t=e.item,n=e.activeItem,i=t.externalLink?"a":S.c,c=Object(F.a)().t;return Object(g.jsx)("li",{className:u()({"nav-item":!t.children,disabled:t.disabled,active:t.navLink===n}),children:Object(g.jsxs)(i,Object(a.a)(Object(a.a)({className:"d-flex align-items-center",target:t.newTab?"_blank":void 0},!0===t.externalLink?{href:t.navLink||"/"}:{to:t.navLink||"/",className:function(e){if(e.isActive&&!t.disabled)return"d-flex align-items-center active"}}),{},{onClick:function(e){0!==t.navLink.length&&"#"!==t.navLink&&!0!==t.disabled||e.preventDefault()},children:[t.icon,Object(g.jsx)("span",{className:"menu-item text-truncate",children:c(t.title)}),t.badge&&t.badgeText?Object(g.jsx)(m.f,{className:"ms-auto me-1",color:t.badge,pill:!0,children:t.badgeText}):null]}))})},H=n(145),W=Object(c.createContext)(),V=function e(t,n){var a=t.children;if(!a)return!1;var i,c=Object(H.a)(a);try{for(c.s();!(i=c.n()).done;){var s=i.value;if(s.children&&e(s,n))return!0;if(s&&s.navLink&&n&&(s.navLink===n||n.includes(s.navLink)))return!0}}catch(l){c.e(l)}finally{c.f()}return!1},_=function e(t,n,a){t.forEach((function(t){if(!a.includes(t.id)){var i=n.indexOf(t.id);i>-1&&n.splice(i,1),t.children&&e(t.children,n,a)}}))},J=["item","groupOpen","menuHover","activeItem","parentItem","groupActive","setGroupOpen","menuCollapsed","setGroupActive","currentActiveGroup","setCurrentActiveGroup"],U=function(e){var t=e.item,n=e.groupOpen,s=e.menuHover,o=e.activeItem,r=e.parentItem,d=e.groupActive,b=e.setGroupOpen,j=e.menuCollapsed,v=e.setGroupActive,p=e.currentActiveGroup,O=e.setCurrentActiveGroup,x=Object(y.a)(e,J),h=Object(F.a)().t,f=Object(l.e)(),k=Object(l.e)().pathname,L=function(e,t){!function(e,t){var a=n,c=d;a.includes(e.id)?(a.splice(a.indexOf(e.id),1),e.children&&_(e.children,a,d)):c.includes(e.id)||p.includes(e.id)?(!c.includes(e.id)&&p.includes(e.id)?c.push(e.id):c.splice(c.indexOf(e.id),1),v(Object(i.a)(c))):t?(t.children&&_(t.children,a,d),a.includes(e.id)||a.push(e.id)):(a=[]).includes(e.id)||a.push(e.id),b(Object(i.a)(a))}(t,r),e.preventDefault()};Object(c.useEffect)((function(){if(V(t,k))d.includes(t.id)||d.push(t.id);else{var e=d.indexOf(t.id);e>-1&&d.splice(e,1)}v(Object(i.a)(d)),O(Object(i.a)(d)),b([])}),[f]);var w;return Object(g.jsxs)("li",{className:u()("nav-item has-sub",{open:(w=t.id,j&&s||!1===j?!(!d.includes(w)&&!n.includes(w))||void 0:(!d.includes(w)||!j||!1!==s)&&null),"menu-collapsed-open":d.includes(t.id),"sidebar-group-active":d.includes(t.id)||n.includes(t.id)||p.includes(t.id)}),children:[Object(g.jsxs)(S.b,{className:"d-flex align-items-center",to:"/",onClick:function(e){return L(e,t)},children:[t.icon,Object(g.jsx)("span",{className:"menu-title text-truncate",children:h(t.title)}),t.badge&&t.badgeText?Object(g.jsx)(m.f,{className:"ms-auto me-1",color:t.badge,pill:!0,children:t.badgeText}):null]}),Object(g.jsx)("ul",{className:"menu-content",children:Object(g.jsx)(m.p,{isOpen:d&&d.includes(t.id)||n&&n.includes(t.id),children:Object(g.jsx)(K,Object(a.a)(Object(a.a)({},x),{},{items:t.children,groupActive:d,setGroupActive:v,currentActiveGroup:p,setCurrentActiveGroup:O,groupOpen:n,setGroupOpen:b,parentItem:t,menuCollapsed:j,menuHover:s,activeItem:o}))})})]})},Y=n(594),q=function(e){var t=e.item;return Object(g.jsxs)("li",{className:"navigation-header",children:[Object(g.jsx)("span",{children:t.header}),Object(g.jsx)(Y.a,{className:"feather-more-horizontal"})]})},K=function(e){var t={VerticalNavMenuLink:G,VerticalNavMenuGroup:U,VerticalNavMenuSectionHeader:q};return e.items.map((function(n,i){var c=t[function(e){return e.header?"VerticalNavMenuSectionHeader":e.children?"VerticalNavMenuGroup":"VerticalNavMenuLink"}(n)];return n.children?Object(g.jsx)(c,Object(a.a)({item:n,index:i},e),n.id):Object(g.jsx)(c,Object(a.a)({item:n},e),n.id||n.header)}))},Q=function(e){var t=e.menuCollapsed,n=e.menu,i=e.skin,s=e.menuData,l=Object(c.useState)([]),r=Object(o.a)(l,2),d=r[0],b=r[1],j=Object(c.useState)([]),m=Object(o.a)(j,2),v=m[0],p=m[1],O=Object(c.useState)([]),x=Object(o.a)(O,2),h=x[0],f=x[1],L=Object(c.useState)(null),y=Object(o.a)(L,2),w=y[0],N=y[1],C=Object(c.useState)(!1),T=Object(o.a)(C,2),S=T[0],z=T[1],A=Object(c.useRef)(null);return Object(g.jsx)(c.Fragment,{children:Object(g.jsx)("div",{className:u()("main-menu menu-fixed menu-accordion menu-shadow",{expanded:S||!1===t,"menu-light":"semi-dark"!==i&&"dark"!==i,"menu-dark":"semi-dark"===i||"dark"===i}),onMouseEnter:function(){z(!0)},onMouseLeave:function(){return z(!1)},children:n?n(Object(a.a)({},e)):Object(g.jsxs)(c.Fragment,{children:[Object(g.jsx)(D,Object(a.a)({setGroupOpen:b,menuHover:S},e)),Object(g.jsx)("div",{className:"shadow-bottom",ref:A}),Object(g.jsx)(k.a,{className:"main-menu-content",options:{wheelPropagation:!1},onScrollY:function(e){return function(e){A&&e.scrollTop>0?A.current.classList.contains("d-block")||A.current.classList.add("d-block"):A.current.classList.contains("d-block")&&A.current.classList.remove("d-block")}(e)},children:Object(g.jsx)("ul",{className:"navigation navigation-main",children:Object(g.jsx)(K,{items:s,menuData:s,menuHover:S,groupOpen:d,activeItem:w,groupActive:v,setGroupOpen:b,menuCollapsed:t,setActiveItem:N,setGroupActive:p,currentActiveGroup:h,setCurrentActiveGroup:f})})})]})})})},Z=function(){var e=Object(r.c)(),t=Object(r.d)((function(e){return e.layout.isRTL}));return Object(c.useEffect)((function(){var e=document.getElementsByTagName("html")[0];t?e.setAttribute("dir","rtl"):e.setAttribute("dir","ltr")}),[t]),[t,function(t){e(Object(d.j)(t))}]},X=n(536),$=function(){var e=Object(r.c)();return{navbarType:Object(r.d)((function(e){return e.layout})).navbarType,setNavbarType:function(t){e(Object(d.i)(t))}}},ee=function(){var e=Object(r.c)();return{setFooterType:function(t){e(Object(d.c)(t))},footerType:Object(r.d)((function(e){return e.layout})).footerType}},te=function(){var e=Object(r.c)();return{navbarColor:Object(r.d)((function(e){return e.layout})).navbarColor,setNavbarColor:function(t){e(Object(d.h)(t))}}},ne=function(){var e=Object(r.c)();return{transition:Object(r.d)((function(e){return e.layout})).routerTransition,setTransition:function(t){e(Object(d.k)(t))}}},ae=(n(655),n(656),function(e){var t=e.menu,n=e.navbar,i=e.footer,s=e.children,b=e.menuData,p=Z(),O=Object(o.a)(p,2),x=O[0],h=O[1],f=Object(R.a)(),k=f.skin,y=f.setSkin,w=$(),N=w.navbarType,S=w.setNavbarType,z=ee(),A=z.footerType,E=z.setFooterType,P=te(),I=P.navbarColor,B=P.setNavbarColor,D=Object(X.a)(),F=D.layout,G=D.setLayout,H=D.setLastLayout,W=ne(),V=W.transition,_=W.setTransition,J=Object(c.useState)(!1),U=Object(o.a)(J,2),Y=U[0],q=U[1],K=Object(c.useState)(!1),ae=Object(o.a)(K,2),ie=ae[0],ce=ae[1],se=Object(c.useState)(window.innerWidth),le=Object(o.a)(se,2),oe=le[0],re=le[1],de=Object(r.c)(),be=Object(r.d)((function(e){return e.layout})),ue=function(){re(window.innerWidth)},je=Object(l.e)(),me=be.menuHidden,ve=be.contentWidth,pe=be.menuCollapsed,Oe=function(e){return de(Object(d.f)(e))};Object(c.useEffect)((function(){ie&&oe<1200&&ce(!1)}),[je]),Object(c.useEffect)((function(){void 0!==window&&window.addEventListener("resize",ue)}),[oe]),Object(c.useEffect)((function(){return q(!0),function(){return q(!1)}}),[]);var xe={static:"footer-static",sticky:"footer-fixed",hidden:"footer-hidden"},he={floating:"boxed"===ve?"floating-nav container-xxl":"floating-nav",sticky:"fixed-top",static:"navbar-static-top",hidden:"d-none"},fe=""!==I&&"light"!==I&&"white"!==I;return Y?Object(g.jsxs)("div",Object(a.a)(Object(a.a)({className:u()("wrapper vertical-layout ".concat({floating:"navbar-floating",sticky:"navbar-sticky",static:"navbar-static",hidden:"navbar-hidden"}[N]||"navbar-floating"," ").concat(xe[A]||"footer-static"),{"vertical-menu-modern":oe>=1200,"menu-collapsed":pe&&oe>=1200,"menu-expanded":!pe&&oe>1200,"vertical-overlay-menu":oe<1200,"menu-hide":!ie&&oe<1200,"menu-open":ie&&oe<1200})},me?{"data-col":"1-column"}:{}),{},{children:[me?null:Object(g.jsx)(Q,{skin:k,menu:t,menuData:b,menuCollapsed:pe,menuVisibility:ie,setMenuCollapsed:Oe,setMenuVisibility:ce}),Object(g.jsx)(m.C,{expand:"lg",container:!1,light:"dark"!==k,dark:"dark"===k||fe,color:fe?I:void 0,className:u()("header-navbar navbar align-items-center ".concat(he[N]||"floating-nav"," navbar-shadow")),children:Object(g.jsx)("div",{className:"navbar-container d-flex content",children:n?n({skin:k,setSkin:y,setMenuVisibility:ce}):Object(g.jsx)(M,{setMenuVisibility:ce,skin:k,setSkin:y})})}),s,Object(g.jsx)("div",{className:u()("sidenav-overlay",{show:ie}),onClick:function(){return ce(!1)}}),!0===v.a.layout.customizer?Object(g.jsx)(L,{skin:k,isRtl:x,layout:F,setSkin:y,setIsRtl:h,isHidden:me,setLayout:G,footerType:A,navbarType:N,transition:V,setIsHidden:function(e){return de(Object(d.g)(e))},themeConfig:v.a,navbarColor:I,contentWidth:ve,setTransition:_,setFooterType:E,setNavbarType:S,setLastLayout:H,menuCollapsed:pe,setNavbarColor:B,setContentWidth:function(e){return de(Object(d.b)(e))},setMenuCollapsed:Oe}):null,Object(g.jsx)("footer",{className:u()("footer footer-light ".concat(xe[A]||"footer-static"),{"d-none":"hidden"===A}),children:i||Object(g.jsx)(T,{footerType:A,footerClasses:xe})}),!0===v.a.layout.scrollTop?Object(g.jsx)("div",{className:"scroll-to-top",children:Object(g.jsx)(C,{showOffset:300,className:"scroll-top d-block",children:Object(g.jsx)(m.i,{className:"btn-icon",color:"primary",children:Object(g.jsx)(j.a,{size:14})})})}):null]})):null}),ie=n(522),ce=[{id:"Subscribers",title:"Subscribers",icon:Object(g.jsx)(ie.c,{size:20}),children:[{id:"AllSubscribers",title:"List",icon:Object(g.jsx)(B.a,{size:12}),navLink:"/subscribers/all"},{id:"NewSubscriber",title:"New",icon:Object(g.jsx)(B.a,{size:12}),navLink:"/subscribers/new"}]}],se=Object(i.a)(ce),le=function(e){return Object(g.jsx)(ae,Object(a.a)(Object(a.a)({menuData:se},e),{},{children:Object(g.jsx)(l.b,{})}))},oe=(n(238),n(657),function(e){var t,n=e.navbar,i=(e.menuData,e.footer),s=e.children,l=(e.menu,Object(R.a)()),b=l.skin,p=l.setSkin,O=Z(),x=Object(o.a)(O,2),h=x[0],f=x[1],k=$(),y=k.navbarType,w=k.setNavbarType,N=ee(),z=N.footerType,E=N.setFooterType,P=te(),I=P.navbarColor,B=P.setNavbarColor,D=Object(X.a)(),F=D.layout,G=D.setLayout,H=D.setLastLayout,W=ne(),V=W.transition,_=W.setTransition,J=Object(c.useState)(!1),U=Object(o.a)(J,2),Y=U[0],q=U[1],K=Object(c.useState)(!1),Q=Object(o.a)(K,2),ae=Q[0],ie=Q[1],ce=Object(r.c)(),se=Object(r.d)((function(e){return e.layout})),le=se.contentWidth,oe=se.menuHidden;Object(c.useEffect)((function(){return q(!0),window.addEventListener("scroll",(function(){window.pageYOffset>65&&!1===ae&&ie(!0),window.pageYOffset<65&&ie(!1)})),function(){return q(!1),void ie(!1)}}),[]);var re={static:"footer-static",sticky:"footer-fixed",hidden:"footer-hidden"},de={floating:"boxed"===le?"floating-nav container-xxl":"floating-nav",sticky:"fixed-top"},be=""!==I&&"light"!==I&&"white"!==I;return Y?Object(g.jsxs)("div",Object(a.a)(Object(a.a)({className:u()("wrapper horizontal-layout horizontal-menu ".concat({floating:"navbar-floating",sticky:"navbar-sticky",static:"navbar-static"}[y]||"navbar-floating"," ").concat(re[z]||"footer-static"," menu-expanded"))},oe?{"data-col":"1-column"}:{}),{},{children:[Object(g.jsxs)(m.C,{expand:"lg",container:!1,className:u()("header-navbar navbar-fixed align-items-center navbar-shadow navbar-brand-center",{"navbar-scrolled":ae}),children:[!n&&Object(g.jsx)("div",{className:"navbar-header d-xl-block d-none",children:Object(g.jsx)("ul",{className:"nav navbar-nav",children:Object(g.jsx)(m.A,{children:Object(g.jsxs)(S.b,{to:"/",className:"navbar-brand",children:[Object(g.jsx)("span",{className:"brand-logo",children:Object(g.jsx)("img",{src:v.a.app.appLogoImage,alt:"logo"})}),Object(g.jsx)("h2",{className:"brand-text mb-0",children:v.a.app.appName})]})})})}),Object(g.jsx)("div",{className:"navbar-container d-flex content",children:n?n({skin:b,setSkin:p}):Object(g.jsx)(M,{skin:b,setSkin:p})})]}),oe?null:Object(g.jsx)("div",{className:"horizontal-menu-wrapper",children:Object(g.jsx)(m.C,{tag:"div",expand:"sm",light:"dark"!==b,dark:"dark"===b||be,className:u()("header-navbar navbar-horizontal navbar-shadow menu-border",(t={},Object(A.a)(t,de[y],"static"!==y),Object(A.a)(t,"floating-nav",!de[y]&&"static"!==y||"floating"===y),t))})}),s,!0===v.a.layout.customizer?Object(g.jsx)(L,{skin:b,isRtl:h,layout:F,setSkin:p,setIsRtl:f,isHidden:oe,setLayout:G,footerType:z,navbarType:y,transition:V,setIsHidden:function(e){return ce(Object(d.g)(e))},themeConfig:v.a,navbarColor:I,contentWidth:le,setTransition:_,setFooterType:E,setNavbarType:w,setLastLayout:H,setNavbarColor:B,setContentWidth:function(e){return ce(Object(d.b)(e))}}):null,Object(g.jsx)("footer",{className:u()("footer footer-light ".concat(re[z]||"footer-static"),{"d-none":"hidden"===z}),children:i||Object(g.jsx)(T,{footerType:z,footerClasses:re})}),!0===v.a.layout.scrollTop?Object(g.jsx)("div",{className:"scroll-to-top",children:Object(g.jsx)(C,{showOffset:300,className:"scroll-top d-block",children:Object(g.jsx)(m.i,{className:"btn-icon",color:"primary",children:Object(g.jsx)(j.a,{size:14})})})}):null]})):null}),re=n(566),de=n(591),be=n(593),ue=n(569),je=n(568),me=n(580),ve=n(598),pe=n(599),Oe=n(603),xe=[{id:"apps",title:"Apps",icon:Object(g.jsx)(re.a,{}),children:[{id:"email",title:"Email",icon:Object(g.jsx)(de.a,{}),navLink:"/apps/email"},{id:"chat",title:"Chat",icon:Object(g.jsx)(be.a,{}),navLink:"/apps/chat"},{id:"todo",title:"Todo",icon:Object(g.jsx)(ue.a,{}),navLink:"/apps/todo"},{id:"calendar",title:"Calendar",icon:Object(g.jsx)(je.a,{}),navLink:"/apps/calendar"},{id:"invoiceApp",title:"Invoice",icon:Object(g.jsx)(me.a,{}),children:[{id:"invoiceList",title:"List",icon:Object(g.jsx)(B.a,{}),navLink:"/apps/invoice/list"},{id:"invoicePreview",title:"Preview",icon:Object(g.jsx)(B.a,{}),navLink:"/apps/invoice/preview"},{id:"invoiceEdit",title:"Edit",icon:Object(g.jsx)(B.a,{}),navLink:"/apps/invoice/edit"},{id:"invoiceAdd",title:"Add",icon:Object(g.jsx)(B.a,{}),navLink:"/apps/invoice/add"}]},{id:"roles-permissions",title:"Roles & Permissions",icon:Object(g.jsx)(ve.a,{size:20}),children:[{id:"roles",title:"Roles",icon:Object(g.jsx)(B.a,{size:12}),navLink:"/apps/roles"},{id:"permissions",title:"Permissions",icon:Object(g.jsx)(B.a,{size:12}),navLink:"/apps/permissions"}]},{id:"eCommerce",title:"eCommerce",icon:Object(g.jsx)(pe.a,{}),children:[{id:"shop",title:"Shop",icon:Object(g.jsx)(B.a,{}),navLink:"/apps/ecommerce/shop"},{id:"detail",title:"Details",icon:Object(g.jsx)(B.a,{}),navLink:"/apps/ecommerce/product-detail"},{id:"wishList",title:"Wish List",icon:Object(g.jsx)(B.a,{}),navLink:"/apps/ecommerce/wishlist"},{id:"checkout",title:"Checkout",icon:Object(g.jsx)(B.a,{}),navLink:"/apps/ecommerce/checkout"}]},{id:"users",title:"User",icon:Object(g.jsx)(Oe.a,{}),children:[{id:"list",title:"List",icon:Object(g.jsx)(B.a,{}),navLink:"/apps/user/list"},{id:"view",title:"View",icon:Object(g.jsx)(B.a,{}),navLink:"/apps/user/view"}]}]}],he=n(602),fe=n(584),ke=n(586),ge=n(576),Le=n(587),ye=n(572),we=n(581),Ne=n(600),Ce=[{id:"pages",title:"Pages",icon:Object(g.jsx)(me.a,{}),children:[{id:"authentication",title:"Authentication",icon:Object(g.jsx)(he.a,{}),children:[{id:"login",title:"Login",icon:Object(g.jsx)(B.a,{size:12}),children:[{id:"login-basic",title:"Basic",permissions:["admin","editor"],navLink:"/pages/login-basic",newTab:!0},{id:"login-cover",title:"Cover",permissions:["admin","editor"],navLink:"/pages/login-cover",newTab:!0}]},{id:"register",title:"Register",icon:Object(g.jsx)(B.a,{size:12}),children:[{id:"register-basic",title:"Basic",permissions:["admin","editor"],navLink:"/pages/register-basic",newTab:!0},{id:"register-cover",title:"Cover",permissions:["admin","editor"],navLink:"/pages/register-cover",newTab:!0},{id:"multi-steps-register",title:"Multi-Steps",permissions:["admin","editor"],navLink:"/pages/register-multi-steps",newTab:!0}]},{id:"forgot-password",title:"Forgot Password",icon:Object(g.jsx)(B.a,{size:12}),children:[{id:"forgotPassword-basic",title:"Basic",permissions:["admin","editor"],navLink:"/pages/forgot-password-basic",newTab:!0},{id:"forgotPassword-cover",title:"Cover",permissions:["admin","editor"],navLink:"/pages/forgot-password-cover",newTab:!0}]},{id:"resetPassword",title:"Reset Password",icon:Object(g.jsx)(B.a,{size:12}),children:[{id:"resetPassword-basic",title:"Basic",permissions:["admin","editor"],navLink:"/pages/reset-password-basic",newTab:!0},{id:"resetPassword-cover",title:"Cover",permissions:["admin","editor"],navLink:"/pages/reset-password-cover",newTab:!0}]},{id:"verify-email",title:"Reset Password",icon:Object(g.jsx)(B.a,{size:12}),children:[{id:"verify-email-basic",title:"Basic",permissions:["admin","editor"],navLink:"/pages/verify-email-basic",newTab:!0},{id:"verify-email-cover",title:"Cover",permissions:["admin","editor"],navLink:"/pages/verify-email-cover",newTab:!0}]},{id:"two-step",title:"Two Steps",icon:Object(g.jsx)(B.a,{size:12}),children:[{id:"two-steps-basic",title:"Basic",permissions:["admin","editor"],navLink:"/pages/two-steps-basic",newTab:!0},{id:"two-steps-cover",title:"Cover",permissions:["admin","editor"],navLink:"/pages/two-steps-cover",newTab:!0}]}]},{id:"accountSettings",title:"Account Settings",icon:Object(g.jsx)(x.a,{}),navLink:"/pages/account-settings"},{id:"profile",title:"Profile",icon:Object(g.jsx)(Oe.a,{}),navLink:"/pages/profile",collapsed:!0},{id:"faq",title:"FAQ",icon:Object(g.jsx)(fe.a,{}),navLink:"/pages/faq"},{id:"knowledgeBase",title:"Knowledge Base",icon:Object(g.jsx)(ke.a,{}),navLink:"/pages/knowledge-base",parentOf:["/pages/knowledge-base/category/questions","/pages/knowledge-base/category"]},{id:"pricing",title:"Pricing",icon:Object(g.jsx)(ge.a,{}),navLink:"/pages/pricing"},{id:"license",title:"License",icon:Object(g.jsx)(me.a,{}),permissions:["admin","editor"],navLink:"/pages/license"},{id:"api-key",title:"API Key",icon:Object(g.jsx)(Le.a,{}),permissions:["admin","editor"],navLink:"/pages/api-key"},{id:"blog",title:"Blog",icon:Object(g.jsx)(ye.a,{}),children:[{id:"blogList",title:"List",icon:Object(g.jsx)(B.a,{}),navLink:"/pages/blog/list"},{id:"blogDetail",title:"Detail",icon:Object(g.jsx)(B.a,{}),navLink:"/pages/blog/detail"},{id:"blogEdit",title:"Edit",icon:Object(g.jsx)(B.a,{}),navLink:"/pages/blog/edit"}]},{id:"mailTemplate",title:"Mail Template",icon:Object(g.jsx)(de.a,{}),children:[{id:"welcomeTemp",title:"Welcome",navLink:"https://pixinvent.com/demo/vuexy-mail-template/mail-welcome.html",externalLink:!0},{id:"resetPassTemp",title:"Reset Password",navLink:"https://pixinvent.com/demo/vuexy-mail-template/mail-reset-password.html",externalLink:!0},{id:"verifyEmailTemp",title:"Verify Email",navLink:"https://pixinvent.com/demo/vuexy-mail-template/mail-verify-email.html",externalLink:!0},{id:"deactivateAccountTemp",title:"Deactivate Account",navLink:"https://pixinvent.com/demo/vuexy-mail-template/mail-deactivate-account.html",externalLink:!0},{id:"invoiceMailTemp",title:"Invoice",navLink:"https://pixinvent.com/demo/vuexy-mail-template/mail-invoice.html",externalLink:!0},{id:"promotionalMailTemp",title:"Promotional",navLink:"https://pixinvent.com/demo/vuexy-mail-template/mail-promotional.html",externalLink:!0}]},{id:"miscellaneous",title:"Miscellaneous",icon:Object(g.jsx)(we.a,{}),children:[{id:"comingSoon",title:"Coming Soon",icon:Object(g.jsx)(B.a,{}),navLink:"/misc/coming-soon",newTab:!0},{id:"notAuthorized",title:"Not Authorized",icon:Object(g.jsx)(B.a,{}),navLink:"/misc/not-authorized",newTab:!0},{id:"maintenance",title:"Maintenance",icon:Object(g.jsx)(B.a,{}),navLink:"/misc/maintenance",newTab:!0},{id:"error",title:"Error",icon:Object(g.jsx)(B.a,{}),navLink:"/misc/error",newTab:!0}]},{id:"modal-examples",title:"Modal Examples",icon:Object(g.jsx)(Ne.a,{size:12}),permissions:["admin","editor"],navLink:"/pages/modal-examples"}]}],Te=n(578),Se=n(582),ze=n(590),Ae=[{id:"misc",title:"Misc",icon:Object(g.jsx)(re.a,{}),children:[{id:"access-control",title:"Access Control",icon:Object(g.jsx)(ve.a,{size:20}),action:"read",resource:"ACL",navLink:"/access-control"},{id:"menuLevels",title:"Menu Levels",icon:Object(g.jsx)(z.a,{}),children:[{id:"secondLevel",title:"Second Level 2.1",icon:Object(g.jsx)(B.a,{}),navLink:"#"},{id:"secondLevel1",title:"Second Level 2.2",icon:Object(g.jsx)(B.a,{}),children:[{id:"ThirdLevel",title:"Third Level 3.1",icon:Object(g.jsx)(B.a,{}),navLink:"#"},{id:"ThirdLevel1",title:"Third Level 3.2",icon:Object(g.jsx)(B.a,{}),navLink:"#"}]}]},{id:"disabledMenu",title:"Disabled Menu",icon:Object(g.jsx)(Te.a,{}),navLink:"#",disabled:!0},{id:"documentation",title:"Documentation",icon:Object(g.jsx)(Se.a,{}),externalLink:!0,newTab:!0,navLink:"https://pixinvent.com/demo/vuexy-react-admin-dashboard-template/documentation"},{id:"raiseSupport",title:"Raise Support",icon:Object(g.jsx)(ze.a,{}),externalLink:!0,newTab:!0,navLink:"https://pixinvent.ticksy.com/"}]}],Ee=n(565),Pe=[{id:"chartsGroup",title:"Charts",icon:Object(g.jsx)(Ee.a,{}),children:[{id:"apex",title:"Apex",icon:Object(g.jsx)(B.a,{}),navLink:"/charts/apex"},{id:"chartJs",title:"ChartJS",icon:Object(g.jsx)(B.a,{}),navLink:"/charts/chartjs"},{id:"recharts",title:"Recharts",icon:Object(g.jsx)(B.a,{}),navLink:"/charts/recharts"}]}],Me=n(585),Ie=n(562),Be=[{id:"dashboards",title:"Dashboards",icon:Object(g.jsx)(Me.a,{}),children:[{id:"analyticsDash",title:"Analytics",icon:Object(g.jsx)(Ie.a,{}),navLink:"/dashboard/analytics"},{id:"eCommerceDash",title:"eCommerce",icon:Object(g.jsx)(pe.a,{}),navLink:"/dashboard/ecommerce"}]}],Re=n(588),De=n(601),Fe=n(579),Ge=n(574),He=n(567),We=n(589),Ve=[{id:"uiElements",title:"User Interface",icon:Object(g.jsx)(Re.a,{}),children:[{id:"typography",title:"Typography",icon:Object(g.jsx)(De.a,{}),navLink:"/ui-element/typography"},{id:"feather",title:"Feather",icon:Object(g.jsx)(Fe.a,{}),navLink:"/icons/reactfeather"},{id:"cards",title:"Card",icon:Object(g.jsx)(Ge.a,{}),badge:"success",badgeText:"New",children:[{id:"basic",title:"Basic",icon:Object(g.jsx)(B.a,{}),navLink:"/cards/basic"},{id:"cardAdvance",title:"Advance",icon:Object(g.jsx)(B.a,{}),navLink:"/cards/advance"},{id:"cardStatistics",title:"Statistics",icon:Object(g.jsx)(B.a,{}),navLink:"/cards/statistics"},{id:"CardAnalytics",title:"Analytics",icon:Object(g.jsx)(B.a,{}),navLink:"/cards/analytics"},{id:"cardActions",title:"Actions",icon:Object(g.jsx)(B.a,{}),navLink:"/cards/action"}]},{id:"components",title:"Components",icon:Object(g.jsx)(He.a,{}),children:[{id:"accordion",title:"Accordion",icon:Object(g.jsx)(B.a,{}),navLink:"/components/accordion"},{id:"alerts",title:"Alerts",icon:Object(g.jsx)(B.a,{}),navLink:"/components/alerts"},{id:"autoComplete",title:"Auto Complete",icon:Object(g.jsx)(B.a,{}),navLink:"/components/auto-complete"},{id:"avatar",title:"Avatar",icon:Object(g.jsx)(B.a,{}),navLink:"/components/avatar"},{id:"badges",title:"Badges",icon:Object(g.jsx)(B.a,{}),navLink:"/components/badges"},{id:"blockui",title:"BlockUI",icon:Object(g.jsx)(B.a,{}),navLink:"/components/blockui"},{id:"breadCrumbs",title:"Breadcrumbs",icon:Object(g.jsx)(B.a,{}),navLink:"/components/breadcrumbs"},{id:"buttons",title:"Buttons",icon:Object(g.jsx)(B.a,{}),navLink:"/components/buttons"},{id:"collapse",title:"Collapse",icon:Object(g.jsx)(B.a,{}),navLink:"/components/collapse"},{id:"divider",title:"Divider",icon:Object(g.jsx)(B.a,{}),navLink:"/components/divider"},{id:"dropDowns",title:"Dropdowns",icon:Object(g.jsx)(B.a,{}),navLink:"/components/dropdowns"},{id:"listGroup",title:"List Group",icon:Object(g.jsx)(B.a,{}),navLink:"/components/list-group"},{id:"modals",title:"Modals",icon:Object(g.jsx)(B.a,{}),navLink:"/components/modals"},{id:"navsComponent",title:"Navs Component",icon:Object(g.jsx)(B.a,{}),navLink:"/components/nav-component"},{id:"offCanvas",title:"OffCanvas",icon:Object(g.jsx)(B.a,{size:12}),navLink:"/components/offcanvas"},{id:"pagination",title:"Pagination",icon:Object(g.jsx)(B.a,{}),navLink:"/components/pagination"},{id:"pillBadges",title:"Pill Badges",icon:Object(g.jsx)(B.a,{}),navLink:"/components/pill-badges"},{id:"pillsComponent",title:"Pills Component",icon:Object(g.jsx)(B.a,{}),navLink:"/components/pills-component"},{id:"popovers",title:"Popovers",icon:Object(g.jsx)(B.a,{}),navLink:"/components/popovers"},{id:"progress",title:"Progress",icon:Object(g.jsx)(B.a,{}),navLink:"/components/progress"},{id:"spinners",title:"Spinner",icon:Object(g.jsx)(B.a,{}),navLink:"/components/spinners"},{id:"tabsComponent",title:"Tabs Component",icon:Object(g.jsx)(B.a,{}),navLink:"/components/tabs-component"},{id:"timeline",title:"Timeline",icon:Object(g.jsx)(B.a,{}),navLink:"/components/timeline"},{id:"react-hot-toasts",title:"React Hot Toasts",icon:Object(g.jsx)(B.a,{}),navLink:"/components/react-hot-toasts"},{id:"tooltips",title:"Tooltips",icon:Object(g.jsx)(B.a,{}),navLink:"/components/tooltips"}]},{id:"extensions",title:"Extensions",icon:Object(g.jsx)(re.a,{}),children:[{id:"sweetAlert",title:"Sweet Alert",icon:Object(g.jsx)(B.a,{}),navLink:"/extensions/sweet-alert"},{id:"toastr",title:"Toastr",icon:Object(g.jsx)(B.a,{}),navLink:"/extensions/toastr"},{id:"slider",title:"Sliders",icon:Object(g.jsx)(B.a,{}),navLink:"/extensions/slider"},{id:"drag_&_drop",title:"Drag & Drop",icon:Object(g.jsx)(B.a,{}),navLink:"/extensions/drag-and-drop"},{id:"tour",title:"Tour",icon:Object(g.jsx)(B.a,{}),navLink:"/extensions/tour"},{id:"clipBoard",title:"Clipboard",icon:Object(g.jsx)(B.a,{}),navLink:"/extensions/clipboard"},{id:"reactPlayer",title:"React Player",icon:Object(g.jsx)(B.a,{}),navLink:"/extensions/react-player"},{id:"contentMenu",title:"Context Menu",icon:Object(g.jsx)(B.a,{}),navLink:"/extensions/context-menu"},{id:"swiper",title:"Swiper",icon:Object(g.jsx)(B.a,{}),navLink:"/extensions/swiper"},{id:"ratings",title:"Ratings",icon:Object(g.jsx)(B.a,{}),navLink:"/extensions/ratings"},{id:"i18n",title:"I18n",icon:Object(g.jsx)(B.a,{}),navLink:"/extensions/i18n"},{id:"extPagination",title:"React Paginate",icon:Object(g.jsx)(B.a,{}),navLink:"/extensions/pagination"},{id:"extImport",title:"Import",icon:Object(g.jsx)(B.a,{}),navLink:"/extensions/import"},{id:"extExport",title:"Export",icon:Object(g.jsx)(B.a,{}),navLink:"/extensions/export"},{id:"extExportSelected",title:"Export Selected",icon:Object(g.jsx)(B.a,{}),navLink:"/extensions/export-selected"}]},{id:"pageLayouts",title:"Page Layouts",icon:Object(g.jsx)(We.a,{}),children:[{id:"layoutBoxed",title:"Layout Boxed",icon:Object(g.jsx)(B.a,{}),navLink:"/page-layout/layout-boxed"},{id:"withoutMenu",title:"Without Menu",icon:Object(g.jsx)(B.a,{}),navLink:"/page-layout/without-menu"},{id:"layoutEmpty",title:"Layout Empty",icon:Object(g.jsx)(B.a,{}),navLink:"/page-layout/layout-empty"},{id:"layoutBlank",title:"Layout Blank",icon:Object(g.jsx)(B.a,{}),navLink:"/page-layout/layout-blank"}]}]}],_e=n(577),Je=n(573),Ue=n(595),Ye=n(563),qe=n(596),Ke=n(597),Qe=n(583),Ze=[{id:"formsAndTable",title:"Forms & Tables",icon:Object(g.jsx)(_e.a,{}),children:[{id:"formElements",title:"Form Elements",icon:Object(g.jsx)(Je.a,{}),children:[{id:"input",title:"Input",icon:Object(g.jsx)(B.a,{}),navLink:"/forms/elements/input"},{id:"inputGroup",title:"Input Groups",icon:Object(g.jsx)(B.a,{}),navLink:"/forms/elements/input-group"},{id:"inputMask",title:"Input Mask",icon:Object(g.jsx)(B.a,{}),navLink:"/forms/elements/input-mask"},{id:"textarea",title:"Textarea",icon:Object(g.jsx)(B.a,{}),navLink:"/forms/elements/textarea"},{id:"checkbox",title:"Checkbox",icon:Object(g.jsx)(B.a,{}),navLink:"/forms/elements/checkbox"},{id:"radio",title:"Radio",icon:Object(g.jsx)(B.a,{}),navLink:"/forms/elements/radio"},{id:"switch",title:"Switch",icon:Object(g.jsx)(B.a,{}),navLink:"/forms/elements/switch"},{id:"select",title:"Select",icon:Object(g.jsx)(B.a,{}),navLink:"/forms/elements/select"},{id:"numberInput",title:"Number Input",icon:Object(g.jsx)(B.a,{}),navLink:"/forms/elements/number-input"},{id:"fileUploader",title:"File Uploader",icon:Object(g.jsx)(B.a,{}),navLink:"/forms/elements/file-uploader"},{id:"quillEditor",title:"Editor",icon:Object(g.jsx)(B.a,{}),navLink:"/forms/elements/editor"},{id:"date_&_timePicker",title:"Date & Time Picker",icon:Object(g.jsx)(B.a,{}),navLink:"/forms/elements/pickers"}]},{id:"formLayouts",title:"Form Layout",icon:Object(g.jsx)(re.a,{}),navLink:"/forms/layout/form-layout"},{id:"wizard",title:"Form Wizard",icon:Object(g.jsx)(Ue.a,{}),navLink:"/forms/wizard"},{id:"formValidation",title:"Form Validation",icon:Object(g.jsx)(Ye.a,{size:12}),navLink:"/forms/form-validation"},{id:"formRepeater",title:"Form Repeater",icon:Object(g.jsx)(qe.a,{}),navLink:"/forms/form-repeater"},{id:"tablesReactstrap",title:"Table",icon:Object(g.jsx)(Ke.a,{}),navLink:"/tables/reactstrap"},{id:"dataTable",title:"DataTable",icon:Object(g.jsx)(Qe.a,{}),children:[{id:"dtBasic",title:"Basic",icon:Object(g.jsx)(B.a,{}),navLink:"/datatables/basic"},{id:"dtAdvance",title:"Advanced",icon:Object(g.jsx)(B.a,{}),navLink:"/datatables/advance"}]}]}],Xe=[].concat(Object(i.a)(Be),Object(i.a)(xe),Object(i.a)(Ve),Object(i.a)(Ze),Object(i.a)(Ce),Object(i.a)(Pe),Object(i.a)(Ae)),$e=function(e){return Object(g.jsx)(oe,Object(a.a)(Object(a.a)({menuData:Xe},e),{},{children:Object(g.jsx)(l.b,{})}))},et=(n(658),function(e){var t,n=e.children,i=e.routeMeta,s=Object(r.c)(),l=Object(r.d)((function(e){return e})),o=l.navbar,b=l.layout.layout,j=l.layout.contentWidth,m=l.layout.routerTransition,v="horizontal"===b.layout&&!i||"horizontal"===b.layout&&i&&!i.appLayout,p=v?"div":c.Fragment;return Object(c.useEffect)((function(){return i&&(i.contentWidth&&s(Object(d.b)(i.contentWidth)),i.menuCollapsed&&s(Object(d.f)(i.menuCollapsed)),i.menuHidden&&s(Object(d.g)(i.menuHidden))),function(){i&&(i.contentWidth&&s(Object(d.b)("full")),i.menuCollapsed&&s(Object(d.f)(!i.menuCollapsed)),i.menuHidden&&s(Object(d.g)(!i.menuHidden)))}}),[i]),Object(g.jsxs)("div",{className:u()("app-content content overflow-hidden",(t={},Object(A.a)(t,i?i.className:"",i&&i.className),Object(A.a)(t,"show-overlay",o.query.length),t)),children:[Object(g.jsx)("div",{className:"content-overlay"}),Object(g.jsx)("div",{className:"header-navbar-shadow"}),Object(g.jsx)("div",{className:u()(Object(A.a)({"content-wrapper":i&&!i.appLayout,"content-area-wrapper":i&&i.appLayout,"container-xxl p-0":"boxed"===j},"animate__animated animate__".concat(m),"none"!==m&&m.length)),children:Object(g.jsx)(p,Object(a.a)(Object(a.a)({},v?{className:"content-body"}:{}),{},{children:n}))})]})}),tt=Object(c.memo)(et),nt=function(e){var t=e.children,n=e.route;if(n){var a=Object(O.k)(),i=n.meta&&n.meta.restricted;if(a&&i)return Object(g.jsx)(l.a,{to:Object(O.j)(a.role)})}return Object(g.jsx)(c.Suspense,{fallback:null,children:t})},at=function(e){var t=e.children,n=e.route;Object(c.useContext)(W),JSON.parse(localStorage.getItem("userData"));if(n){var a=!1;if(n.meta&&(a=n.meta.restricted),a)return Object(g.jsx)(l.a,{to:"/"})}return Object(g.jsx)(c.Suspense,{fallback:null,children:t})},it=Object(c.lazy)((function(){return Promise.all([n.e(0),n.e(4),n.e(5),n.e(25)]).then(n.bind(null,894))})),ct=Object(c.lazy)((function(){return Promise.all([n.e(0),n.e(4),n.e(8),n.e(5),n.e(32)]).then(n.bind(null,889))})),st=Object(c.lazy)((function(){return Promise.all([n.e(0),n.e(4),n.e(8),n.e(5),n.e(26)]).then(n.bind(null,888))})),lt=[{path:"/subscribers/all",element:Object(g.jsx)(it,{})},{path:"/subscribers/new",element:Object(g.jsx)(ct,{})},{path:"/subscribers/update",element:Object(g.jsx)(st,{})}],ot={blank:Object(g.jsx)(s.a,{}),vertical:Object(g.jsx)(le,{}),horizontal:Object(g.jsx)($e,{})},rt="/subscribers/all",dt=Object(i.a)(lt),bt=function(e,t){var n=[];return dt&&dt.filter((function(i){var s=!1;if(i.meta&&i.meta.layout&&i.meta.layout===e||(void 0===i.meta||void 0===i.meta.layout)&&t===e){var l=at;if(i.meta&&(s="blank"===i.meta.layout,l=i.meta.publicRoute?nt:at),i.element){var o=Object(O.l)(i.element.props)&&!1===s?tt:c.Fragment;i.element=Object(g.jsx)(o,Object(a.a)(Object(a.a)({},!1===s?function(e){if(Object(O.l)(e.element.props))return e.meta?{routeMeta:e.meta}:{}}(i):{}),{},{children:Object(g.jsx)(l,{route:i,children:i.element})}))}n.push(i)}return n})),n},ut=function(e){var t=e||"vertical",n=[];return["vertical","horizontal","blank"].forEach((function(e){var a=bt(e,t);n.push({path:"/",element:ot[e]||ot[t],children:a})})),n}},643:function(e,t,n){},653:function(e,t,n){},654:function(e,t,n){},655:function(e,t,n){},656:function(e,t,n){},657:function(e,t,n){},895:function(e,t,n){"use strict";n.r(t);var a=n(16),i=n(1),c=n(135),s=n(9),l=n(551),o=n(479),r=n(11),d=Object(i.lazy)((function(){return Promise.all([n.e(7),n.e(30)]).then(n.bind(null,875))})),b=function(e){var t=e.allRoutes;Object(s.f)();return Object(i.useEffect)((function(){}),[]),Object(s.h)([{path:"/",index:!0,element:Object(r.jsx)(s.a,{replace:!0,to:Object(o.j)("admin")})},{path:"*",element:Object(r.jsx)(l.a,{}),children:[{path:"*",element:Object(r.jsx)(d,{})}]}].concat(Object(c.a)(t)))},u=n(635),j=n(536),m=n(503);n(662),t.default=function(){var e=Object(i.useState)([]),t=Object(a.a)(e,2),n=t[0],c=t[1],s=Object(j.a)().layout;return Object(i.useEffect)((function(){c(Object(u.b)(s)),setTimeout((function(){console.clear(),setTimeout((function(){console.clear(),setTimeout((function(){console.clear()}),[2e3])}),[1500])}),[1e3])}),[s]),Object(m.createTheme)("darkTheme",{text:{primary:"#ffffff",secondary:"#ffffffb8"},background:{default:"#2B323A"},context:{background:"#3E454D",text:"#FFFFFF"},divider:{default:"#ffffff28"},action:{button:"rgba(0,0,0,.54)",hover:"rgba(0,0,0,.08)",disabled:"rgba(0,0,0,.12)"}},"dark"),Object(r.jsx)(i.Suspense,{fallback:null,children:Object(r.jsx)(b,{allRoutes:n})})}}}]);
+(this["webpackJsonpvuexy-react-admin-dashboard"] =
+  this["webpackJsonpvuexy-react-admin-dashboard"] || []).push([
+  [13],
+  {
+    479: function (e, t, n) {
+      "use strict";
+      n.d(t, "l", function () {
+        return c;
+      }),
+        n.d(t, "k", function () {
+          return s;
+        }),
+        n.d(t, "j", function () {
+          return l;
+        }),
+        n.d(t, "m", function () {
+          return o;
+        }),
+        n.d(t, "i", function () {
+          return r;
+        }),
+        n.d(t, "h", function () {
+          return d;
+        }),
+        n.d(t, "g", function () {
+          return b;
+        }),
+        n.d(t, "c", function () {
+          return u;
+        }),
+        n.d(t, "b", function () {
+          return j;
+        }),
+        n.d(t, "e", function () {
+          return m;
+        }),
+        n.d(t, "d", function () {
+          return v;
+        }),
+        n.d(t, "f", function () {
+          return p;
+        }),
+        n.d(t, "a", function () {
+          return O;
+        });
+      var a = n(21),
+        i = n(635),
+        c = function (e) {
+          return 0 === Object.keys(e).length;
+        },
+        s = function () {
+          return JSON.parse(localStorage.getItem("userData"));
+        },
+        l = function (e) {
+          if ("admin" === e) return i.a;
+        },
+        o = function (e) {
+          return Object(a.a)(
+            Object(a.a)({}, e),
+            {},
+            {
+              colors: Object(a.a)(
+                Object(a.a)({}, e.colors),
+                {},
+                {
+                  primary25: "07274E1a",
+                  primary: "#07274E",
+                  neutral10: "#07274E",
+                  neutral20: "#ededed",
+                  neutral30: "#ededed",
+                }
+              ),
+            }
+          );
+        },
+        r = [
+          { label: "OPc", value: 0 },
+          { label: "OP", value: 1 },
+        ],
+        d = [
+          { label: "bps", value: 0 },
+          { label: "Kbps", value: 1 },
+          { label: "Mbps", value: 2 },
+          { label: "Gbps", value: 3 },
+          { label: "Tbps", value: 4 },
+        ],
+        b = [
+          { label: "SERVICE_GRANTED", value: 0 },
+          { label: "OPERATOR_DETERMINED_BARRING", value: 1 },
+        ],
+        u = [
+          { label: "(0) All Packet Oriented Services Barred", value: 0 },
+          { label: "(1) Roamer Access HPLMN-AP Barred", value: 1 },
+          { label: "(2) Roamer Access to VPLMN-AP Barred", value: 2 },
+          { label: "(3) Barring of all outgoing calls", value: 3 },
+          {
+            label: "(4) Barring of all outgoing international calls",
+            value: 4,
+          },
+          {
+            label:
+              "(5) Barring of all outgoing international calls except those directed to the home",
+            value: 5,
+          },
+          { label: "(6) Barring of all outgoing inter-zonal calls", value: 6 },
+          {
+            label:
+              "(7) Barring of all outgoing inter-zonal calls except those directed to the home PLMN country",
+            value: 7,
+          },
+          {
+            label:
+              "(8) Barring of all outgoing international calls except those directed to the home PLMN country and Barring of all outgoing inter-zonal calls",
+            value: 8,
+          },
+        ],
+        j = [
+          { label: "IPv4", value: 1 },
+          { label: "IPv6", value: 2 },
+          { label: "IPv4v6", value: 3 },
+        ],
+        m = [
+          { label: "1", value: 1 },
+          { label: "2", value: 2 },
+          { label: "3", value: 3 },
+          { label: "4", value: 4 },
+          { label: "65", value: 65 },
+          { label: "66", value: 66 },
+          { label: "67", value: 67 },
+          { label: "71", value: 71 },
+          { label: "72", value: 72 },
+          { label: "73", value: 73 },
+          { label: "74", value: 74 },
+          { label: "75", value: 75 },
+          { label: "76", value: 76 },
+          { label: "5", value: 5 },
+          { label: "6", value: 6 },
+          { label: "7", value: 7 },
+          { label: "8", value: 8 },
+          { label: "9", value: 9 },
+          { label: "69", value: 69 },
+          { label: "70", value: 70 },
+          { label: "79", value: 79 },
+          { label: "80", value: 80 },
+          { label: "82", value: 82 },
+          { label: "83", value: 83 },
+          { label: "84", value: 84 },
+          { label: "85", value: 85 },
+          { label: "86", value: 86 },
+        ],
+        v = [
+          { label: "1", value: 1 },
+          { label: "2", value: 2 },
+          { label: "3", value: 3 },
+          { label: "4", value: 4 },
+          { label: "5", value: 5 },
+          { label: "6", value: 6 },
+          { label: "7", value: 7 },
+          { label: "8", value: 8 },
+          { label: "9", value: 9 },
+          { label: "10", value: 10 },
+          { label: "11", value: 11 },
+          { label: "12", value: 12 },
+          { label: "13", value: 13 },
+          { label: "14", value: 14 },
+          { label: "15", value: 15 },
+        ],
+        p = [
+          { label: "Disabled", value: 1 },
+          { label: "Enabled", value: 2 },
+        ],
+        O = [
+          { label: "Downlink", value: 1 },
+          { label: "Uplink", value: 2 },
+        ];
+    },
+    480: function (e, t, n) {
+      "use strict";
+      n.d(t, "a", function () {
+        return l;
+      });
+      var a = n(135),
+        i = n(1),
+        c = n(139),
+        s = n(136),
+        l = function () {
+          var e = Object(s.c)(),
+            t = Object(s.d)(function (e) {
+              return e.layout;
+            });
+          return (
+            Object(i.useEffect)(
+              function () {
+                var e,
+                  n = window.document.body;
+                (e = n.classList).remove.apply(e, Object(a.a)(n.classList)),
+                  "light" !== t.skin &&
+                    n.classList.add(
+                      {
+                        dark: "dark-layout",
+                        bordered: "bordered-layout",
+                        "semi-dark": "semi-dark-layout",
+                      }[t.skin]
+                    );
+              },
+              [t.skin]
+            ),
+            {
+              skin: t.skin,
+              setSkin: function (t) {
+                e(Object(c.l)(t));
+              },
+            }
+          );
+        };
+    },
+    536: function (e, t, n) {
+      "use strict";
+      n.d(t, "a", function () {
+        return c;
+      });
+      var a = n(136),
+        i = n(139),
+        c = function () {
+          var e = Object(a.c)(),
+            t = Object(a.d)(function (e) {
+              return e.layout;
+            }),
+            n = function (t) {
+              e(Object(i.e)(t));
+            };
+          if (window) {
+            var c = 1200;
+            window.innerWidth < c && n("vertical"),
+              window.addEventListener("resize", function () {
+                window.innerWidth <= c &&
+                  "vertical" !== t.lastLayout &&
+                  "vertical" !== t.layout &&
+                  n("vertical"),
+                  window.innerWidth >= c &&
+                    t.lastLayout !== t.layout &&
+                    n(t.lastLayout);
+              });
+          }
+          return {
+            layout: t.layout,
+            setLayout: n,
+            lastLayout: t.lastLayout,
+            setLastLayout: function (t) {
+              e(Object(i.d)(t));
+            },
+          };
+        };
+    },
+    551: function (e, t, n) {
+      "use strict";
+      var a = n(16),
+        i = n(9),
+        c = n(1),
+        s = n(480),
+        l = n(2),
+        o = n.n(l),
+        r = n(11);
+      t.a = function () {
+        var e = Object(c.useState)(!1),
+          t = Object(a.a)(e, 2),
+          n = t[0],
+          l = t[1],
+          d = Object(s.a)().skin;
+        return (
+          Object(c.useEffect)(function () {
+            return (
+              l(!0),
+              function () {
+                return l(!1);
+              }
+            );
+          }, []),
+          n
+            ? Object(r.jsx)("div", {
+                className: o()("blank-page", { "dark-layout": "dark" === d }),
+                children: Object(r.jsx)("div", {
+                  className: "app-content content",
+                  children: Object(r.jsx)("div", {
+                    className: "content-wrapper",
+                    children: Object(r.jsx)("div", {
+                      className: "content-body",
+                      children: Object(r.jsx)(i.b, {}),
+                    }),
+                  }),
+                }),
+              })
+            : null
+        );
+      };
+    },
+    635: function (e, t, n) {
+      "use strict";
+      n.d(t, "a", function () {
+        return rt;
+      }),
+        n.d(t, "b", function () {
+          return ut;
+        });
+      var a = n(21),
+        i = n(135),
+        c = n(1),
+        s = n(551),
+        l = n(9),
+        o = n(16),
+        r = n(136),
+        d = n(139),
+        b = n(2),
+        u = n.n(b),
+        j = n(564),
+        m = n(96),
+        v = n(22),
+        p = n(485),
+        O = n(479),
+        x = n(552),
+        h = n(553),
+        f = n(533),
+        k = n.n(f),
+        g = (n(643), n(11)),
+        L = function (e) {
+          var t = e.skin,
+            n = e.isRtl,
+            a = e.layout,
+            i = e.setSkin,
+            s = e.setIsRtl,
+            l = e.isHidden,
+            r = e.setLayout,
+            d = e.navbarType,
+            b = e.footerType,
+            j = e.transition,
+            v = e.navbarColor,
+            f = e.setIsHidden,
+            L = e.contentWidth,
+            y = e.menuCollapsed,
+            w = e.setLastLayout,
+            N = e.setTransition,
+            C = e.setNavbarType,
+            T = e.setFooterType,
+            S = e.setNavbarColor,
+            z = e.setContentWidth,
+            A = e.setMenuCollapsed,
+            E = Object(c.useState)(!1),
+            P = Object(o.a)(E, 2),
+            M = P[0],
+            I = P[1],
+            B = function (e) {
+              e.preventDefault(), I(!M);
+            },
+            R = [
+              { value: "fadeIn", label: "Fade" },
+              { value: "fadeInLeft", label: "Fade In Left" },
+              { value: "zoomIn", label: "Zoom In" },
+              { value: "none", label: "None" },
+            ],
+            D = R.find(function (e) {
+              return e.value === j;
+            });
+          return Object(g.jsxs)("div", {
+            className: u()("customizer d-none d-md-block", { open: M }),
+            children: [
+              Object(g.jsx)("a", {
+                href: "/",
+                className:
+                  "customizer-toggle d-flex align-items-center justify-content-center",
+                onClick: B,
+                children: Object(g.jsx)(x.a, {
+                  size: 14,
+                  className: "spinner",
+                }),
+              }),
+              Object(g.jsxs)(k.a, {
+                className: "customizer-content",
+                options: { wheelPropagation: !1 },
+                children: [
+                  Object(g.jsxs)("div", {
+                    className:
+                      "customizer-header px-2 pt-1 pb-0 position-relative",
+                    children: [
+                      Object(g.jsx)("h4", {
+                        className: "mb-0",
+                        children: "Theme Customizer",
+                      }),
+                      Object(g.jsx)("p", {
+                        className: "m-0",
+                        children: "Customize & Preview in Real Time",
+                      }),
+                      Object(g.jsx)("a", {
+                        href: "/",
+                        className: "customizer-close",
+                        onClick: B,
+                        children: Object(g.jsx)(h.a, {}),
+                      }),
+                    ],
+                  }),
+                  Object(g.jsx)("hr", {}),
+                  Object(g.jsxs)("div", {
+                    className: "px-2",
+                    children: [
+                      Object(g.jsxs)("div", {
+                        className: "mb-2",
+                        children: [
+                          Object(g.jsx)("p", {
+                            className: "fw-bold",
+                            children: "Skin",
+                          }),
+                          Object(g.jsx)("div", {
+                            className: "d-flex",
+                            children: (function () {
+                              var e = [
+                                {
+                                  name: "light",
+                                  label: "Light",
+                                  checked: "light" === t,
+                                },
+                                {
+                                  name: "bordered",
+                                  label: "Bordered",
+                                  checked: "bordered" === t,
+                                },
+                                {
+                                  name: "dark",
+                                  label: "Dark",
+                                  checked: "dark" === t,
+                                },
+                                {
+                                  name: "semi-dark",
+                                  label: "Semi Dark",
+                                  checked: "semi-dark" === t,
+                                },
+                              ];
+                              return e.map(function (t, n) {
+                                var c = n !== e.length - 1;
+                                return "horizontal" === a &&
+                                  "semi-dark" === t.name
+                                  ? null
+                                  : Object(g.jsxs)(
+                                      "div",
+                                      {
+                                        className: u()("form-check", {
+                                          "mb-2 me-1": c,
+                                        }),
+                                        children: [
+                                          Object(g.jsx)(m.u, {
+                                            type: "radio",
+                                            id: t.name,
+                                            checked: t.checked,
+                                            onChange: function () {
+                                              return i(t.name);
+                                            },
+                                          }),
+                                          Object(g.jsx)(m.v, {
+                                            className: "form-check-label",
+                                            for: t.name,
+                                            children: t.label,
+                                          }),
+                                        ],
+                                      },
+                                      n
+                                    );
+                              });
+                            })(),
+                          }),
+                        ],
+                      }),
+                      Object(g.jsxs)("div", {
+                        className: "mb-2",
+                        children: [
+                          Object(g.jsx)("p", {
+                            className: "fw-bold",
+                            children: "Content Width",
+                          }),
+                          Object(g.jsxs)("div", {
+                            className: "d-flex",
+                            children: [
+                              Object(g.jsxs)("div", {
+                                className: "form-check me-1",
+                                children: [
+                                  Object(g.jsx)(m.u, {
+                                    type: "radio",
+                                    id: "full-width",
+                                    checked: "full" === L,
+                                    onChange: function () {
+                                      return z("full");
+                                    },
+                                  }),
+                                  Object(g.jsx)(m.v, {
+                                    className: "form-check-label",
+                                    for: "full-width",
+                                    children: "Full Width",
+                                  }),
+                                ],
+                              }),
+                              Object(g.jsxs)("div", {
+                                className: "form-check",
+                                children: [
+                                  Object(g.jsx)(m.u, {
+                                    id: "boxed",
+                                    type: "radio",
+                                    checked: "boxed" === L,
+                                    onChange: function () {
+                                      return z("boxed");
+                                    },
+                                  }),
+                                  Object(g.jsx)(m.v, {
+                                    className: "form-check-label",
+                                    for: "boxed",
+                                    children: "Boxed",
+                                  }),
+                                ],
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                      Object(g.jsx)("div", {
+                        className: "form-switch mb-2 ps-0",
+                        children: Object(g.jsxs)("div", {
+                          className: "d-flex",
+                          children: [
+                            Object(g.jsx)("p", {
+                              className: "fw-bold me-auto mb-0",
+                              children: "RTL",
+                            }),
+                            Object(g.jsx)(m.u, {
+                              type: "switch",
+                              id: "rtl",
+                              name: "RTL",
+                              checked: n,
+                              onChange: function () {
+                                return s(!n);
+                              },
+                            }),
+                          ],
+                        }),
+                      }),
+                      Object(g.jsx)("div", {
+                        className: "mb-2",
+                        children: Object(g.jsxs)("div", {
+                          className:
+                            "d-flex justify-content-between align-items-center",
+                          children: [
+                            Object(g.jsx)("p", {
+                              className: "fw-bold mb-0",
+                              children: "Router Transition",
+                            }),
+                            Object(g.jsx)(p.a, {
+                              theme: O.m,
+                              className: "react-select",
+                              classNamePrefix: "select",
+                              defaultValue: R[0],
+                              value: D,
+                              options: R,
+                              isClearable: !1,
+                              onChange: function (e) {
+                                var t = e.value;
+                                return N(t);
+                              },
+                            }),
+                          ],
+                        }),
+                      }),
+                    ],
+                  }),
+                  Object(g.jsx)("hr", {}),
+                  Object(g.jsxs)("div", {
+                    className: "px-2",
+                    children: [
+                      Object(g.jsx)("p", {
+                        className: "fw-bold",
+                        children: "Menu Layout",
+                      }),
+                      Object(g.jsx)("div", {
+                        className: "mb-2",
+                        children: Object(g.jsxs)("div", {
+                          className: "d-flex align-items-center",
+                          children: [
+                            Object(g.jsxs)("div", {
+                              className: "form-check me-1",
+                              children: [
+                                Object(g.jsx)(m.u, {
+                                  type: "radio",
+                                  id: "vertical-layout",
+                                  checked: "vertical" === a,
+                                  onChange: function () {
+                                    r("vertical"), w("vertical");
+                                  },
+                                }),
+                                Object(g.jsx)(m.v, {
+                                  className: "form-check-label",
+                                  for: "vertical-layout",
+                                  children: "Vertical",
+                                }),
+                              ],
+                            }),
+                            Object(g.jsxs)("div", {
+                              className: "form-check",
+                              children: [
+                                Object(g.jsx)(m.u, {
+                                  type: "radio",
+                                  id: "horizontal-layout",
+                                  checked: "horizontal" === a,
+                                  onChange: function () {
+                                    r("horizontal"), w("horizontal");
+                                  },
+                                }),
+                                Object(g.jsx)(m.v, {
+                                  className: "form-check-label",
+                                  for: "horizontal-layout",
+                                  children: "Horizontal",
+                                }),
+                              ],
+                            }),
+                          ],
+                        }),
+                      }),
+                      "horizontal" !== a
+                        ? Object(g.jsx)("div", {
+                            className: "form-switch mb-2 ps-0",
+                            children: Object(g.jsxs)("div", {
+                              className: "d-flex align-items-center",
+                              children: [
+                                Object(g.jsx)("p", {
+                                  className: "fw-bold me-auto mb-0",
+                                  children: "Menu Collapsed",
+                                }),
+                                Object(g.jsx)(m.u, {
+                                  type: "switch",
+                                  id: "menu-collapsed",
+                                  name: "menu-collapsed",
+                                  checked: y,
+                                  onChange: function () {
+                                    return A(!y);
+                                  },
+                                }),
+                              ],
+                            }),
+                          })
+                        : null,
+                      Object(g.jsx)("div", {
+                        className: "form-switch mb-2 ps-0",
+                        children: Object(g.jsxs)("div", {
+                          className: "d-flex align-items-center",
+                          children: [
+                            Object(g.jsx)("p", {
+                              className: "fw-bold me-auto mb-0",
+                              children: "Menu Hidden",
+                            }),
+                            Object(g.jsx)(m.u, {
+                              type: "switch",
+                              id: "menu-hidden",
+                              name: "menu-hidden",
+                              checked: l,
+                              onChange: function () {
+                                return f(!l);
+                              },
+                            }),
+                          ],
+                        }),
+                      }),
+                    ],
+                  }),
+                  Object(g.jsx)("hr", {}),
+                  Object(g.jsxs)("div", {
+                    className: "px-2",
+                    children: [
+                      "horizontal" !== a
+                        ? Object(g.jsxs)("div", {
+                            className: "mb-2",
+                            children: [
+                              Object(g.jsx)("p", {
+                                className: "fw-bold",
+                                children: "Navbar Color",
+                              }),
+                              Object(g.jsx)("ul", {
+                                className: "list-inline unstyled-list",
+                                children: [
+                                  "white",
+                                  "primary",
+                                  "secondary",
+                                  "success",
+                                  "danger",
+                                  "info",
+                                  "warning",
+                                  "dark",
+                                ].map(function (e) {
+                                  return Object(g.jsx)(
+                                    "li",
+                                    {
+                                      className: u()(
+                                        "color-box bg-".concat(e),
+                                        {
+                                          selected: v === e,
+                                          border: "white" === e,
+                                        }
+                                      ),
+                                      onClick: function () {
+                                        return S(e);
+                                      },
+                                    },
+                                    e
+                                  );
+                                }),
+                              }),
+                            ],
+                          })
+                        : null,
+                      Object(g.jsxs)("div", {
+                        className: "mb-2",
+                        children: [
+                          Object(g.jsxs)("p", {
+                            className: "fw-bold",
+                            children: [
+                              "horizontal" === a ? "Menu" : "Navbar",
+                              " Type",
+                            ],
+                          }),
+                          Object(g.jsx)("div", {
+                            className: "d-flex",
+                            children: (function () {
+                              var e = [
+                                {
+                                  name: "floating",
+                                  label: "Floating",
+                                  checked: "floating" === d,
+                                },
+                                {
+                                  name: "sticky",
+                                  label: "Sticky",
+                                  checked: "sticky" === d,
+                                },
+                                {
+                                  name: "static",
+                                  label: "Static",
+                                  checked: "static" === d,
+                                },
+                                {
+                                  name: "hidden",
+                                  label: "Hidden",
+                                  checked: "hidden" === d,
+                                },
+                              ];
+                              return e.map(function (t, n) {
+                                var i = n !== e.length - 1;
+                                return "horizontal" === a && "hidden" === t.name
+                                  ? null
+                                  : Object(g.jsxs)(
+                                      "div",
+                                      {
+                                        className: u()("form-check", {
+                                          "mb-2 me-1": i,
+                                        }),
+                                        children: [
+                                          Object(g.jsx)(m.u, {
+                                            type: "radio",
+                                            id: t.name,
+                                            checked: t.checked,
+                                            onChange: function () {
+                                              return C(t.name);
+                                            },
+                                          }),
+                                          Object(g.jsx)(m.v, {
+                                            className: "form-check-label",
+                                            for: t.name,
+                                            children: t.label,
+                                          }),
+                                        ],
+                                      },
+                                      n
+                                    );
+                              });
+                            })(),
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  Object(g.jsx)("hr", {}),
+                  Object(g.jsx)("div", {
+                    className: "px-2",
+                    children: Object(g.jsxs)("div", {
+                      className: "mb-2",
+                      children: [
+                        Object(g.jsx)("p", {
+                          className: "fw-bold",
+                          children: "Footer Type",
+                        }),
+                        Object(g.jsx)("div", {
+                          className: "d-flex",
+                          children: (function () {
+                            var e = [
+                              {
+                                name: "sticky",
+                                label: "Sticky",
+                                checked: "sticky" === b,
+                              },
+                              {
+                                name: "static",
+                                label: "Static",
+                                checked: "static" === b,
+                              },
+                              {
+                                name: "hidden",
+                                label: "Hidden",
+                                checked: "hidden" === b,
+                              },
+                            ];
+                            return e.map(function (t, n) {
+                              var a = n !== e.length - 1;
+                              return Object(g.jsxs)(
+                                "div",
+                                {
+                                  className: u()("form-check", {
+                                    "mb-2 me-1": a,
+                                  }),
+                                  children: [
+                                    Object(g.jsx)(m.u, {
+                                      type: "radio",
+                                      checked: t.checked,
+                                      id: "footer-".concat(t.name),
+                                      onChange: function () {
+                                        return T(t.name);
+                                      },
+                                    }),
+                                    Object(g.jsx)(m.v, {
+                                      className: "form-check-label",
+                                      for: "footer-".concat(t.name),
+                                      children: t.label,
+                                    }),
+                                  ],
+                                },
+                                n
+                              );
+                            });
+                          })(),
+                        }),
+                      ],
+                    }),
+                  }),
+                ],
+              }),
+            ],
+          });
+        },
+        y = n(138),
+        w = ["showOffset", "scrollBehaviour", "children"],
+        N = function (e) {
+          var t = e.showOffset,
+            n = e.scrollBehaviour,
+            i = e.children,
+            s = Object(y.a)(e, w),
+            l = Object(c.useState)(!1),
+            r = Object(o.a)(l, 2),
+            d = r[0],
+            b = r[1];
+          Object(c.useEffect)(function () {
+            window &&
+              window.addEventListener("scroll", function () {
+                window.pageYOffset >= t ? b(!0) : b(!1);
+              });
+          }, []);
+          return (
+            d &&
+            Object(g.jsx)(
+              "div",
+              Object(a.a)(
+                Object(a.a)(
+                  {
+                    className: "scroll-to-top",
+                    onClick: function () {
+                      window.scroll({ top: 0, behavior: n });
+                    },
+                  },
+                  s
+                ),
+                {},
+                { children: i }
+              )
+            )
+          );
+        },
+        C = N;
+      N.defaultProps = { scrollBehaviour: "smooth" };
+      var T = function () {
+          return Object(g.jsx)("p", {
+            className: "clearfix mb-0",
+            children: Object(g.jsxs)("span", {
+              className: "float-md-start d-block d-md-inline-block mt-25",
+              children: [
+                "COPYRIGHT \xa9 ",
+                new Date().getFullYear(),
+                " ",
+                Object(g.jsx)("a", {
+                  href: "#",
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                  children: "BBDH",
+                }),
+                Object(g.jsx)("span", {
+                  className: "d-none d-sm-inline-block",
+                  children: ", All rights Reserved",
+                }),
+              ],
+            }),
+          });
+        },
+        S = (n(559), n(560), n(134)),
+        z = (n(484), n(570), n(592)),
+        A = n(31),
+        E = (n(20), n(561), n(653), n(654), n(147)),
+        P = function (e) {
+          var t = e.setMenuVisibility,
+            n = Object(c.useState)(""),
+            a = Object(o.a)(n, 2),
+            i = (a[0], a[1], Object(c.useState)(!1)),
+            s = Object(o.a)(i, 2),
+            l = (s[0], s[1], Object(r.c)());
+          Object(r.d)(function (e) {
+            return e.navbar;
+          });
+          Object(c.useEffect)(function () {
+            l(Object(E.b)());
+          }, []);
+          return Object(g.jsx)(c.Fragment, {
+            children: Object(g.jsx)("ul", {
+              className: "navbar-nav d-xl-none",
+              children: Object(g.jsx)(m.A, {
+                className: "mobile-menu me-auto",
+                children: Object(g.jsx)(m.B, {
+                  className: "nav-menu-main menu-toggle hidden-xs is-active",
+                  onClick: function () {
+                    return t(!0);
+                  },
+                  children: Object(g.jsx)(z.a, { className: "ficon" }),
+                }),
+              }),
+            }),
+          });
+        },
+        M = function (e) {
+          e.skin, e.setSkin;
+          var t = e.setMenuVisibility;
+          return Object(g.jsx)(c.Fragment, {
+            children: Object(g.jsx)("div", {
+              className: "bookmark-wrapper d-flex align-items-center",
+              children: Object(g.jsx)(P, { setMenuVisibility: t }),
+            }),
+          });
+        },
+        I = n(575),
+        B = n(571),
+        R = n(480),
+        D = function (e) {
+          var t = e.menuCollapsed,
+            n = e.setMenuCollapsed,
+            a = e.setMenuVisibility,
+            i = e.setGroupOpen,
+            s = e.menuHover,
+            l = Object(R.a)().skin,
+            o = Object(O.k)();
+          Object(c.useEffect)(
+            function () {
+              !s && t && i([]);
+            },
+            [s, t]
+          );
+          var r = function () {
+            return t
+              ? Object(g.jsx)(B.a, {
+                  size: 20,
+                  "data-tour": "toggle-icon",
+                  className: "".concat(
+                    "dark" == l ? "text-white" : "text-primary",
+                    " toggle-icon d-none d-xl-block"
+                  ),
+                  onClick: function () {
+                    return n(!1);
+                  },
+                })
+              : Object(g.jsx)(I.a, {
+                  size: 20,
+                  "data-tour": "toggle-icon",
+                  className: "".concat(
+                    "dark" == l ? "text-white" : "text-primary",
+                    " toggle-icon d-none d-xl-block"
+                  ),
+                  onClick: function () {
+                    return n(!0);
+                  },
+                });
+          };
+          return Object(g.jsx)("div", {
+            className: "navbar-header",
+            children: Object(g.jsxs)("ul", {
+              className: "nav navbar-nav flex-row",
+              children: [
+                Object(g.jsx)("li", {
+                  className: "nav-item me-auto",
+                  children: Object(g.jsx)(S.c, {
+                    to: o ? Object(O.j)(o.role) : "/",
+                    className: "navbar-brand",
+                    children: Object(g.jsx)("h2", {
+                      className: "brand-text mb-0",
+                      children: "Dashboard",
+                    }),
+                  }),
+                }),
+                Object(g.jsx)("li", {
+                  className: "nav-item nav-toggle",
+                  children: Object(g.jsxs)("div", {
+                    className: "nav-link modern-nav-toggle cursor-pointer",
+                    children: [
+                      Object(g.jsx)(r, {}),
+                      Object(g.jsx)(h.a, {
+                        onClick: function () {
+                          return a(!1);
+                        },
+                        className: "toggle-icon icon-x d-block d-xl-none",
+                        size: 20,
+                      }),
+                    ],
+                  }),
+                }),
+              ],
+            }),
+          });
+        },
+        F = n(896),
+        G = function (e) {
+          var t = e.item,
+            n = e.activeItem,
+            i = t.externalLink ? "a" : S.c,
+            c = Object(F.a)().t;
+          return Object(g.jsx)("li", {
+            className: u()({
+              "nav-item": !t.children,
+              disabled: t.disabled,
+              active: t.navLink === n,
+            }),
+            children: Object(g.jsxs)(
+              i,
+              Object(a.a)(
+                Object(a.a)(
+                  {
+                    className: "d-flex align-items-center",
+                    target: t.newTab ? "_blank" : void 0,
+                  },
+                  !0 === t.externalLink
+                    ? { href: t.navLink || "/" }
+                    : {
+                        to: t.navLink || "/",
+                        className: function (e) {
+                          if (e.isActive && !t.disabled)
+                            return "d-flex align-items-center active";
+                        },
+                      }
+                ),
+                {},
+                {
+                  onClick: function (e) {
+                    (0 !== t.navLink.length &&
+                      "#" !== t.navLink &&
+                      !0 !== t.disabled) ||
+                      e.preventDefault();
+                  },
+                  children: [
+                    t.icon,
+                    Object(g.jsx)("span", {
+                      className: "menu-item text-truncate",
+                      children: c(t.title),
+                    }),
+                    t.badge && t.badgeText
+                      ? Object(g.jsx)(m.f, {
+                          className: "ms-auto me-1",
+                          color: t.badge,
+                          pill: !0,
+                          children: t.badgeText,
+                        })
+                      : null,
+                  ],
+                }
+              )
+            ),
+          });
+        },
+        H = n(145),
+        W = Object(c.createContext)(),
+        V = function e(t, n) {
+          var a = t.children;
+          if (!a) return !1;
+          var i,
+            c = Object(H.a)(a);
+          try {
+            for (c.s(); !(i = c.n()).done; ) {
+              var s = i.value;
+              if (s.children && e(s, n)) return !0;
+              if (
+                s &&
+                s.navLink &&
+                n &&
+                (s.navLink === n || n.includes(s.navLink))
+              )
+                return !0;
+            }
+          } catch (l) {
+            c.e(l);
+          } finally {
+            c.f();
+          }
+          return !1;
+        },
+        _ = function e(t, n, a) {
+          t.forEach(function (t) {
+            if (!a.includes(t.id)) {
+              var i = n.indexOf(t.id);
+              i > -1 && n.splice(i, 1), t.children && e(t.children, n, a);
+            }
+          });
+        },
+        J = [
+          "item",
+          "groupOpen",
+          "menuHover",
+          "activeItem",
+          "parentItem",
+          "groupActive",
+          "setGroupOpen",
+          "menuCollapsed",
+          "setGroupActive",
+          "currentActiveGroup",
+          "setCurrentActiveGroup",
+        ],
+        U = function (e) {
+          var t = e.item,
+            n = e.groupOpen,
+            s = e.menuHover,
+            o = e.activeItem,
+            r = e.parentItem,
+            d = e.groupActive,
+            b = e.setGroupOpen,
+            j = e.menuCollapsed,
+            v = e.setGroupActive,
+            p = e.currentActiveGroup,
+            O = e.setCurrentActiveGroup,
+            x = Object(y.a)(e, J),
+            h = Object(F.a)().t,
+            f = Object(l.e)(),
+            k = Object(l.e)().pathname,
+            L = function (e, t) {
+              !(function (e, t) {
+                var a = n,
+                  c = d;
+                a.includes(e.id)
+                  ? (a.splice(a.indexOf(e.id), 1),
+                    e.children && _(e.children, a, d))
+                  : c.includes(e.id) || p.includes(e.id)
+                  ? (!c.includes(e.id) && p.includes(e.id)
+                      ? c.push(e.id)
+                      : c.splice(c.indexOf(e.id), 1),
+                    v(Object(i.a)(c)))
+                  : t
+                  ? (t.children && _(t.children, a, d),
+                    a.includes(e.id) || a.push(e.id))
+                  : (a = []).includes(e.id) || a.push(e.id),
+                  b(Object(i.a)(a));
+              })(t, r),
+                e.preventDefault();
+            };
+          Object(c.useEffect)(
+            function () {
+              if (V(t, k)) d.includes(t.id) || d.push(t.id);
+              else {
+                var e = d.indexOf(t.id);
+                e > -1 && d.splice(e, 1);
+              }
+              v(Object(i.a)(d)), O(Object(i.a)(d)), b([]);
+            },
+            [f]
+          );
+          var w;
+          return Object(g.jsxs)("li", {
+            className: u()("nav-item has-sub", {
+              open:
+                ((w = t.id),
+                (j && s) || !1 === j
+                  ? !(!d.includes(w) && !n.includes(w)) || void 0
+                  : (!d.includes(w) || !j || !1 !== s) && null),
+              "menu-collapsed-open": d.includes(t.id),
+              "sidebar-group-active":
+                d.includes(t.id) || n.includes(t.id) || p.includes(t.id),
+            }),
+            children: [
+              Object(g.jsxs)(S.b, {
+                className: "d-flex align-items-center",
+                to: "/",
+                onClick: function (e) {
+                  return L(e, t);
+                },
+                children: [
+                  t.icon,
+                  Object(g.jsx)("span", {
+                    className: "menu-title text-truncate",
+                    children: h(t.title),
+                  }),
+                  t.badge && t.badgeText
+                    ? Object(g.jsx)(m.f, {
+                        className: "ms-auto me-1",
+                        color: t.badge,
+                        pill: !0,
+                        children: t.badgeText,
+                      })
+                    : null,
+                ],
+              }),
+              Object(g.jsx)("ul", {
+                className: "menu-content",
+                children: Object(g.jsx)(m.p, {
+                  isOpen: (d && d.includes(t.id)) || (n && n.includes(t.id)),
+                  children: Object(g.jsx)(
+                    K,
+                    Object(a.a)(
+                      Object(a.a)({}, x),
+                      {},
+                      {
+                        items: t.children,
+                        groupActive: d,
+                        setGroupActive: v,
+                        currentActiveGroup: p,
+                        setCurrentActiveGroup: O,
+                        groupOpen: n,
+                        setGroupOpen: b,
+                        parentItem: t,
+                        menuCollapsed: j,
+                        menuHover: s,
+                        activeItem: o,
+                      }
+                    )
+                  ),
+                }),
+              }),
+            ],
+          });
+        },
+        Y = n(594),
+        q = function (e) {
+          var t = e.item;
+          return Object(g.jsxs)("li", {
+            className: "navigation-header",
+            children: [
+              Object(g.jsx)("span", { children: t.header }),
+              Object(g.jsx)(Y.a, { className: "feather-more-horizontal" }),
+            ],
+          });
+        },
+        K = function (e) {
+          var t = {
+            VerticalNavMenuLink: G,
+            VerticalNavMenuGroup: U,
+            VerticalNavMenuSectionHeader: q,
+          };
+          return e.items.map(function (n, i) {
+            var c =
+              t[
+                (function (e) {
+                  return e.header
+                    ? "VerticalNavMenuSectionHeader"
+                    : e.children
+                    ? "VerticalNavMenuGroup"
+                    : "VerticalNavMenuLink";
+                })(n)
+              ];
+            return n.children
+              ? Object(g.jsx)(c, Object(a.a)({ item: n, index: i }, e), n.id)
+              : Object(g.jsx)(c, Object(a.a)({ item: n }, e), n.id || n.header);
+          });
+        },
+        Q = function (e) {
+          var t = e.menuCollapsed,
+            n = e.menu,
+            i = e.skin,
+            s = e.menuData,
+            l = Object(c.useState)([]),
+            r = Object(o.a)(l, 2),
+            d = r[0],
+            b = r[1],
+            j = Object(c.useState)([]),
+            m = Object(o.a)(j, 2),
+            v = m[0],
+            p = m[1],
+            O = Object(c.useState)([]),
+            x = Object(o.a)(O, 2),
+            h = x[0],
+            f = x[1],
+            L = Object(c.useState)(null),
+            y = Object(o.a)(L, 2),
+            w = y[0],
+            N = y[1],
+            C = Object(c.useState)(!1),
+            T = Object(o.a)(C, 2),
+            S = T[0],
+            z = T[1],
+            A = Object(c.useRef)(null);
+          return Object(g.jsx)(c.Fragment, {
+            children: Object(g.jsx)("div", {
+              className: u()(
+                "main-menu menu-fixed menu-accordion menu-shadow",
+                {
+                  expanded: S || !1 === t,
+                  "menu-light": "semi-dark" !== i && "dark" !== i,
+                  "menu-dark": "semi-dark" === i || "dark" === i,
+                }
+              ),
+              onMouseEnter: function () {
+                z(!0);
+              },
+              onMouseLeave: function () {
+                return z(!1);
+              },
+              children: n
+                ? n(Object(a.a)({}, e))
+                : Object(g.jsxs)(c.Fragment, {
+                    children: [
+                      Object(g.jsx)(
+                        D,
+                        Object(a.a)({ setGroupOpen: b, menuHover: S }, e)
+                      ),
+                      Object(g.jsx)("div", {
+                        className: "shadow-bottom",
+                        ref: A,
+                      }),
+                      Object(g.jsx)(k.a, {
+                        className: "main-menu-content",
+                        options: { wheelPropagation: !1 },
+                        onScrollY: function (e) {
+                          return (function (e) {
+                            A && e.scrollTop > 0
+                              ? A.current.classList.contains("d-block") ||
+                                A.current.classList.add("d-block")
+                              : A.current.classList.contains("d-block") &&
+                                A.current.classList.remove("d-block");
+                          })(e);
+                        },
+                        children: Object(g.jsx)("ul", {
+                          className: "navigation navigation-main",
+                          children: Object(g.jsx)(K, {
+                            items: s,
+                            menuData: s,
+                            menuHover: S,
+                            groupOpen: d,
+                            activeItem: w,
+                            groupActive: v,
+                            setGroupOpen: b,
+                            menuCollapsed: t,
+                            setActiveItem: N,
+                            setGroupActive: p,
+                            currentActiveGroup: h,
+                            setCurrentActiveGroup: f,
+                          }),
+                        }),
+                      }),
+                    ],
+                  }),
+            }),
+          });
+        },
+        Z = function () {
+          var e = Object(r.c)(),
+            t = Object(r.d)(function (e) {
+              return e.layout.isRTL;
+            });
+          return (
+            Object(c.useEffect)(
+              function () {
+                var e = document.getElementsByTagName("html")[0];
+                t ? e.setAttribute("dir", "rtl") : e.setAttribute("dir", "ltr");
+              },
+              [t]
+            ),
+            [
+              t,
+              function (t) {
+                e(Object(d.j)(t));
+              },
+            ]
+          );
+        },
+        X = n(536),
+        $ = function () {
+          var e = Object(r.c)();
+          return {
+            navbarType: Object(r.d)(function (e) {
+              return e.layout;
+            }).navbarType,
+            setNavbarType: function (t) {
+              e(Object(d.i)(t));
+            },
+          };
+        },
+        ee = function () {
+          var e = Object(r.c)();
+          return {
+            setFooterType: function (t) {
+              e(Object(d.c)(t));
+            },
+            footerType: Object(r.d)(function (e) {
+              return e.layout;
+            }).footerType,
+          };
+        },
+        te = function () {
+          var e = Object(r.c)();
+          return {
+            navbarColor: Object(r.d)(function (e) {
+              return e.layout;
+            }).navbarColor,
+            setNavbarColor: function (t) {
+              e(Object(d.h)(t));
+            },
+          };
+        },
+        ne = function () {
+          var e = Object(r.c)();
+          return {
+            transition: Object(r.d)(function (e) {
+              return e.layout;
+            }).routerTransition,
+            setTransition: function (t) {
+              e(Object(d.k)(t));
+            },
+          };
+        },
+        ae =
+          (n(655),
+          n(656),
+          function (e) {
+            var t = e.menu,
+              n = e.navbar,
+              i = e.footer,
+              s = e.children,
+              b = e.menuData,
+              p = Z(),
+              O = Object(o.a)(p, 2),
+              x = O[0],
+              h = O[1],
+              f = Object(R.a)(),
+              k = f.skin,
+              y = f.setSkin,
+              w = $(),
+              N = w.navbarType,
+              S = w.setNavbarType,
+              z = ee(),
+              A = z.footerType,
+              E = z.setFooterType,
+              P = te(),
+              I = P.navbarColor,
+              B = P.setNavbarColor,
+              D = Object(X.a)(),
+              F = D.layout,
+              G = D.setLayout,
+              H = D.setLastLayout,
+              W = ne(),
+              V = W.transition,
+              _ = W.setTransition,
+              J = Object(c.useState)(!1),
+              U = Object(o.a)(J, 2),
+              Y = U[0],
+              q = U[1],
+              K = Object(c.useState)(!1),
+              ae = Object(o.a)(K, 2),
+              ie = ae[0],
+              ce = ae[1],
+              se = Object(c.useState)(window.innerWidth),
+              le = Object(o.a)(se, 2),
+              oe = le[0],
+              re = le[1],
+              de = Object(r.c)(),
+              be = Object(r.d)(function (e) {
+                return e.layout;
+              }),
+              ue = function () {
+                re(window.innerWidth);
+              },
+              je = Object(l.e)(),
+              me = be.menuHidden,
+              ve = be.contentWidth,
+              pe = be.menuCollapsed,
+              Oe = function (e) {
+                return de(Object(d.f)(e));
+              };
+            Object(c.useEffect)(
+              function () {
+                ie && oe < 1200 && ce(!1);
+              },
+              [je]
+            ),
+              Object(c.useEffect)(
+                function () {
+                  void 0 !== window && window.addEventListener("resize", ue);
+                },
+                [oe]
+              ),
+              Object(c.useEffect)(function () {
+                return (
+                  q(!0),
+                  function () {
+                    return q(!1);
+                  }
+                );
+              }, []);
+            var xe = {
+                static: "footer-static",
+                sticky: "footer-fixed",
+                hidden: "footer-hidden",
+              },
+              he = {
+                floating:
+                  "boxed" === ve
+                    ? "floating-nav container-xxl"
+                    : "floating-nav",
+                sticky: "fixed-top",
+                static: "navbar-static-top",
+                hidden: "d-none",
+              },
+              fe = "" !== I && "light" !== I && "white" !== I;
+            return Y
+              ? Object(g.jsxs)(
+                  "div",
+                  Object(a.a)(
+                    Object(a.a)(
+                      {
+                        className: u()(
+                          "wrapper vertical-layout "
+                            .concat(
+                              {
+                                floating: "navbar-floating",
+                                sticky: "navbar-sticky",
+                                static: "navbar-static",
+                                hidden: "navbar-hidden",
+                              }[N] || "navbar-floating",
+                              " "
+                            )
+                            .concat(xe[A] || "footer-static"),
+                          {
+                            "vertical-menu-modern": oe >= 1200,
+                            "menu-collapsed": pe && oe >= 1200,
+                            "menu-expanded": !pe && oe > 1200,
+                            "vertical-overlay-menu": oe < 1200,
+                            "menu-hide": !ie && oe < 1200,
+                            "menu-open": ie && oe < 1200,
+                          }
+                        ),
+                      },
+                      me ? { "data-col": "1-column" } : {}
+                    ),
+                    {},
+                    {
+                      children: [
+                        me
+                          ? null
+                          : Object(g.jsx)(Q, {
+                              skin: k,
+                              menu: t,
+                              menuData: b,
+                              menuCollapsed: pe,
+                              menuVisibility: ie,
+                              setMenuCollapsed: Oe,
+                              setMenuVisibility: ce,
+                            }),
+                        Object(g.jsx)(m.C, {
+                          expand: "lg",
+                          container: !1,
+                          light: "dark" !== k,
+                          dark: "dark" === k || fe,
+                          color: fe ? I : void 0,
+                          className: u()(
+                            "header-navbar navbar align-items-center ".concat(
+                              he[N] || "floating-nav",
+                              " navbar-shadow"
+                            )
+                          ),
+                          children: Object(g.jsx)("div", {
+                            className: "navbar-container d-flex content",
+                            children: n
+                              ? n({
+                                  skin: k,
+                                  setSkin: y,
+                                  setMenuVisibility: ce,
+                                })
+                              : Object(g.jsx)(M, {
+                                  setMenuVisibility: ce,
+                                  skin: k,
+                                  setSkin: y,
+                                }),
+                          }),
+                        }),
+                        s,
+                        Object(g.jsx)("div", {
+                          className: u()("sidenav-overlay", { show: ie }),
+                          onClick: function () {
+                            return ce(!1);
+                          },
+                        }),
+                        !0 === v.a.layout.customizer
+                          ? Object(g.jsx)(L, {
+                              skin: k,
+                              isRtl: x,
+                              layout: F,
+                              setSkin: y,
+                              setIsRtl: h,
+                              isHidden: me,
+                              setLayout: G,
+                              footerType: A,
+                              navbarType: N,
+                              transition: V,
+                              setIsHidden: function (e) {
+                                return de(Object(d.g)(e));
+                              },
+                              themeConfig: v.a,
+                              navbarColor: I,
+                              contentWidth: ve,
+                              setTransition: _,
+                              setFooterType: E,
+                              setNavbarType: S,
+                              setLastLayout: H,
+                              menuCollapsed: pe,
+                              setNavbarColor: B,
+                              setContentWidth: function (e) {
+                                return de(Object(d.b)(e));
+                              },
+                              setMenuCollapsed: Oe,
+                            })
+                          : null,
+                        Object(g.jsx)("footer", {
+                          className: u()(
+                            "footer footer-light ".concat(
+                              xe[A] || "footer-static"
+                            ),
+                            { "d-none": "hidden" === A }
+                          ),
+                          children:
+                            i ||
+                            Object(g.jsx)(T, {
+                              footerType: A,
+                              footerClasses: xe,
+                            }),
+                        }),
+                        !0 === v.a.layout.scrollTop
+                          ? Object(g.jsx)("div", {
+                              className: "scroll-to-top",
+                              children: Object(g.jsx)(C, {
+                                showOffset: 300,
+                                className: "scroll-top d-block",
+                                children: Object(g.jsx)(m.i, {
+                                  className: "btn-icon",
+                                  color: "primary",
+                                  children: Object(g.jsx)(j.a, { size: 14 }),
+                                }),
+                              }),
+                            })
+                          : null,
+                      ],
+                    }
+                  )
+                )
+              : null;
+          }),
+        ie = n(522),
+        ce = [
+          {
+            id: "Subscribers",
+            title: "Subscribers",
+            icon: Object(g.jsx)(ie.c, { size: 20 }),
+            children: [
+              {
+                id: "AllSubscribers",
+                title: "List",
+                icon: Object(g.jsx)(B.a, { size: 12 }),
+                navLink: "/subscribers/all",
+              },
+              {
+                id: "NewSubscriber",
+                title: "New",
+                icon: Object(g.jsx)(B.a, { size: 12 }),
+                navLink: "/subscribers/new",
+              },
+            ],
+          },
+        ],
+        se = Object(i.a)(ce),
+        le = function (e) {
+          return Object(g.jsx)(
+            ae,
+            Object(a.a)(
+              Object(a.a)({ menuData: se }, e),
+              {},
+              { children: Object(g.jsx)(l.b, {}) }
+            )
+          );
+        },
+        oe =
+          (n(238),
+          n(657),
+          function (e) {
+            var t,
+              n = e.navbar,
+              i = (e.menuData, e.footer),
+              s = e.children,
+              l = (e.menu, Object(R.a)()),
+              b = l.skin,
+              p = l.setSkin,
+              O = Z(),
+              x = Object(o.a)(O, 2),
+              h = x[0],
+              f = x[1],
+              k = $(),
+              y = k.navbarType,
+              w = k.setNavbarType,
+              N = ee(),
+              z = N.footerType,
+              E = N.setFooterType,
+              P = te(),
+              I = P.navbarColor,
+              B = P.setNavbarColor,
+              D = Object(X.a)(),
+              F = D.layout,
+              G = D.setLayout,
+              H = D.setLastLayout,
+              W = ne(),
+              V = W.transition,
+              _ = W.setTransition,
+              J = Object(c.useState)(!1),
+              U = Object(o.a)(J, 2),
+              Y = U[0],
+              q = U[1],
+              K = Object(c.useState)(!1),
+              Q = Object(o.a)(K, 2),
+              ae = Q[0],
+              ie = Q[1],
+              ce = Object(r.c)(),
+              se = Object(r.d)(function (e) {
+                return e.layout;
+              }),
+              le = se.contentWidth,
+              oe = se.menuHidden;
+            Object(c.useEffect)(function () {
+              return (
+                q(!0),
+                window.addEventListener("scroll", function () {
+                  window.pageYOffset > 65 && !1 === ae && ie(!0),
+                    window.pageYOffset < 65 && ie(!1);
+                }),
+                function () {
+                  return q(!1), void ie(!1);
+                }
+              );
+            }, []);
+            var re = {
+                static: "footer-static",
+                sticky: "footer-fixed",
+                hidden: "footer-hidden",
+              },
+              de = {
+                floating:
+                  "boxed" === le
+                    ? "floating-nav container-xxl"
+                    : "floating-nav",
+                sticky: "fixed-top",
+              },
+              be = "" !== I && "light" !== I && "white" !== I;
+            return Y
+              ? Object(g.jsxs)(
+                  "div",
+                  Object(a.a)(
+                    Object(a.a)(
+                      {
+                        className: u()(
+                          "wrapper horizontal-layout horizontal-menu "
+                            .concat(
+                              {
+                                floating: "navbar-floating",
+                                sticky: "navbar-sticky",
+                                static: "navbar-static",
+                              }[y] || "navbar-floating",
+                              " "
+                            )
+                            .concat(re[z] || "footer-static", " menu-expanded")
+                        ),
+                      },
+                      oe ? { "data-col": "1-column" } : {}
+                    ),
+                    {},
+                    {
+                      children: [
+                        Object(g.jsxs)(m.C, {
+                          expand: "lg",
+                          container: !1,
+                          className: u()(
+                            "header-navbar navbar-fixed align-items-center navbar-shadow navbar-brand-center",
+                            { "navbar-scrolled": ae }
+                          ),
+                          children: [
+                            !n &&
+                              Object(g.jsx)("div", {
+                                className: "navbar-header d-xl-block d-none",
+                                children: Object(g.jsx)("ul", {
+                                  className: "nav navbar-nav",
+                                  children: Object(g.jsx)(m.A, {
+                                    children: Object(g.jsxs)(S.b, {
+                                      to: "/",
+                                      className: "navbar-brand",
+                                      children: [
+                                        Object(g.jsx)("span", {
+                                          className: "brand-logo",
+                                          children: Object(g.jsx)("img", {
+                                            src: v.a.app.appLogoImage,
+                                            alt: "logo",
+                                          }),
+                                        }),
+                                        Object(g.jsx)("h2", {
+                                          className: "brand-text mb-0",
+                                          children: v.a.app.appName,
+                                        }),
+                                      ],
+                                    }),
+                                  }),
+                                }),
+                              }),
+                            Object(g.jsx)("div", {
+                              className: "navbar-container d-flex content",
+                              children: n
+                                ? n({ skin: b, setSkin: p })
+                                : Object(g.jsx)(M, { skin: b, setSkin: p }),
+                            }),
+                          ],
+                        }),
+                        oe
+                          ? null
+                          : Object(g.jsx)("div", {
+                              className: "horizontal-menu-wrapper",
+                              children: Object(g.jsx)(m.C, {
+                                tag: "div",
+                                expand: "sm",
+                                light: "dark" !== b,
+                                dark: "dark" === b || be,
+                                className: u()(
+                                  "header-navbar navbar-horizontal navbar-shadow menu-border",
+                                  ((t = {}),
+                                  Object(A.a)(t, de[y], "static" !== y),
+                                  Object(A.a)(
+                                    t,
+                                    "floating-nav",
+                                    (!de[y] && "static" !== y) ||
+                                      "floating" === y
+                                  ),
+                                  t)
+                                ),
+                              }),
+                            }),
+                        s,
+                        !0 === v.a.layout.customizer
+                          ? Object(g.jsx)(L, {
+                              skin: b,
+                              isRtl: h,
+                              layout: F,
+                              setSkin: p,
+                              setIsRtl: f,
+                              isHidden: oe,
+                              setLayout: G,
+                              footerType: z,
+                              navbarType: y,
+                              transition: V,
+                              setIsHidden: function (e) {
+                                return ce(Object(d.g)(e));
+                              },
+                              themeConfig: v.a,
+                              navbarColor: I,
+                              contentWidth: le,
+                              setTransition: _,
+                              setFooterType: E,
+                              setNavbarType: w,
+                              setLastLayout: H,
+                              setNavbarColor: B,
+                              setContentWidth: function (e) {
+                                return ce(Object(d.b)(e));
+                              },
+                            })
+                          : null,
+                        Object(g.jsx)("footer", {
+                          className: u()(
+                            "footer footer-light ".concat(
+                              re[z] || "footer-static"
+                            ),
+                            { "d-none": "hidden" === z }
+                          ),
+                          children:
+                            i ||
+                            Object(g.jsx)(T, {
+                              footerType: z,
+                              footerClasses: re,
+                            }),
+                        }),
+                        !0 === v.a.layout.scrollTop
+                          ? Object(g.jsx)("div", {
+                              className: "scroll-to-top",
+                              children: Object(g.jsx)(C, {
+                                showOffset: 300,
+                                className: "scroll-top d-block",
+                                children: Object(g.jsx)(m.i, {
+                                  className: "btn-icon",
+                                  color: "primary",
+                                  children: Object(g.jsx)(j.a, { size: 14 }),
+                                }),
+                              }),
+                            })
+                          : null,
+                      ],
+                    }
+                  )
+                )
+              : null;
+          }),
+        re = n(566),
+        de = n(591),
+        be = n(593),
+        ue = n(569),
+        je = n(568),
+        me = n(580),
+        ve = n(598),
+        pe = n(599),
+        Oe = n(603),
+        xe = [
+          {
+            id: "apps",
+            title: "Apps",
+            icon: Object(g.jsx)(re.a, {}),
+            children: [
+              {
+                id: "email",
+                title: "Email",
+                icon: Object(g.jsx)(de.a, {}),
+                navLink: "/apps/email",
+              },
+              {
+                id: "chat",
+                title: "Chat",
+                icon: Object(g.jsx)(be.a, {}),
+                navLink: "/apps/chat",
+              },
+              {
+                id: "todo",
+                title: "Todo",
+                icon: Object(g.jsx)(ue.a, {}),
+                navLink: "/apps/todo",
+              },
+              {
+                id: "calendar",
+                title: "Calendar",
+                icon: Object(g.jsx)(je.a, {}),
+                navLink: "/apps/calendar",
+              },
+              {
+                id: "invoiceApp",
+                title: "Invoice",
+                icon: Object(g.jsx)(me.a, {}),
+                children: [
+                  {
+                    id: "invoiceList",
+                    title: "List",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/apps/invoice/list",
+                  },
+                  {
+                    id: "invoicePreview",
+                    title: "Preview",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/apps/invoice/preview",
+                  },
+                  {
+                    id: "invoiceEdit",
+                    title: "Edit",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/apps/invoice/edit",
+                  },
+                  {
+                    id: "invoiceAdd",
+                    title: "Add",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/apps/invoice/add",
+                  },
+                ],
+              },
+              {
+                id: "roles-permissions",
+                title: "Roles & Permissions",
+                icon: Object(g.jsx)(ve.a, { size: 20 }),
+                children: [
+                  {
+                    id: "roles",
+                    title: "Roles",
+                    icon: Object(g.jsx)(B.a, { size: 12 }),
+                    navLink: "/apps/roles",
+                  },
+                  {
+                    id: "permissions",
+                    title: "Permissions",
+                    icon: Object(g.jsx)(B.a, { size: 12 }),
+                    navLink: "/apps/permissions",
+                  },
+                ],
+              },
+              {
+                id: "eCommerce",
+                title: "eCommerce",
+                icon: Object(g.jsx)(pe.a, {}),
+                children: [
+                  {
+                    id: "shop",
+                    title: "Shop",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/apps/ecommerce/shop",
+                  },
+                  {
+                    id: "detail",
+                    title: "Details",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/apps/ecommerce/product-detail",
+                  },
+                  {
+                    id: "wishList",
+                    title: "Wish List",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/apps/ecommerce/wishlist",
+                  },
+                  {
+                    id: "checkout",
+                    title: "Checkout",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/apps/ecommerce/checkout",
+                  },
+                ],
+              },
+              {
+                id: "users",
+                title: "User",
+                icon: Object(g.jsx)(Oe.a, {}),
+                children: [
+                  {
+                    id: "list",
+                    title: "List",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/apps/user/list",
+                  },
+                  {
+                    id: "view",
+                    title: "View",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/apps/user/view",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        he = n(602),
+        fe = n(584),
+        ke = n(586),
+        ge = n(576),
+        Le = n(587),
+        ye = n(572),
+        we = n(581),
+        Ne = n(600),
+        Ce = [
+          {
+            id: "pages",
+            title: "Pages",
+            icon: Object(g.jsx)(me.a, {}),
+            children: [
+              {
+                id: "authentication",
+                title: "Authentication",
+                icon: Object(g.jsx)(he.a, {}),
+                children: [
+                  {
+                    id: "login",
+                    title: "Login",
+                    icon: Object(g.jsx)(B.a, { size: 12 }),
+                    children: [
+                      {
+                        id: "login-basic",
+                        title: "Basic",
+                        permissions: ["admin", "editor"],
+                        navLink: "/pages/login-basic",
+                        newTab: !0,
+                      },
+                      {
+                        id: "login-cover",
+                        title: "Cover",
+                        permissions: ["admin", "editor"],
+                        navLink: "/pages/login-cover",
+                        newTab: !0,
+                      },
+                    ],
+                  },
+                  {
+                    id: "register",
+                    title: "Register",
+                    icon: Object(g.jsx)(B.a, { size: 12 }),
+                    children: [
+                      {
+                        id: "register-basic",
+                        title: "Basic",
+                        permissions: ["admin", "editor"],
+                        navLink: "/pages/register-basic",
+                        newTab: !0,
+                      },
+                      {
+                        id: "register-cover",
+                        title: "Cover",
+                        permissions: ["admin", "editor"],
+                        navLink: "/pages/register-cover",
+                        newTab: !0,
+                      },
+                      {
+                        id: "multi-steps-register",
+                        title: "Multi-Steps",
+                        permissions: ["admin", "editor"],
+                        navLink: "/pages/register-multi-steps",
+                        newTab: !0,
+                      },
+                    ],
+                  },
+                  {
+                    id: "forgot-password",
+                    title: "Forgot Password",
+                    icon: Object(g.jsx)(B.a, { size: 12 }),
+                    children: [
+                      {
+                        id: "forgotPassword-basic",
+                        title: "Basic",
+                        permissions: ["admin", "editor"],
+                        navLink: "/pages/forgot-password-basic",
+                        newTab: !0,
+                      },
+                      {
+                        id: "forgotPassword-cover",
+                        title: "Cover",
+                        permissions: ["admin", "editor"],
+                        navLink: "/pages/forgot-password-cover",
+                        newTab: !0,
+                      },
+                    ],
+                  },
+                  {
+                    id: "resetPassword",
+                    title: "Reset Password",
+                    icon: Object(g.jsx)(B.a, { size: 12 }),
+                    children: [
+                      {
+                        id: "resetPassword-basic",
+                        title: "Basic",
+                        permissions: ["admin", "editor"],
+                        navLink: "/pages/reset-password-basic",
+                        newTab: !0,
+                      },
+                      {
+                        id: "resetPassword-cover",
+                        title: "Cover",
+                        permissions: ["admin", "editor"],
+                        navLink: "/pages/reset-password-cover",
+                        newTab: !0,
+                      },
+                    ],
+                  },
+                  {
+                    id: "verify-email",
+                    title: "Reset Password",
+                    icon: Object(g.jsx)(B.a, { size: 12 }),
+                    children: [
+                      {
+                        id: "verify-email-basic",
+                        title: "Basic",
+                        permissions: ["admin", "editor"],
+                        navLink: "/pages/verify-email-basic",
+                        newTab: !0,
+                      },
+                      {
+                        id: "verify-email-cover",
+                        title: "Cover",
+                        permissions: ["admin", "editor"],
+                        navLink: "/pages/verify-email-cover",
+                        newTab: !0,
+                      },
+                    ],
+                  },
+                  {
+                    id: "two-step",
+                    title: "Two Steps",
+                    icon: Object(g.jsx)(B.a, { size: 12 }),
+                    children: [
+                      {
+                        id: "two-steps-basic",
+                        title: "Basic",
+                        permissions: ["admin", "editor"],
+                        navLink: "/pages/two-steps-basic",
+                        newTab: !0,
+                      },
+                      {
+                        id: "two-steps-cover",
+                        title: "Cover",
+                        permissions: ["admin", "editor"],
+                        navLink: "/pages/two-steps-cover",
+                        newTab: !0,
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                id: "accountSettings",
+                title: "Account Settings",
+                icon: Object(g.jsx)(x.a, {}),
+                navLink: "/pages/account-settings",
+              },
+              {
+                id: "profile",
+                title: "Profile",
+                icon: Object(g.jsx)(Oe.a, {}),
+                navLink: "/pages/profile",
+                collapsed: !0,
+              },
+              {
+                id: "faq",
+                title: "FAQ",
+                icon: Object(g.jsx)(fe.a, {}),
+                navLink: "/pages/faq",
+              },
+              {
+                id: "knowledgeBase",
+                title: "Knowledge Base",
+                icon: Object(g.jsx)(ke.a, {}),
+                navLink: "/pages/knowledge-base",
+                parentOf: [
+                  "/pages/knowledge-base/category/questions",
+                  "/pages/knowledge-base/category",
+                ],
+              },
+              {
+                id: "pricing",
+                title: "Pricing",
+                icon: Object(g.jsx)(ge.a, {}),
+                navLink: "/pages/pricing",
+              },
+              {
+                id: "license",
+                title: "License",
+                icon: Object(g.jsx)(me.a, {}),
+                permissions: ["admin", "editor"],
+                navLink: "/pages/license",
+              },
+              {
+                id: "api-key",
+                title: "API Key",
+                icon: Object(g.jsx)(Le.a, {}),
+                permissions: ["admin", "editor"],
+                navLink: "/pages/api-key",
+              },
+              {
+                id: "blog",
+                title: "Blog",
+                icon: Object(g.jsx)(ye.a, {}),
+                children: [
+                  {
+                    id: "blogList",
+                    title: "List",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/pages/blog/list",
+                  },
+                  {
+                    id: "blogDetail",
+                    title: "Detail",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/pages/blog/detail",
+                  },
+                  {
+                    id: "blogEdit",
+                    title: "Edit",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/pages/blog/edit",
+                  },
+                ],
+              },
+              {
+                id: "mailTemplate",
+                title: "Mail Template",
+                icon: Object(g.jsx)(de.a, {}),
+                children: [
+                  {
+                    id: "welcomeTemp",
+                    title: "Welcome",
+                    navLink:
+                      "https://pixinvent.com/demo/vuexy-mail-template/mail-welcome.html",
+                    externalLink: !0,
+                  },
+                  {
+                    id: "resetPassTemp",
+                    title: "Reset Password",
+                    navLink:
+                      "https://pixinvent.com/demo/vuexy-mail-template/mail-reset-password.html",
+                    externalLink: !0,
+                  },
+                  {
+                    id: "verifyEmailTemp",
+                    title: "Verify Email",
+                    navLink:
+                      "https://pixinvent.com/demo/vuexy-mail-template/mail-verify-email.html",
+                    externalLink: !0,
+                  },
+                  {
+                    id: "deactivateAccountTemp",
+                    title: "Deactivate Account",
+                    navLink:
+                      "https://pixinvent.com/demo/vuexy-mail-template/mail-deactivate-account.html",
+                    externalLink: !0,
+                  },
+                  {
+                    id: "invoiceMailTemp",
+                    title: "Invoice",
+                    navLink:
+                      "https://pixinvent.com/demo/vuexy-mail-template/mail-invoice.html",
+                    externalLink: !0,
+                  },
+                  {
+                    id: "promotionalMailTemp",
+                    title: "Promotional",
+                    navLink:
+                      "https://pixinvent.com/demo/vuexy-mail-template/mail-promotional.html",
+                    externalLink: !0,
+                  },
+                ],
+              },
+              {
+                id: "miscellaneous",
+                title: "Miscellaneous",
+                icon: Object(g.jsx)(we.a, {}),
+                children: [
+                  {
+                    id: "comingSoon",
+                    title: "Coming Soon",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/misc/coming-soon",
+                    newTab: !0,
+                  },
+                  {
+                    id: "notAuthorized",
+                    title: "Not Authorized",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/misc/not-authorized",
+                    newTab: !0,
+                  },
+                  {
+                    id: "maintenance",
+                    title: "Maintenance",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/misc/maintenance",
+                    newTab: !0,
+                  },
+                  {
+                    id: "error",
+                    title: "Error",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/misc/error",
+                    newTab: !0,
+                  },
+                ],
+              },
+              {
+                id: "modal-examples",
+                title: "Modal Examples",
+                icon: Object(g.jsx)(Ne.a, { size: 12 }),
+                permissions: ["admin", "editor"],
+                navLink: "/pages/modal-examples",
+              },
+            ],
+          },
+        ],
+        Te = n(578),
+        Se = n(582),
+        ze = n(590),
+        Ae = [
+          {
+            id: "misc",
+            title: "Misc",
+            icon: Object(g.jsx)(re.a, {}),
+            children: [
+              {
+                id: "access-control",
+                title: "Access Control",
+                icon: Object(g.jsx)(ve.a, { size: 20 }),
+                action: "read",
+                resource: "ACL",
+                navLink: "/access-control",
+              },
+              {
+                id: "menuLevels",
+                title: "Menu Levels",
+                icon: Object(g.jsx)(z.a, {}),
+                children: [
+                  {
+                    id: "secondLevel",
+                    title: "Second Level 2.1",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "#",
+                  },
+                  {
+                    id: "secondLevel1",
+                    title: "Second Level 2.2",
+                    icon: Object(g.jsx)(B.a, {}),
+                    children: [
+                      {
+                        id: "ThirdLevel",
+                        title: "Third Level 3.1",
+                        icon: Object(g.jsx)(B.a, {}),
+                        navLink: "#",
+                      },
+                      {
+                        id: "ThirdLevel1",
+                        title: "Third Level 3.2",
+                        icon: Object(g.jsx)(B.a, {}),
+                        navLink: "#",
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                id: "disabledMenu",
+                title: "Disabled Menu",
+                icon: Object(g.jsx)(Te.a, {}),
+                navLink: "#",
+                disabled: !0,
+              },
+              {
+                id: "documentation",
+                title: "Documentation",
+                icon: Object(g.jsx)(Se.a, {}),
+                externalLink: !0,
+                newTab: !0,
+                navLink:
+                  "https://pixinvent.com/demo/vuexy-react-admin-dashboard-template/documentation",
+              },
+              {
+                id: "raiseSupport",
+                title: "Raise Support",
+                icon: Object(g.jsx)(ze.a, {}),
+                externalLink: !0,
+                newTab: !0,
+                navLink: "https://pixinvent.ticksy.com/",
+              },
+            ],
+          },
+        ],
+        Ee = n(565),
+        Pe = [
+          {
+            id: "chartsGroup",
+            title: "Charts",
+            icon: Object(g.jsx)(Ee.a, {}),
+            children: [
+              {
+                id: "apex",
+                title: "Apex",
+                icon: Object(g.jsx)(B.a, {}),
+                navLink: "/charts/apex",
+              },
+              {
+                id: "chartJs",
+                title: "ChartJS",
+                icon: Object(g.jsx)(B.a, {}),
+                navLink: "/charts/chartjs",
+              },
+              {
+                id: "recharts",
+                title: "Recharts",
+                icon: Object(g.jsx)(B.a, {}),
+                navLink: "/charts/recharts",
+              },
+            ],
+          },
+        ],
+        Me = n(585),
+        Ie = n(562),
+        Be = [
+          {
+            id: "dashboards",
+            title: "Dashboards",
+            icon: Object(g.jsx)(Me.a, {}),
+            children: [
+              {
+                id: "analyticsDash",
+                title: "Analytics",
+                icon: Object(g.jsx)(Ie.a, {}),
+                navLink: "/dashboard/analytics",
+              },
+              {
+                id: "eCommerceDash",
+                title: "eCommerce",
+                icon: Object(g.jsx)(pe.a, {}),
+                navLink: "/dashboard/ecommerce",
+              },
+            ],
+          },
+        ],
+        Re = n(588),
+        De = n(601),
+        Fe = n(579),
+        Ge = n(574),
+        He = n(567),
+        We = n(589),
+        Ve = [
+          {
+            id: "uiElements",
+            title: "User Interface",
+            icon: Object(g.jsx)(Re.a, {}),
+            children: [
+              {
+                id: "typography",
+                title: "Typography",
+                icon: Object(g.jsx)(De.a, {}),
+                navLink: "/ui-element/typography",
+              },
+              {
+                id: "feather",
+                title: "Feather",
+                icon: Object(g.jsx)(Fe.a, {}),
+                navLink: "/icons/reactfeather",
+              },
+              {
+                id: "cards",
+                title: "Card",
+                icon: Object(g.jsx)(Ge.a, {}),
+                badge: "success",
+                badgeText: "New",
+                children: [
+                  {
+                    id: "basic",
+                    title: "Basic",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/cards/basic",
+                  },
+                  {
+                    id: "cardAdvance",
+                    title: "Advance",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/cards/advance",
+                  },
+                  {
+                    id: "cardStatistics",
+                    title: "Statistics",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/cards/statistics",
+                  },
+                  {
+                    id: "CardAnalytics",
+                    title: "Analytics",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/cards/analytics",
+                  },
+                  {
+                    id: "cardActions",
+                    title: "Actions",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/cards/action",
+                  },
+                ],
+              },
+              {
+                id: "components",
+                title: "Components",
+                icon: Object(g.jsx)(He.a, {}),
+                children: [
+                  {
+                    id: "accordion",
+                    title: "Accordion",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/accordion",
+                  },
+                  {
+                    id: "alerts",
+                    title: "Alerts",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/alerts",
+                  },
+                  {
+                    id: "autoComplete",
+                    title: "Auto Complete",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/auto-complete",
+                  },
+                  {
+                    id: "avatar",
+                    title: "Avatar",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/avatar",
+                  },
+                  {
+                    id: "badges",
+                    title: "Badges",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/badges",
+                  },
+                  {
+                    id: "blockui",
+                    title: "BlockUI",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/blockui",
+                  },
+                  {
+                    id: "breadCrumbs",
+                    title: "Breadcrumbs",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/breadcrumbs",
+                  },
+                  {
+                    id: "buttons",
+                    title: "Buttons",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/buttons",
+                  },
+                  {
+                    id: "collapse",
+                    title: "Collapse",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/collapse",
+                  },
+                  {
+                    id: "divider",
+                    title: "Divider",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/divider",
+                  },
+                  {
+                    id: "dropDowns",
+                    title: "Dropdowns",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/dropdowns",
+                  },
+                  {
+                    id: "listGroup",
+                    title: "List Group",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/list-group",
+                  },
+                  {
+                    id: "modals",
+                    title: "Modals",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/modals",
+                  },
+                  {
+                    id: "navsComponent",
+                    title: "Navs Component",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/nav-component",
+                  },
+                  {
+                    id: "offCanvas",
+                    title: "OffCanvas",
+                    icon: Object(g.jsx)(B.a, { size: 12 }),
+                    navLink: "/components/offcanvas",
+                  },
+                  {
+                    id: "pagination",
+                    title: "Pagination",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/pagination",
+                  },
+                  {
+                    id: "pillBadges",
+                    title: "Pill Badges",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/pill-badges",
+                  },
+                  {
+                    id: "pillsComponent",
+                    title: "Pills Component",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/pills-component",
+                  },
+                  {
+                    id: "popovers",
+                    title: "Popovers",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/popovers",
+                  },
+                  {
+                    id: "progress",
+                    title: "Progress",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/progress",
+                  },
+                  {
+                    id: "spinners",
+                    title: "Spinner",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/spinners",
+                  },
+                  {
+                    id: "tabsComponent",
+                    title: "Tabs Component",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/tabs-component",
+                  },
+                  {
+                    id: "timeline",
+                    title: "Timeline",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/timeline",
+                  },
+                  {
+                    id: "react-hot-toasts",
+                    title: "React Hot Toasts",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/react-hot-toasts",
+                  },
+                  {
+                    id: "tooltips",
+                    title: "Tooltips",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/components/tooltips",
+                  },
+                ],
+              },
+              {
+                id: "extensions",
+                title: "Extensions",
+                icon: Object(g.jsx)(re.a, {}),
+                children: [
+                  {
+                    id: "sweetAlert",
+                    title: "Sweet Alert",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/extensions/sweet-alert",
+                  },
+                  {
+                    id: "toastr",
+                    title: "Toastr",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/extensions/toastr",
+                  },
+                  {
+                    id: "slider",
+                    title: "Sliders",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/extensions/slider",
+                  },
+                  {
+                    id: "drag_&_drop",
+                    title: "Drag & Drop",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/extensions/drag-and-drop",
+                  },
+                  {
+                    id: "tour",
+                    title: "Tour",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/extensions/tour",
+                  },
+                  {
+                    id: "clipBoard",
+                    title: "Clipboard",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/extensions/clipboard",
+                  },
+                  {
+                    id: "reactPlayer",
+                    title: "React Player",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/extensions/react-player",
+                  },
+                  {
+                    id: "contentMenu",
+                    title: "Context Menu",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/extensions/context-menu",
+                  },
+                  {
+                    id: "swiper",
+                    title: "Swiper",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/extensions/swiper",
+                  },
+                  {
+                    id: "ratings",
+                    title: "Ratings",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/extensions/ratings",
+                  },
+                  {
+                    id: "i18n",
+                    title: "I18n",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/extensions/i18n",
+                  },
+                  {
+                    id: "extPagination",
+                    title: "React Paginate",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/extensions/pagination",
+                  },
+                  {
+                    id: "extImport",
+                    title: "Import",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/extensions/import",
+                  },
+                  {
+                    id: "extExport",
+                    title: "Export",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/extensions/export",
+                  },
+                  {
+                    id: "extExportSelected",
+                    title: "Export Selected",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/extensions/export-selected",
+                  },
+                ],
+              },
+              {
+                id: "pageLayouts",
+                title: "Page Layouts",
+                icon: Object(g.jsx)(We.a, {}),
+                children: [
+                  {
+                    id: "layoutBoxed",
+                    title: "Layout Boxed",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/page-layout/layout-boxed",
+                  },
+                  {
+                    id: "withoutMenu",
+                    title: "Without Menu",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/page-layout/without-menu",
+                  },
+                  {
+                    id: "layoutEmpty",
+                    title: "Layout Empty",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/page-layout/layout-empty",
+                  },
+                  {
+                    id: "layoutBlank",
+                    title: "Layout Blank",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/page-layout/layout-blank",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        _e = n(577),
+        Je = n(573),
+        Ue = n(595),
+        Ye = n(563),
+        qe = n(596),
+        Ke = n(597),
+        Qe = n(583),
+        Ze = [
+          {
+            id: "formsAndTable",
+            title: "Forms & Tables",
+            icon: Object(g.jsx)(_e.a, {}),
+            children: [
+              {
+                id: "formElements",
+                title: "Form Elements",
+                icon: Object(g.jsx)(Je.a, {}),
+                children: [
+                  {
+                    id: "input",
+                    title: "Input",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/forms/elements/input",
+                  },
+                  {
+                    id: "inputGroup",
+                    title: "Input Groups",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/forms/elements/input-group",
+                  },
+                  {
+                    id: "inputMask",
+                    title: "Input Mask",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/forms/elements/input-mask",
+                  },
+                  {
+                    id: "textarea",
+                    title: "Textarea",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/forms/elements/textarea",
+                  },
+                  {
+                    id: "checkbox",
+                    title: "Checkbox",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/forms/elements/checkbox",
+                  },
+                  {
+                    id: "radio",
+                    title: "Radio",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/forms/elements/radio",
+                  },
+                  {
+                    id: "switch",
+                    title: "Switch",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/forms/elements/switch",
+                  },
+                  {
+                    id: "select",
+                    title: "Select",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/forms/elements/select",
+                  },
+                  {
+                    id: "numberInput",
+                    title: "Number Input",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/forms/elements/number-input",
+                  },
+                  {
+                    id: "fileUploader",
+                    title: "File Uploader",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/forms/elements/file-uploader",
+                  },
+                  {
+                    id: "quillEditor",
+                    title: "Editor",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/forms/elements/editor",
+                  },
+                  {
+                    id: "date_&_timePicker",
+                    title: "Date & Time Picker",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/forms/elements/pickers",
+                  },
+                ],
+              },
+              {
+                id: "formLayouts",
+                title: "Form Layout",
+                icon: Object(g.jsx)(re.a, {}),
+                navLink: "/forms/layout/form-layout",
+              },
+              {
+                id: "wizard",
+                title: "Form Wizard",
+                icon: Object(g.jsx)(Ue.a, {}),
+                navLink: "/forms/wizard",
+              },
+              {
+                id: "formValidation",
+                title: "Form Validation",
+                icon: Object(g.jsx)(Ye.a, { size: 12 }),
+                navLink: "/forms/form-validation",
+              },
+              {
+                id: "formRepeater",
+                title: "Form Repeater",
+                icon: Object(g.jsx)(qe.a, {}),
+                navLink: "/forms/form-repeater",
+              },
+              {
+                id: "tablesReactstrap",
+                title: "Table",
+                icon: Object(g.jsx)(Ke.a, {}),
+                navLink: "/tables/reactstrap",
+              },
+              {
+                id: "dataTable",
+                title: "DataTable",
+                icon: Object(g.jsx)(Qe.a, {}),
+                children: [
+                  {
+                    id: "dtBasic",
+                    title: "Basic",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/datatables/basic",
+                  },
+                  {
+                    id: "dtAdvance",
+                    title: "Advanced",
+                    icon: Object(g.jsx)(B.a, {}),
+                    navLink: "/datatables/advance",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        Xe = [].concat(
+          Object(i.a)(Be),
+          Object(i.a)(xe),
+          Object(i.a)(Ve),
+          Object(i.a)(Ze),
+          Object(i.a)(Ce),
+          Object(i.a)(Pe),
+          Object(i.a)(Ae)
+        ),
+        $e = function (e) {
+          return Object(g.jsx)(
+            oe,
+            Object(a.a)(
+              Object(a.a)({ menuData: Xe }, e),
+              {},
+              { children: Object(g.jsx)(l.b, {}) }
+            )
+          );
+        },
+        et =
+          (n(658),
+          function (e) {
+            var t,
+              n = e.children,
+              i = e.routeMeta,
+              s = Object(r.c)(),
+              l = Object(r.d)(function (e) {
+                return e;
+              }),
+              o = l.navbar,
+              b = l.layout.layout,
+              j = l.layout.contentWidth,
+              m = l.layout.routerTransition,
+              v =
+                ("horizontal" === b.layout && !i) ||
+                ("horizontal" === b.layout && i && !i.appLayout),
+              p = v ? "div" : c.Fragment;
+            return (
+              Object(c.useEffect)(
+                function () {
+                  return (
+                    i &&
+                      (i.contentWidth && s(Object(d.b)(i.contentWidth)),
+                      i.menuCollapsed && s(Object(d.f)(i.menuCollapsed)),
+                      i.menuHidden && s(Object(d.g)(i.menuHidden))),
+                    function () {
+                      i &&
+                        (i.contentWidth && s(Object(d.b)("full")),
+                        i.menuCollapsed && s(Object(d.f)(!i.menuCollapsed)),
+                        i.menuHidden && s(Object(d.g)(!i.menuHidden)));
+                    }
+                  );
+                },
+                [i]
+              ),
+              Object(g.jsxs)("div", {
+                className: u()(
+                  "app-content content overflow-hidden",
+                  ((t = {}),
+                  Object(A.a)(t, i ? i.className : "", i && i.className),
+                  Object(A.a)(t, "show-overlay", o.query.length),
+                  t)
+                ),
+                children: [
+                  Object(g.jsx)("div", { className: "content-overlay" }),
+                  Object(g.jsx)("div", { className: "header-navbar-shadow" }),
+                  Object(g.jsx)("div", {
+                    className: u()(
+                      Object(A.a)(
+                        {
+                          "content-wrapper": i && !i.appLayout,
+                          "content-area-wrapper": i && i.appLayout,
+                          "container-xxl p-0": "boxed" === j,
+                        },
+                        "animate__animated animate__".concat(m),
+                        "none" !== m && m.length
+                      )
+                    ),
+                    children: Object(g.jsx)(
+                      p,
+                      Object(a.a)(
+                        Object(a.a)({}, v ? { className: "content-body" } : {}),
+                        {},
+                        { children: n }
+                      )
+                    ),
+                  }),
+                ],
+              })
+            );
+          }),
+        tt = Object(c.memo)(et),
+        nt = function (e) {
+          var t = e.children,
+            n = e.route;
+          if (n) {
+            var a = Object(O.k)(),
+              i = n.meta && n.meta.restricted;
+            if (a && i) return Object(g.jsx)(l.a, { to: Object(O.j)(a.role) });
+          }
+          return Object(g.jsx)(c.Suspense, { fallback: null, children: t });
+        },
+        at = function (e) {
+          var t = e.children,
+            n = e.route;
+          Object(c.useContext)(W), JSON.parse(localStorage.getItem("userData"));
+          if (n) {
+            var a = !1;
+            if ((n.meta && (a = n.meta.restricted), a))
+              return Object(g.jsx)(l.a, { to: "/" });
+          }
+          return Object(g.jsx)(c.Suspense, { fallback: null, children: t });
+        },
+        it = Object(c.lazy)(function () {
+          return Promise.all([n.e(0), n.e(4), n.e(5), n.e(25)]).then(
+            n.bind(null, 894)
+          );
+        }),
+        ct = Object(c.lazy)(function () {
+          return Promise.all([n.e(0), n.e(4), n.e(8), n.e(5), n.e(32)]).then(
+            n.bind(null, 889)
+          );
+        }),
+        st = Object(c.lazy)(function () {
+          return Promise.all([n.e(0), n.e(4), n.e(8), n.e(5), n.e(26)]).then(
+            n.bind(null, 888)
+          );
+        }),
+        lt = [
+          { path: "/subscribers/all", element: Object(g.jsx)(it, {}) },
+          { path: "/subscribers/new", element: Object(g.jsx)(ct, {}) },
+          { path: "/subscribers/update", element: Object(g.jsx)(st, {}) },
+        ],
+        ot = {
+          blank: Object(g.jsx)(s.a, {}),
+          vertical: Object(g.jsx)(le, {}),
+          horizontal: Object(g.jsx)($e, {}),
+        },
+        rt = "/subscribers/all",
+        dt = Object(i.a)(lt),
+        bt = function (e, t) {
+          var n = [];
+          return (
+            dt &&
+              dt.filter(function (i) {
+                var s = !1;
+                if (
+                  (i.meta && i.meta.layout && i.meta.layout === e) ||
+                  ((void 0 === i.meta || void 0 === i.meta.layout) && t === e)
+                ) {
+                  var l = at;
+                  if (
+                    (i.meta &&
+                      ((s = "blank" === i.meta.layout),
+                      (l = i.meta.publicRoute ? nt : at)),
+                    i.element)
+                  ) {
+                    var o =
+                      Object(O.l)(i.element.props) && !1 === s
+                        ? tt
+                        : c.Fragment;
+                    i.element = Object(g.jsx)(
+                      o,
+                      Object(a.a)(
+                        Object(a.a)(
+                          {},
+                          !1 === s
+                            ? (function (e) {
+                                if (Object(O.l)(e.element.props))
+                                  return e.meta ? { routeMeta: e.meta } : {};
+                              })(i)
+                            : {}
+                        ),
+                        {},
+                        {
+                          children: Object(g.jsx)(l, {
+                            route: i,
+                            children: i.element,
+                          }),
+                        }
+                      )
+                    );
+                  }
+                  n.push(i);
+                }
+                return n;
+              }),
+            n
+          );
+        },
+        ut = function (e) {
+          var t = e || "vertical",
+            n = [];
+          return (
+            ["vertical", "horizontal", "blank"].forEach(function (e) {
+              var a = bt(e, t);
+              n.push({ path: "/", element: ot[e] || ot[t], children: a });
+            }),
+            n
+          );
+        };
+    },
+    643: function (e, t, n) {},
+    653: function (e, t, n) {},
+    654: function (e, t, n) {},
+    655: function (e, t, n) {},
+    656: function (e, t, n) {},
+    657: function (e, t, n) {},
+    895: function (e, t, n) {
+      "use strict";
+      n.r(t);
+      var a = n(16),
+        i = n(1),
+        c = n(135),
+        s = n(9),
+        l = n(551),
+        o = n(479),
+        r = n(11),
+        d = Object(i.lazy)(function () {
+          return Promise.all([n.e(7), n.e(30)]).then(n.bind(null, 875));
+        }),
+        b = function (e) {
+          var t = e.allRoutes;
+          Object(s.f)();
+          return (
+            Object(i.useEffect)(function () {}, []),
+            Object(s.h)(
+              [
+                {
+                  path: "/",
+                  index: !0,
+                  element: Object(r.jsx)(s.a, {
+                    replace: !0,
+                    to: Object(o.j)("admin"),
+                  }),
+                },
+                {
+                  path: "*",
+                  element: Object(r.jsx)(l.a, {}),
+                  children: [{ path: "*", element: Object(r.jsx)(d, {}) }],
+                },
+              ].concat(Object(c.a)(t))
+            )
+          );
+        },
+        u = n(635),
+        j = n(536),
+        m = n(503);
+      n(662),
+        (t.default = function () {
+          var e = Object(i.useState)([]),
+            t = Object(a.a)(e, 2),
+            n = t[0],
+            c = t[1],
+            s = Object(j.a)().layout;
+          return (
+            Object(i.useEffect)(
+              function () {
+                c(Object(u.b)(s)),
+                  setTimeout(
+                    // function () {
+                    //   console.clear(),
+                    //     setTimeout(
+                    //       function () {
+                    //         console.clear(),
+                    //           setTimeout(
+                    //             function () {
+                    //               console.clear();
+                    //             },
+                    //             [2e3]
+                    //           );
+                    //       },
+                    //       [1500]
+                    //     );
+                    // },
+                    [1e3]
+                  );
+              },
+              [s]
+            ),
+            Object(m.createTheme)(
+              "darkTheme",
+              {
+                text: { primary: "#ffffff", secondary: "#ffffffb8" },
+                background: { default: "#2B323A" },
+                context: { background: "#3E454D", text: "#FFFFFF" },
+                divider: { default: "#ffffff28" },
+                action: {
+                  button: "rgba(0,0,0,.54)",
+                  hover: "rgba(0,0,0,.08)",
+                  disabled: "rgba(0,0,0,.12)",
+                },
+              },
+              "dark"
+            ),
+            Object(r.jsx)(i.Suspense, {
+              fallback: null,
+              children: Object(r.jsx)(b, { allRoutes: n }),
+            })
+          );
+        });
+    },
+  },
+]);
 //# sourceMappingURL=13.db3405eb.chunk.js.map

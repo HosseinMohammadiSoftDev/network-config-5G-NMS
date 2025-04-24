@@ -31,7 +31,7 @@ class SetConfigConnectionSMSRequest extends FormRequest
 
             foreach ($requiredKeys as $key)
                 if (!array_key_exists($key, $this->input('connection-data')))
-                    $validator->errors()->add('connection_data', "کلید '$key' باید در JSON وجود داشته باشد.");
+                    $validator->errors()->add("The key '$key' must exist in the JSON of 'connection_data'.");
 
         });
     }

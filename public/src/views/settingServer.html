@@ -13,11 +13,10 @@
       rel="icon"
       type="image/x-icon"
     />
-    <script type="module" crossorigin src="/assets/settingServer-BRHoVY-Z.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/logo white-CEz9GIPI.js">
-    <link rel="modulepreload" crossorigin href="/assets/jquery-DJaEtHRJ.js">
-    <link rel="stylesheet" crossorigin href="/assets/logo white-BHbPscNU.css">
-    <link rel="stylesheet" crossorigin href="/assets/settingServer-DbuTfEum.css">
+    <script type="module" crossorigin src="/assets/settingServer-CAE6axGn.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/logo-mci-02 (1)-CIi6MUcD.js">
+    <link rel="stylesheet" crossorigin href="/assets/logo-mci-02 (1)-BHbPscNU.css">
+    <link rel="stylesheet" crossorigin href="/assets/settingServer-CUemk4xX.css">
   </head>
   <body>
     <div class="container-fluid">
@@ -53,7 +52,7 @@
           <!--menu respansive-->
           <!--menu respansive-->
           <div
-            class="offcanvas offcanvas-start divMenuHumber"
+            class="offcanvas offcanvas-start divMenuHumber backOffcanvas"
             data-bs-scroll="true"
             tabindex="-1"
             id="offcanvasWithBothOptions"
@@ -563,7 +562,7 @@
           </div> -->
 
           <div
-            class="boxChange position-fixed mt-4 d-flex justify-content-between"
+            class="boxChange position-fixed d-flex justify-content-between"
             id="updateBtn"
           >
             <div class="d-flex align-items-center">
@@ -590,6 +589,7 @@
             <div class="modal-dialog">
               <div class="modal-content">
                 <div class="modal-header">
+                  <h5 class="modal-title">Update Config Module</h5>
                   <button
                     type="button"
                     class="btn-close"
@@ -602,7 +602,7 @@
                 </p>
                 <div
                   id="divServers"
-                  class="modal-body p-2"
+                  class="modal-body p-2 d-flex flex-column justify-content-center"
                 ></div>
                 <div class="modal-footer">
                   <button
@@ -635,6 +635,7 @@
             <div class="modal-dialog">
               <div class="modal-content">
                 <div class="modal-header">
+                  <h5 class="modal-title">Restore to Previous State</h5>
                   <button
                     type="button"
                     class="btn-close"
@@ -647,7 +648,7 @@
                   the previous state?
                 </div>
                 <div class="modal-footer">
-                  <form class="w-100 was-validated">
+                  <form class="w-100 was-validated d-flex flex-row-reverse">
                     <button
                       type="button"
                       id="subReturnToPrevious"
@@ -658,7 +659,7 @@
                     </button>
                     <button
                       type="button"
-                      class="btn btn-danger"
+                      class="btn btn-danger me-2"
                       data-bs-dismiss="modal"
                     >
                       Cancel
@@ -679,6 +680,7 @@
             <div class="modal-dialog">
               <div class="modal-content">
                 <div class="modal-header">
+                  <h5 class="modal-title">Restore to Default</h5>
                   <button
                     type="button"
                     class="btn-close"
@@ -691,7 +693,7 @@
                   the default state?
                 </div>
                 <div class="modal-footer">
-                  <form class="w-100 was-validated">
+                  <form class="w-100 was-validated d-flex flex-row-reverse">
                     <button
                       type="button"
                       id="subReturnToTheInitial"
@@ -702,7 +704,7 @@
                     </button>
                     <button
                       type="button"
-                      class="btn btn-danger"
+                      class="btn btn-danger me-2"
                       data-bs-dismiss="modal"
                     >
                       Cancel
