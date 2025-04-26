@@ -26,6 +26,7 @@ Route::middleware(['auth:sanctum'])->post('logout', [AuthController::class, 'log
 Route::post('send-login-by-phone', [AuthController::class , 'sendLoginPhone']);
 Route::post('login-by-phone', [AuthController::class , 'loginPhone']);
 
+Route::post('validation-reCaptcha', [AuthController::class, 'validateReCaptchaToken']);
 
 
 Route::middleware(['auth:sanctum'])->group(function () {

@@ -3,6 +3,9 @@
 namespace Modules\User\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Response;
+use Modules\User\Http\Requests\ReCaptcha\ValidateReCaptchaTokenRequest;
 use Modules\User\Models\Role;
 use Modules\User\Models\User;
 use Modules\Server\Models\Server;
@@ -201,4 +204,25 @@ class AuthController extends ApiController
 
     }
 
+
+
+    public function validateReCaptchaToken (ValidateReCaptchaTokenRequest $request)
+    {
+        $credentials = $request->validated();
+
+        $secretKey = env('RECAPTCHA_SECRET_KEY');
+        $googleUrl = env('RECAPTCHA_VERYFY');
+
+        $response = Http::asForm()->post($googleUrl, [
+            'secret'   => $secretKey,
+            'response' => $credentials['token'],
+        ]);
+
+
+
+
+        return $response->json()['success'] == true ?? null
+            ? Response::josn(['success' => true, 'data' => $response->json()], 200)
+            : Response::json(['success' => false, 'data' => $response->json()], 422);
+    }
 }
