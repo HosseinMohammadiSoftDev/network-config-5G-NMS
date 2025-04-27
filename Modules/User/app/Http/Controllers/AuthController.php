@@ -143,7 +143,7 @@ class AuthController extends ApiController
 
         $correct_code = PhoneLogin::firstWhere('phone', $user->phone);
 
-        // بررسی صحت کد وارد شده
+//        validation code
         if (!$correct_code || $correct_code->token !== $credentials['code'])
             return response(['msg' => 'The entered code is incorrect!'], 422);
 

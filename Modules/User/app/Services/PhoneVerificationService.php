@@ -79,45 +79,38 @@ class PhoneVerificationService extends ApiController
 
             $this->storeVerificationCode($template, $code, $phone);
 
+            $message = "code login to 5G Application: $code";
+
 
                     // SMS panle SunwaysmsService SOAP SERVICE
-            // $connectionData = SystemSettings::first()->config_connection_sms ?? null
-                // ? Crypt::decrypt(SystemSettings::first()->config_connection_sms)
-                // : throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
+             $connectionData = SystemSettings::first()->config_connection_sms ?? null
+                 ? Crypt::decrypt(SystemSettings::first()->config_connection_sms)
+                 : throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
 
-                    // SOAP SERVICE
-                // if ($connectionData) {
-                //     $sunwaysmsService = new SunwaysmsService(
-                //         $connectionData['username'],
-                //         $connectionData['password'],
-                //         $connectionData['special_number']
-                //     );
-                //     $sunwaysmsService->sendMessage($phone, $code);
+                 if ($connectionData) {
 
-                //     // HTTP SERVICE
-                // $smsService = new SMSService();
-                // $smsService->sendMessage(
-                //     $connectionData['username'],
-                //     $connectionData['password'],
-                //     [$phone],
-                //     $code,
-                //     '09303380391',
-                //     false,
-                //     [$code]
-                // );
+                         // HTTP SERVICE
+                     $smsService = new SMSService();
+                     $smsService->sendMessage(
+                         $connectionData['username'],
+                         $connectionData['password'],
+                         [$phone],
+                         $message,
+                         $connectionData['special_number'],
+                         false,
+                         [$code]
+                     );
 
-                // } else
-                //     throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
+                 } else
+                     throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
 
 
             throw new HttpResponseException(response()->json([
                 'msg' => "The SMS has been sent successfully.",
-                'code' => $code,
                 'user_id' => $user['id'] ?? null
             ], 200));
 
        } catch (\Exception $e) {
-        //    throw new HttpResponseException(response()->json(['msg' => "SMS sending failed!", 'error' => $e->getMessage()],422));
             throw $e;
        }
     }
@@ -294,7 +287,7 @@ class PhoneVerificationService extends ApiController
     {
         $correct_code = PhoneLogin::firstWhere('phone', $phone);
 
-        // بررسی صحت کد وارد شده
+//              validation code
         if (!$correct_code || $correct_code->token !== $code)
             return response(['msg' => 'The entered code is incorrect!'], 422);
 
