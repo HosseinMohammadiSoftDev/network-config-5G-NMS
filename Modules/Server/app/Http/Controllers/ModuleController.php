@@ -147,7 +147,13 @@ class ModuleController extends ApiController
 
         $userPermissions = $user->getAllPermissions()->pluck('name')->toArray();
 
-        $modules = Module::with(['servers' => function ($query) use ($userPermissions) {
+
+
+        $modules = Module::whereHas('servers', function ($query) use ($userPermissions) {
+            $query->whereIn('name', collect($userPermissions)->map(function ($permission) {
+                return str_replace('server/', '', $permission);
+            })->toArray());
+        })->with(['servers' => function ($query) use ($userPermissions) {
             $query->whereIn('name', collect($userPermissions)->map(function ($permission) {
                 return str_replace('server/', '', $permission);
             })->toArray());
