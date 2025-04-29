@@ -24,6 +24,8 @@ return new class extends Migration
 
             $table->string('orginal_VM_ip')->nullable();
 
+            $table->boolean('active_online_capcha')->default(false);
+
             $table->timestamps();
         });
     }

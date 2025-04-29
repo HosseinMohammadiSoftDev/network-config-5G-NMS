@@ -75,6 +75,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::middleware(['role:admin'])->post('set-config-connection-sms', [SystemSettingsController::class, 'setConfigConnectionSMS']);
     Route::middleware(['role:admin'])->get('get-config-connection-sms', [SystemSettingsController::class, 'getConfinConnectionSMS']);
 
+    Route::post('set-status-reCapcha', [SystemSettingsController::class, 'setStatusReCapcha']);
+    Route::get('get-status-reCapcha', [SystemSettingsController::class, 'getStatusReCapcha']);
+
         // motherboard
     Route::get('get-motherboard', [SystemSettingsController::class, 'getMotherboard']);
 

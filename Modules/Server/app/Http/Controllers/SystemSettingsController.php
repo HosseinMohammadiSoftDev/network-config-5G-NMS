@@ -4,6 +4,9 @@ namespace Modules\Server\Http\Controllers;
 
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Validation\ValidationException;
+use Modules\Server\Http\Requests\Capcha\SetStatusReCapchaRequest;
 use Modules\Server\Models\Server;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -163,7 +166,33 @@ class SystemSettingsController extends ApiController
     }
 
 
+//    online capcha
+    public function setStatusReCapcha (SetStatusReCapchaRequest $request)
+    {
+        $creadtioanle = $request->validated();
 
+        try {
+            DB::beginTransaction();
+
+                $systemSetting = SystemSettings::first();
+
+                !$systemSetting
+                    ? $systemSetting = $systemSetting->create($creadtioanle)
+                    : $systemSetting->update(['active_online_capcha'
+                        => $creadtioanle['active_online_capcha'] ?? $systemSetting['active_online_capcha']]);
+
+            DB::commit();
+                return response()->json(['success' => true, 'msg' => 'Settings have been successfully applied.'], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+                return response()->json(['success' => false, 'msg' => 'An issue occurred in the application process.'], 500);
+        }
+    }
+    public function getStatusReCapcha ()
+    {
+        return response()->json(['success' => true, 'data' => SystemSettings::first()->active_online_capcha], 200);
+    }
 
 
 

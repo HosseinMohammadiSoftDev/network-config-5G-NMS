@@ -19,7 +19,8 @@ class SystemSettings extends Model
         'is_login_2FA',
         'is_login_sms',
         'config_connection_sms',
-        'orginal_vm_ip'
+        'orginal_vm_ip',
+        'active_online_capcha'
     ];
 
 }
