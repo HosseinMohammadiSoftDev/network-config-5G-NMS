@@ -8,20 +8,8 @@ use GuzzleHttp\Exception\GuzzleException;
 
 class SMSService
 {
-    private const BASE_URL = 'https://sms.sunwaysms.com/smsws/HttpService.ashx';
 
-    private Client $http;
-
-    public function __construct(Client $client = null)
-    {
-        $this->http = $client ?? new Client([
-            'base_uri' => self::BASE_URL,
-            'timeout' => 30,
-        ]);
-    }
-
-
-    public function sendMessage(
+    public function sendMessageAsync(
         string $username,
         string $password,
         array $recipientNumbers,
@@ -29,7 +17,7 @@ class SMSService
         string $sender,
         bool $isFlash,
         array $messageIds
-    ): ?string {
+    ): bool {
         $params = [
             'service'       => 'SendArray',
             'UserName'      => $username,
@@ -41,14 +29,11 @@ class SMSService
             'chkMessageId'  => implode(',', $messageIds),
         ];
 
-        try {
-            $response = $this->http->get('', [
-                'query' => $params,
-            ]);
+        $query = http_build_query($params);
+        $url = env('SUN_WAY_SMS_ADDRESS') . '?' . $query;
 
-            return $response->getBody()->getContents();
-        } catch (GuzzleException $e) {
-            return $e->getMessage();
-        }
+        exec("curl -s \"$url\" > /dev/null 2>&1 &");
+
+        return true;
     }
 }
