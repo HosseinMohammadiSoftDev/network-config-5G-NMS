@@ -693,11 +693,11 @@ class ModuleController extends ApiController
             throw new HttpResponseException(response()->json(['msg' => 'You did not specify a configuration address run config'], 422));
 
 
-        // $sshHelper = new sshHelper($server, $username, $password);
+         $sshHelper = new sshHelper($server, $username, $password);
 
             // update module
-        // $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $server['path_config'] . $moduleName . '.yaml';
-        // $sshHelper->runCommand($commandUpdateFileModule );
+         $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $server['path_config'] . $moduleName . '.yaml';
+         $sshHelper->runCommand($commandUpdateFileModule );
 
             // restart module
         $commandRestart = $server['path_run_config'] . 'bbdh-' . $moduleName . 'd' . ' restart';
@@ -1114,7 +1114,7 @@ class ModuleController extends ApiController
         $module = Module::find($validate['module_id']);
 
         // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' restart';  // command as bbdh
-        $command = 'systemctl restart ' . $module['name'] . 'd'; // command as systemctl
+        $command = 'systemctl restart ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
 
             return $this->runCommandModuleToServer($validate, $command, $server,'restartModel', 'restartServiceModule');
     }
@@ -1126,7 +1126,7 @@ class ModuleController extends ApiController
         $module = Module::find($validate['module_id']);
 
         // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' start';  // command as bbdh
-        $command = 'systemctl start ' . $module['name'] . 'd'; // command as systemctl
+        $command = 'systemctl start ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
 
             return $this->runCommandModuleToServer($validate, $command, $server, 'startModule', 'startServiceModule');
     }
@@ -1138,7 +1138,7 @@ class ModuleController extends ApiController
         $module = Module::find($validate['module_id']);
 
         // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' stop'; // command as bbdh
-        $command = 'systemctl stop ' . $module['name'] . 'd'; // command as systemctl
+        $command = 'systemctl stop ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
 
             return $this->runCommandModuleToServer($validate, $command, $server,'stopModule', 'stopServiceModule');
     }
@@ -1151,7 +1151,7 @@ class ModuleController extends ApiController
 
 
         // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' status'; // command as bbdh
-        $command = 'systemctl status ' . $module['name'] . 'd'; // command as systemctl
+        $command = 'systemctl status ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
 
             return $this->runCommandModuleToServer($validate, $command, $server, 'statusModule', 'statusServiceModule');
     }

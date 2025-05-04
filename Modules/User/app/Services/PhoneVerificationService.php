@@ -92,11 +92,11 @@ class PhoneVerificationService extends ApiController
                          // HTTP SERVICE
                      $smsService = new SMSService();
                      $smsService->sendMessage(
-                         $connectionData['username'],
-                         $connectionData['password'],
+                         $connectionData['username'] ?? null,
+                         $connectionData['password'] ?? null,
                          [$phone],
                          $message,
-                         $connectionData['special_number'],
+                         $connectionData['special_number'] ?? null,
                          false,
                          [$code]
                      );

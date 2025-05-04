@@ -20,7 +20,9 @@ class SystemSettings extends Model
         'is_login_sms',
         'config_connection_sms',
         'orginal_vm_ip',
-        'active_online_capcha'
+        'active_online_capcha',
+        'recaptcha_secret_key',
+        'recaptcha_site_name',
     ];
 
 }

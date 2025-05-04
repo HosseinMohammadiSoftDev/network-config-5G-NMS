@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Validation\ValidationException;
+use Modules\Server\Http\Requests\Capcha\SetReCaptchaDataRequest;
 use Modules\Server\Http\Requests\Capcha\SetStatusReCapchaRequest;
 use Modules\Server\Models\Server;
 use Illuminate\Support\Facades\DB;
@@ -151,7 +152,11 @@ class SystemSettingsController extends ApiController
 
 
             DB::commit();
-                return response()->json(['success' => true, 'msg' => 'Settings have been successfully applied.'], 200);
+                return response()->json([
+                    'success' => true,
+                    'msg' => 'Settings have been successfully applied.',
+                    'data' => Crypt::decrypt(SystemSettings::first()->config_connection_sms)
+                ], 200);
 
         } catch (Exception $e) {
             DB::rollBack();
@@ -194,6 +199,57 @@ class SystemSettingsController extends ApiController
         return response()->json(['success' => true, 'data' => SystemSettings::first()->active_online_capcha], 200);
     }
 
+
+//    set data captcha
+    public function setRecatpchaData (SetReCaptchaDataRequest $request)
+    {
+        $creadtioanle = $request->validated();
+
+        try {
+            DB::beginTransaction();
+
+                $systemSetting = SystemSettings::first();
+
+                    $systemSetting
+                        ? $systemSetting->update([
+                        'recaptcha_secret_key' => Crypt::encrypt($creadtioanle['recaptcha_secret_key'] ?? $systemSetting['recaptcha_secret_key']),
+                        'recaptcha_site_name' => Crypt::encrypt($creadtioanle['recaptcha_site_name'] ?? $systemSetting['recaptcha_site_name'])
+                    ])
+                        : $systemSetting = $systemSetting->create([
+                            'recaptcha_secret_key' => Crypt::encrypt($creadtioanle['recaptcha_secret_key'] ?? $systemSetting['recaptcha_secret_key']),
+                            'recaptcha_site_name' => Crypt::encrypt($creadtioanle['recaptcha_site_name'] ?? $systemSetting['recaptcha_site_name'])
+                    ]);
+
+
+            DB::commit();
+                return response()->json([
+                    'success' => true,
+                    'msg' => 'Settings have been successfully applied.',
+                    'data' => [
+                        'recaptcha_secret_key' => Crypt::decrypt(SystemSettings::first()['recaptcha_secret_key']),
+                        'recaptcha_site_name' => Crypt::decrypt(SystemSettings::first()['recaptcha_site_name'])
+                    ]], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+                return response()->json(['success' => false, 'msg' => 'An issue occurred in the application process.'], 500);
+        }
+    }
+    public function getRecaptchaData()
+    {
+        return SystemSettings::first()->config_connection_sms ?? null
+            ? response()->json([
+                'success' => true,
+                'data' => [
+                    'recaptcha_secret_key' => Crypt::decrypt(SystemSettings::first()->recaptcha_secret_key),
+                    'recaptcha_site_name' => Crypt::decrypt(SystemSettings::first()->recaptcha_site_name)
+                ]
+            ], 200)
+            : response()->json([
+                'success' => true,
+                'msg' => 'no content'
+            ]);
+    }
 
 
 

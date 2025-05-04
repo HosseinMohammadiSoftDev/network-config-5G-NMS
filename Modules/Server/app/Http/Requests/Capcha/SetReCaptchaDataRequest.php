@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\User\Http\Requests\ReCaptcha;
+namespace Modules\Server\Http\Requests\Capcha;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ValidateReCaptchaTokenRequest extends FormRequest
+class SetReCaptchaDataRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -12,7 +12,8 @@ class ValidateReCaptchaTokenRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'response' => ['required', 'string'],
+            'recaptcha_secret_key' => ['required', 'string'],
+            'recaptcha_site_name' => ['required', 'string'],
         ];
     }
 

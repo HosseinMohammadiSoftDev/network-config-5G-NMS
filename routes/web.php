@@ -17,3 +17,7 @@ Route::get('/assets/{path}', function ($path) {
     }
     abort(404);
 })->where('path', '.*');
+
+Route::get('recaptcha', function () {
+   return view('captcha');
+});

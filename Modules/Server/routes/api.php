@@ -25,11 +25,13 @@ Route::fallback(function(){
     return response()->json(['msg' => 'The address has been entered incorrectly.']);
 });
 
+Route::get('get-status-reCapcha', [SystemSettingsController::class, 'getStatusReCapcha']);
+
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
                         // server
-    Route::middleware(['permission:VM/read|role:admin|visitor|expert'])->get('show-all-servers', [ServerController::class, 'showAllServers']);
+    Route::middleware([ 'permission:VM/read|role:admin|visitor|expert'])->get('show-all-servers', [ServerController::class, 'showAllServers']);
     Route::middleware([ 'permission:VM/create|role:admin|expert'])->post('create-server', [ServerController::class, 'createServer']);
     Route::middleware([ 'permission:VM/update|role:admin|expert'])->put('edit-server', [ServerController::class, 'editServer']);
     Route::middleware([ 'permission:VM/delete|role:admin|expert'])->delete('server-delete', [ServerController::class, 'deleteServer']);
@@ -76,7 +78,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::middleware(['role:admin'])->get('get-config-connection-sms', [SystemSettingsController::class, 'getConfinConnectionSMS']);
 
     Route::post('set-status-reCapcha', [SystemSettingsController::class, 'setStatusReCapcha']);
-    Route::get('get-status-reCapcha', [SystemSettingsController::class, 'getStatusReCapcha']);
+
+    Route::post('set-recapcha-data', [SystemSettingsController::class, 'setRecatpchaData']);
+    Route::get('get-recapcha-data', [SystemSettingsController::class, 'getRecaptchaData']);
 
         // motherboard
     Route::get('get-motherboard', [SystemSettingsController::class, 'getMotherboard']);

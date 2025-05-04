@@ -51,6 +51,9 @@ class AuthController extends ApiController
                     if (!$systemSettings)
                         throw ValidationException::withMessages(['validation' => ['no set dafalte VM ip']]);
 
+                    if (isset($systemSettings['orginal_vm_ip ']))
+                        throw ValidationException::withMessages(['validation' => ['do not set dafalte VM ip']]);
+
                 if (request()->ip() !== $systemSettings['orginal_vm_ip ']);
                     throw ValidationException::withMessages(['validation' => ['Your IP is different from the orginal server ip on which your account is registered.']]);
             }
@@ -64,8 +67,8 @@ class AuthController extends ApiController
         if (!$user || !Hash::check($credentials['password'], $user->password))
             return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
 
-        if (!$user->hasRole(Role::ADMIN))
-            // $this->validateLoginDevice($user);
+//        if (!$user->hasRole(Role::ADMIN))
+//             $this->validateLoginDevice($user);
 
 
         $user->tokens()->delete();
@@ -210,19 +213,14 @@ class AuthController extends ApiController
     {
         $credentials = $request->validated();
 
-        $secretKey = env('RECAPTCHA_SECRET_KEY');
-        $googleUrl = env('RECAPTCHA_VERYFY');
-
-        $response = Http::asForm()->post($googleUrl, [
-            'secret'   => $secretKey,
-            'response' => $credentials['token'],
+        $response = Http::asForm()->post(env('RECAPTCHA_VERYFY'), [
+            'secret' => env('RECAPTCHA_SECRET_KEY'),
+            'response' => $credentials['response'],
+            'remoteip' => request()->ip(),
         ]);
 
-
-
-
         return $response->json()['success'] == true ?? null
-            ? Response::josn(['success' => true, 'data' => $response->json()], 200)
+            ? Response::json(['success' => true, 'data' => $response->json()], 200)
             : Response::json(['success' => false, 'data' => $response->json()], 422);
     }
 }

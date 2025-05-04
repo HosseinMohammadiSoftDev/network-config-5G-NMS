@@ -24,6 +24,9 @@ return new class extends Migration
 
             $table->string('orginal_VM_ip')->nullable();
 
+            $table->string('recaptcha_secret_key')->nullable();
+            $table->string('recaptcha_site_name')->nullable();
+
             $table->boolean('active_online_capcha')->default(false);
 
             $table->timestamps();
