@@ -49,7 +49,7 @@ class RoleController extends ApiController
     }
     public function showAllPermissions ()
     {
-        return $this->respondSuccess('List of all permissions', Permission::all()->pluck('name'));
+        return $this->respondSuccess('List of all permissions', Permission::cursor()->pluck('name'));
     }
 
 

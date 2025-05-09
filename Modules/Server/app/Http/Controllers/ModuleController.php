@@ -693,11 +693,11 @@ class ModuleController extends ApiController
             throw new HttpResponseException(response()->json(['msg' => 'You did not specify a configuration address run config'], 422));
 
 
-         $sshHelper = new sshHelper($server, $username, $password);
+//         $sshHelper = new sshHelper($server, $username, $password);
 
             // update module
-         $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $server['path_config'] . $moduleName . '.yaml';
-         $sshHelper->runCommand($commandUpdateFileModule );
+//         $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $server['path_config'] . $moduleName . '.yaml';
+//         $sshHelper->runCommand($commandUpdateFileModule );
 
             // restart module
         $commandRestart = $server['path_run_config'] . 'bbdh-' . $moduleName . 'd' . ' restart';
