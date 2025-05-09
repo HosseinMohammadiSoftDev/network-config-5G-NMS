@@ -1,14 +1,9 @@
 <?php
 
-use Modules\Server\Models\Module;
-use Modules\Server\Models\Server;
 use Illuminate\Support\Facades\Route;
 use Modules\Server\Http\Controllers\ModuleController;
 use Modules\Server\Http\Controllers\ServerController;
-use Modules\Server\Helpers\SshHelper;
 use Modules\Server\Http\Controllers\ServiceController;
-use Modules\Server\Http\Controllers\SystemSettingsController;
-use Modules\Server\Models\SystemSettings;
 
 /*
  *--------------------------------------------------------------------------
@@ -24,8 +19,6 @@ use Modules\Server\Models\SystemSettings;
 Route::fallback(function(){
     return response()->json(['msg' => 'The address has been entered incorrectly.']);
 });
-
-Route::get('get-status-reCapcha', [SystemSettingsController::class, 'getStatusReCapcha']);
 
 
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -62,30 +55,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::middleware(['permission:VM/status|role:admin|expert'])->post('server-stop', [ServerController::class, 'serverStop']);
     Route::middleware(['permission:VM/status|role:admin|expert'])->post('server-start', [ServerController::class, 'ServerStart']);
     Route::middleware(['role:admin|expert|visitor'])->post('server-status', [ServerController::class, 'serverStatus']);
-
-
-            // system seting
-    Route::middleware(['permission:monitoring|role:admin|expert'])->get('show-address', [SystemSettingsController::class, 'showAllAddress']);
-    Route::middleware(['permission:monitoring|role:admin|expert'])->post('add-address', [SystemSettingsController::class,'addOrUpdateAddress']);
-
-    Route::middleware(['role:admin'])->post('set-2FA', [SystemSettingsController::class, 'set2FA']);
-    Route::withoutMiddleware(['auth:sanctum'])->get('get-2FA-status', [SystemSettingsController::class, 'getStatus2FA']);
-
-    Route::middleware(['role:admin'])->post('set-login-sms-status', [SystemSettingsController::class, 'setLoginBySMS']);
-    Route::withoutMiddleware(['auth:sanctum'])->get('get-login-sms-status', [SystemSettingsController::class, 'getLoginBySMS']);
-
-    Route::middleware(['role:admin'])->post('set-config-connection-sms', [SystemSettingsController::class, 'setConfigConnectionSMS']);
-    Route::middleware(['role:admin'])->get('get-config-connection-sms', [SystemSettingsController::class, 'getConfinConnectionSMS']);
-
-    Route::post('set-status-reCapcha', [SystemSettingsController::class, 'setStatusReCapcha']);
-
-    Route::post('set-recapcha-data', [SystemSettingsController::class, 'setRecatpchaData']);
-    Route::get('get-recapcha-data', [SystemSettingsController::class, 'getRecaptchaData']);
-
-        // motherboard
-    Route::get('get-motherboard', [SystemSettingsController::class, 'getMotherboard']);
-
-    Route::middleware(['role:admin'])->post('set-orginal-VM-ip',[SystemSettingsController::class, 'setOrginalVMIp']);
-    Route::get('get-orginal-vm-ip', [SystemSettingsController::class, 'getOrginalVMIp']);
-
 });

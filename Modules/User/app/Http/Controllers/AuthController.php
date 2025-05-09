@@ -2,29 +2,24 @@
 
 namespace Modules\User\Http\Controllers;
 
+use App\Http\Controllers\Contract\ApiController;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Response;
-use Modules\User\Http\Requests\ReCaptcha\ValidateReCaptchaTokenRequest;
-use Modules\User\Models\Role;
-use Modules\User\Models\User;
-use Modules\Server\Models\Server;
-use Modules\User\Models\PhoneLogin;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Modules\Server\Models\SystemSettings;
-use App\Http\Controllers\Contract\ApiController;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Validation\ValidationException;
-use Modules\User\Http\Requests\Auth\Loginrequest;
-use Modules\User\Transformers\Auth\LoginResource;
-use Modules\User\Services\PhoneVerificationService;
+use Modules\Server\Models\Server;
+use Modules\SystemSetting\Models\SystemSettings;
 use Modules\User\Http\Requests\Auth\Login2FARequest;
+use Modules\User\Http\Requests\Auth\Loginrequest;
 use Modules\User\Http\Requests\Phone\LoginPhoneRequest;
 use Modules\User\Http\Requests\Phone\SendLoginPhoneRequest;
-use Modules\User\Http\Requests\Phone\VerifyUserPhoneRequest;
-
-use function PHPUnit\Framework\isNull;
+use Modules\User\Http\Requests\ReCaptcha\ValidateReCaptchaTokenRequest;
+use Modules\User\Models\PhoneLogin;
+use Modules\User\Models\User;
+use Modules\User\Services\PhoneVerificationService;
+use Modules\User\Transformers\Auth\LoginResource;
 
 class AuthController extends ApiController
 {

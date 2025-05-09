@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Server\Http\Requests\Capcha;
+namespace Requests\SystemSetting;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class SetReCaptchaDataRequest extends FormRequest
+class SetOrgainalVMIpRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -12,8 +12,7 @@ class SetReCaptchaDataRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'recaptcha_secret_key' => ['required', 'string'],
-            'recaptcha_site_name' => ['required', 'string'],
+            'orginal_vm_ip' => ['required', 'string', 'ip']
         ];
     }
 

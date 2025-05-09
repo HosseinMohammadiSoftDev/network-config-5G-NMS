@@ -1,11 +1,10 @@
 <?php
 
-namespace Modules\Server\Http\Requests\FA2;
+namespace Requests\SystemSetting;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Password;
 
-class Set2FAReqest extends FormRequest
+class AddAddressRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -13,10 +12,10 @@ class Set2FAReqest extends FormRequest
     public function rules(): array
     {
         return [
-            'is_login_2FA' => ['required', 'boolean'],
+            'zabbix_address' => ['nullable', 'string', 'min:1', 'max:512'],
+            'elk_address' => ['nullable', 'string','min:1','max:512'],
         ];
     }
-
 
     /**
      * Determine if the user is authorized to make this request.

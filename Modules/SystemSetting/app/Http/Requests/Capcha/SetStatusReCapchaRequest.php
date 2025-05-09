@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Server\Http\Requests\SystemSettinge;
+namespace Requests\Capcha;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class SetOrgainalVMIpRequest extends FormRequest
+class SetStatusReCapchaRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -12,7 +12,7 @@ class SetOrgainalVMIpRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'orginal_vm_ip' => ['required', 'string', 'ip']
+            'active_online_capcha' => ['required', 'boolean'],
         ];
     }
 

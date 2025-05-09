@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\Server\Http\Controllers\SystemSettingsController;
 use Modules\User\Http\Controllers\AuthController;
 use Modules\User\Http\Controllers\RoleController;
 use Modules\User\Http\Controllers\UserController;

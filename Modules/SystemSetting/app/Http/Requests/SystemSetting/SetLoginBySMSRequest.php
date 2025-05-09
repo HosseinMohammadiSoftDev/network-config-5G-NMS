@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Server\Http\Requests\Capcha;
+namespace Requests\SystemSetting;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class SetStatusReCapchaRequest extends FormRequest
+class SetLoginBySMSRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -12,9 +12,10 @@ class SetStatusReCapchaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'active_online_capcha' => ['required', 'boolean'],
+            'is_login_sms' => ['required', 'boolean']
         ];
     }
+
 
     /**
      * Determine if the user is authorized to make this request.

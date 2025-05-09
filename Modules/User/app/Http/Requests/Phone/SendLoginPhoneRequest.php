@@ -3,7 +3,7 @@
 namespace Modules\User\Http\Requests\Phone;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Modules\Server\Models\SystemSettings;
+use Modules\SystemSetting\Models\SystemSettings;
 
 class SendLoginPhoneRequest extends FormRequest
 {

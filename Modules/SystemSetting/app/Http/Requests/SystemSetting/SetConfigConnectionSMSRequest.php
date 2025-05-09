@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Server\Http\Requests\SystemSetig;
+namespace Requests\SystemSetting;
 
 use Illuminate\Foundation\Http\FormRequest;
 

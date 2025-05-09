@@ -1,26 +1,19 @@
 <?php
 
-namespace Modules\Server\Http\Controllers;
 
-use Exception;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Validation\ValidationException;
-use Modules\Server\Http\Requests\Capcha\SetReCaptchaDataRequest;
-use Modules\Server\Http\Requests\Capcha\SetStatusReCapchaRequest;
-use Modules\Server\Models\Server;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Crypt;
-use Modules\Server\Models\SystemSettings;
 use App\Http\Controllers\Contract\ApiController;
-use Modules\Server\Http\Requests\FA2\Set2FAReqest;
-use Modules\Server\Http\Requests\SystemStinge\AddAddressRequest;
-use Modules\Server\Http\Requests\SystemStinge\SetLoginBySMSRequest;
-use Modules\Server\Http\Requests\SystemSetig\SetConfigConnectionSMSRequest;
-use Modules\Server\Http\Requests\SystemSettinge\SetOrgainalVMIpRequest;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
+use Modules\Server\Models\Server;
+use Modules\SystemSetting\Models\SystemSettings;
+use Requests\Capcha\SetReCaptchaDataRequest;
+use Requests\Capcha\SetStatusReCapchaRequest;
+use Requests\FA2\Set2FAReqest;
+use Requests\SystemSetting\AddAddressRequest;
+use Requests\SystemSetting\SetConfigConnectionSMSRequest;
+use Requests\SystemSetting\SetLoginBySMSRequest;
+use Requests\SystemSetting\SetOrgainalVMIpRequest;
 
 class SystemSettingsController extends ApiController
 {

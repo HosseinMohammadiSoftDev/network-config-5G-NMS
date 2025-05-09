@@ -1,9 +1,10 @@
 <?php
 
-namespace Modules\Server\Models;
+namespace Modules\SystemSetting\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
 // use Modules\Server\Database\Factories\SystemSettingsFactory;
 
 class SystemSettings extends Model

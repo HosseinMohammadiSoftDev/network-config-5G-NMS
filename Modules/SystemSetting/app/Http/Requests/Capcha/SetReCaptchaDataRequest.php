@@ -1,11 +1,10 @@
 <?php
 
-namespace Modules\Server\Http\Requests\SystemStinge;
+namespace Requests\Capcha;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Modules\Server\Models\SystemSettings;
 
-class SetLoginBySMSRequest extends FormRequest
+class SetReCaptchaDataRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -13,10 +12,10 @@ class SetLoginBySMSRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'is_login_sms' => ['required', 'boolean']
+            'recaptcha_secret_key' => ['required', 'string'],
+            'recaptcha_site_name' => ['required', 'string'],
         ];
     }
-
 
     /**
      * Determine if the user is authorized to make this request.

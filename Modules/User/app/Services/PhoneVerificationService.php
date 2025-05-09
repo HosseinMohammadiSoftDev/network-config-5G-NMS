@@ -4,18 +4,16 @@ namespace Modules\User\Services;
 
 
 
-use Modules\User\Services\SMSService;
-use Modules\User\Models\User;
-use Modules\User\Models\PhoneLogin;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Crypt;
-use Modules\Server\Models\SystemSettings;
-use Modules\User\Models\PhoneResetPassword;
-use Modules\User\Services\SunwaysmsService;
-use Illuminate\Validation\ValidationException;
-use Modules\User\Models\PhoneVerificationToken;
 use App\Http\Controllers\Contract\ApiController;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Validation\ValidationException;
+use Modules\SystemSetting\Models\SystemSettings;
+use Modules\User\Models\PhoneLogin;
+use Modules\User\Models\PhoneResetPassword;
+use Modules\User\Models\PhoneVerificationToken;
+use Modules\User\Models\User;
 
 
 class PhoneVerificationService extends ApiController
