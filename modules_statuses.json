@@ -2,5 +2,6 @@
     "User": true,
     "Log": true,
     "Server": true,
-    "SystemSetting": true
+    "SystemSetting": true,
+    "Backup": true
 }
