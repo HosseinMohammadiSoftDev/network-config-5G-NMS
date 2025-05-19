@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\SystemSetting\Http\Controllers\SystemSettingController;
+use Modules\SystemSetting\Http\Controllers\SystemSettingsController;
 
 /*
  *--------------------------------------------------------------------------
@@ -40,4 +40,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::middleware(['role:admin'])->post('set-orginal-VM-ip',[SystemSettingsController::class, 'setOrginalVMIp']);
     Route::get('get-orginal-vm-ip', [SystemSettingsController::class, 'getOrginalVMIp']);
+
+
+//      merge all routes
+    Route::get('get-all-config-system', [SystemSettingsController::class, 'getAllConfigSystem']);
+    Route::post('set-all-config-system', [SystemSettingsController::class, 'setAllConfigSystem']);
+
 });

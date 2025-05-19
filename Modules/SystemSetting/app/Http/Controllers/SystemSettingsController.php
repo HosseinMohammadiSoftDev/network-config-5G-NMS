@@ -1,19 +1,21 @@
 <?php
 
+namespace Modules\SystemSetting\Http\Controllers;
 
 use App\Http\Controllers\Contract\ApiController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Modules\Server\Models\Server;
+use Modules\SystemSetting\Http\Requests\Capcha\SetReCaptchaDataRequest;
+use Modules\SystemSetting\Http\Requests\Capcha\SetStatusReCapchaRequest;
+use Modules\SystemSetting\Http\Requests\FA2\Set2FAReqest;
+use Modules\SystemSetting\Http\Requests\Merged\MergeAllConfigSystemRequest;
+use Modules\SystemSetting\Http\Requests\SystemSetting\AddAddressRequest;
+use Modules\SystemSetting\Http\Requests\SystemSetting\SetConfigConnectionSMSRequest;
+use Modules\SystemSetting\Http\Requests\SystemSetting\SetLoginBySMSRequest;
+use Modules\SystemSetting\Http\Requests\SystemSetting\SetOrgainalVMIpRequest;
 use Modules\SystemSetting\Models\SystemSettings;
-use Requests\Capcha\SetReCaptchaDataRequest;
-use Requests\Capcha\SetStatusReCapchaRequest;
-use Requests\FA2\Set2FAReqest;
-use Requests\SystemSetting\AddAddressRequest;
-use Requests\SystemSetting\SetConfigConnectionSMSRequest;
-use Requests\SystemSetting\SetLoginBySMSRequest;
-use Requests\SystemSetting\SetOrgainalVMIpRequest;
 
 class SystemSettingsController extends ApiController
 {
@@ -275,5 +277,43 @@ class SystemSettingsController extends ApiController
         return SystemSettings::first()->orginal_vm_ip ?? null
             ? response()->json(['success' => true, 'data' => SystemSettings::first()->orginal_vm_ip], 200)
             : response()->json(['success' => true, 'msg' => 'no content']);
+    }
+
+
+
+//    merge routes
+    public function getAllConfigSystem ()
+    {
+        return SystemSettings::first()
+            ? response()->json(['success' => true, 'data' => SystemSettings::first()], 200)
+            : response()->json(['success' => true, 'msg' => 'no content']);
+    }
+    public function setAllConfigSystem (MergeAllConfigSystemRequest $request)
+    {
+        $creadtioanle = $request->validated();
+
+        try {
+            DB::beginTransaction();
+
+                $systemSetting = SystemSettings::first();
+
+                !$systemSetting
+                    ? $systemSetting = SystemSettings::create($creadtioanle)
+                    : $systemSetting->update([
+                        'zabbix_address' => $creadtioanle['zabbix_address'] ?? $systemSetting['zabbix_address'],
+                        'elk_address' => $creadtioanle['elk_address'] ?? $systemSetting['elk_address'],
+                        'is_login_2FA' => $creadtioanle['is_login_2FA'] ?? $systemSetting['is_login_2FA'],
+                        'is_login_sms' => $creadtioanle['is_login_sms'] ?? $systemSetting['is_login_sms'],
+                        'orginal_vm_ip' => $creadtioanle['orginal_vm_ip'] ?? $systemSetting['orginal_vm_ip']
+                    ]);
+
+
+            DB::commit();
+                return response()->json(['success' => true, 'msg' => 'set config system successFully', 'data' => $creadtioanle], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+                return response()->json(['success' => false, 'msg' => 'An issue occurred in the application process.'], 422);
+        }
     }
 }
