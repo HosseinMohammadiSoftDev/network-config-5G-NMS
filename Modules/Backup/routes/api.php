@@ -14,6 +14,10 @@ use Modules\Backup\Http\Controllers\BackupController;
  *
 */
 
-Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
-    Route::apiResource('backup', BackupController::class)->names('backup');
+Route::middleware(['auth:sanctum'])->group(function () {
+
+    Route::post('set-config-backup', [BackupController::class, 'setConfigBackup']);
+    Route::get('get-config-backup', [BackupController::class, 'getConfigBackup']);
+
+    Route::get('get-history-backup', [BackupController::class, 'getHistoryBackup']);
 });

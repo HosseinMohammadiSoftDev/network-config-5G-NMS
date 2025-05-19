@@ -4,62 +4,56 @@ namespace Modules\Backup\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Modules\Backup\Http\Requests\ConfigBackup\SetConfigBackupRequest;
+use Modules\Backup\Http\Requests\TimeCronJob\SetTimeCronJobAndDestinationPathBackupRequest;
+use Modules\Backup\Http\Requests\TimeCronJob\SetTimeCronJobBackupRequest;
+use Modules\Backup\Models\BackupConfig;
+use Modules\Backup\Models\BackupHistory;
+use Modules\Backup\Services\CronTabService;
+use Modules\SystemSetting\Models\SystemSettings;
 
 class BackupController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function __construct()
     {
-        return view('backup::index');
+
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function getConfigBackup (Request $request)
     {
-        return view('backup::create');
+        return response()->json(['success' => true, 'data' => BackupConfig::cursor()]);
+    }
+    public function setConfigBackup(SetConfigBackupRequest $request)
+    {
+        $credentials = $request->validated();
+
+        try {
+            DB::beginTransaction();
+
+            $backupConfig = BackupConfig::first();
+
+            !$backupConfig
+                ? $backupConfig = BackupConfig::create($credentials)
+                : $backupConfig->update($credentials);
+
+//                    set cron job
+                CronTabService::handel($credentials['run_backup_daily']);
+
+            DB::commit();
+                return response()->json(['success' => true, 'msg' => 'set config backup successFully', 'data' => $backupConfig], 200);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+                return response()->json(['success' => false, 'msg' => $e->getMessage()], 500);
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
 
-    /**
-     * Show the specified resource.
-     */
-    public function show($id)
-    {
-        return view('backup::show');
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
+//      history backup
+    public function getHistoryBackup (Request $request)
     {
-        return view('backup::edit');
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-    {
-        //
+        return response()->json(['success' => true, 'data' => BackupHistory::cursor()]);
     }
 }
