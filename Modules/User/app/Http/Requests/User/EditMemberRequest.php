@@ -32,11 +32,11 @@ class EditMemberRequest extends FormRequest
             'first_name' => ['nullable', 'min:3', 'max:256'],
             'last_name' => ['nullable', 'min:3', 'max:256'],
 
-            'phone' => [
-                'string',
-                'regex:/^09\d{9}$/',
-                Rule::unique('users', 'phone')->ignore($this->user_id, 'id')
-            ],
+//            'phone' => [
+//                'string',
+//                'regex:/^09\d{9}$/',
+//                Rule::unique('users', 'phone')->ignore($this->user_id, 'id')
+//            ],
 
             'role' => ['nullable', 'string', Rule::exists('roles', 'name'), Rule::notIn('admin')],
             'permission_name' => ['nullable', 'array'],
