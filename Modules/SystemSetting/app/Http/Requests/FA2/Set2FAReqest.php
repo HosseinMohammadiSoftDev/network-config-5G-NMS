@@ -1,6 +1,6 @@
 <?php
 
-namespace Requests\FA2;
+namespace Modules\SystemSetting\Http\Requests\FA2;
 
 use Illuminate\Foundation\Http\FormRequest;
 

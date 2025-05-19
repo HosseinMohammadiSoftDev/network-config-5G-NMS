@@ -1,6 +1,7 @@
 <?php
 
-namespace Requests\Capcha;
+namespace Modules\SystemSetting\Http\Requests\Capcha;
+
 
 use Illuminate\Foundation\Http\FormRequest;
 
