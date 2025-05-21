@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\SystemSetting\Http\Controllers\SystemSettingsController;
 use Modules\SystemSetting\Http\Controllers\TraceController;
-
+use Modules\SystemSetting\Http\Controllers\RouteController;
 /*
  *--------------------------------------------------------------------------
  * API Routes
@@ -53,4 +53,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
 //        trace server
     Route::post('trace-server-start', [TraceController::class, 'traceServerStart']);
     Route::post('trace-server-stop', [TraceController::class, 'traceServerStop']);
+
+
+//        route server
+    Route::post('show-route-server', [RouteController::class, 'showRouteServer']);
+    Route::post('add-route-server', [RouteController::class, 'addRouteServer']);
+    Route::post('delete-route-server', [RouteController::class, 'deleteRouteServer']);
 });
