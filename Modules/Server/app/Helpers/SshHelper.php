@@ -9,6 +9,8 @@ use InvalidArgumentException;
 use PHPUnit\Event\Code\Throwable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class SshHelper
 {

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\SystemSetting\Http\Controllers\SystemSettingsController;
+use Modules\SystemSetting\Http\Controllers\TraceController;
 
 /*
  *--------------------------------------------------------------------------
@@ -46,4 +47,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('get-all-config-system', [SystemSettingsController::class, 'getAllConfigSystem']);
     Route::post('set-all-config-system', [SystemSettingsController::class, 'setAllConfigSystem']);
 
+
+
+
+//        trace server
+    Route::post('trace-server-start', [TraceController::class, 'traceServerStart']);
+    Route::post('trace-server-stop', [TraceController::class, 'traceServerStop']);
 });
