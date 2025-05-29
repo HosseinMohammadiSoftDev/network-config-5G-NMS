@@ -4,6 +4,7 @@ namespace Modules\User\Http\Controllers;
 
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Modules\User\Models\User;
 use function PHPSTORM_META\map;
 use Modules\Server\Models\Server;
@@ -120,86 +121,12 @@ class UserController extends ApiController
             $user->givePermissionTo($permissionNames);
         }
     }
-    private function assignRoleAndPermissionsToExpert(User $user, $role, $permissionNames)
-    {
-        $user->assignRole($role);
-
-        $rolePermissions = Permission::whereHas('roles', function ($query) use ($role) {
-            $query->where('name', $role);
-        })->pluck('name')->toArray();
 
 
-        $user->revokePermissionTo($rolePermissions);
-        $user->syncPermissions([]);
 
-        if ((!in_array('module/read', $permissionNames, true) || !in_array('VM/read', $permissionNames, true)))
-            $permissionNames = array_unique(array_merge($permissionNames, ['module/read', 'VM/read']));
-
-
-        if (!empty($permissionNames) && is_array($permissionNames)) {
-            $user->givePermissionTo($permissionNames);
-
-            $vmCrudPermissions = ['VM/create', 'VM/delete', 'VM/update'];
-            $moduleCrudPermissions = ['module/create', 'module/delete', 'module/update'];
-
-            $hasVmCrud = !empty(array_intersect($vmCrudPermissions, $permissionNames));
-            $hasModuleCrud = !empty(array_intersect($moduleCrudPermissions, $permissionNames));
-
-            if (!$permissionNames)
-                throw new HttpResponseException(response()->json(['msg' => 'Granting access to the user is mandatory'], 422));
-
-            if ($hasVmCrud)
-                $user->givePermissionTo('VM/read');
-
-            if ($hasModuleCrud)
-                $user->givePermissionTo('module/read');
-
-            $user->syncPermissions($permissionNames);
-        }
-    }
     public function addMember (AddMemberRequest $request)
     {
-        $credentials = $request->validated();
-        $credentials['added_by'] = Auth::id();
-
-        try {
-            DB::beginTransaction();
-
-        $user = User::create($credentials);
-        $role = $credentials['role'] ?? null;
-
-
-            if ($role == 'visitor' || $user->getRoleNames() == 'visitor')
-                $this->assignRoleAndPermissionsToVisitor($user, $role, $request['permissionNames']);
-            else
-                $this->assignRoleAndPermissionsToExpert($user, $role, $request['permissionNames']);
-
-
-
-            if ($request['serverPermission'])
-                    $user->givePermissionTo($request['serverPermission']);
-
-
-
-                activity('add-member')
-                    ->causedBy(Auth::user())
-                    ->event('create-member')
-                    ->withProperties([
-                        'route' => request()->fullUrl(),
-                        'method' => 'addMember',
-                        'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                        'user_role' =>Auth::user()->roles()->pluck('name')->first(),
-                        'member' => $credentials,
-                    ])
-                ->log('The admin added the user to the application');
-
-                DB::commit();
-            return $this->respondCreated('The user was successfully created', ['user' => $user,'role' => $role, 'permission_name' => $request['permissionNames']]);
-
-        } catch (\Exception $e) {
-                DB::rollBack();
-            throw $e;
-        }
+        return Http::post(env('NMS_IP') . 'add-member', []);
     }
     public function editMember (EditMemberRequest $request)
     {
@@ -275,33 +202,7 @@ class UserController extends ApiController
     }
     public function deleteAccountMember ($userId)
     {
-        $user = User::find($userId);
-            if (!$user)
-                return response()->json(['msg' => 'The user ID is incorrect'], 404);
 
-        if ($user->hasRole('admin'))
-            return response()->json(['msg' => 'You cannot delete a user who has an admin role'], 403);
-
-
-        $user->delete();
-
-        $user->tokens()->delete();
-
-
-        activity('delete-account')
-            ->causedBy(Auth::user())
-            ->performedOn($user)
-            ->event('delete')
-            ->withProperties([
-                'type-log' => 'app',
-                'route' => request()->fullUrl(),
-                'method' => 'deleteAccountMember',
-                'user' => Auth::user(),
-                'member' => $user,
-            ])
-        ->log('The user account was successfully deleted');
-
-        return $this->respondSuccess('The user account was successfully deleted', $user);
     }
 
 

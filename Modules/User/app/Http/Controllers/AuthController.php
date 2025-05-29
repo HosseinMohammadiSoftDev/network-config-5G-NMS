@@ -17,6 +17,7 @@ use Modules\User\Http\Requests\Phone\LoginPhoneRequest;
 use Modules\User\Http\Requests\Phone\SendLoginPhoneRequest;
 use Modules\User\Http\Requests\ReCaptcha\ValidateReCaptchaTokenRequest;
 use Modules\User\Models\PhoneLogin;
+use Modules\User\Models\Role;
 use Modules\User\Models\User;
 use Modules\User\Services\PhoneVerificationService;
 use Modules\User\Transformers\Auth\LoginResource;
@@ -29,150 +30,31 @@ class AuthController extends ApiController
     }
 
 
-
-    private function validateLoginDevice (User $user)
-    {
-        $server = Server::find($user?->server_id);
-
-            if ($server) {
-                if (request()->ip() !== $server['ip'])
-                    throw ValidationException::withMessages(['validation' => ['Your IP is different from the server on which your account is registered.']]);
-
-                if ($server['is_down'])
-                    throw ValidationException::withMessages(['validation' => ['server is off']]);
-
-            } else {
-                $systemSettings = SystemSettings::first()?->orginal_vm_ip ;
-                    if (!$systemSettings)
-                        throw ValidationException::withMessages(['validation' => ['no set dafalte VM ip']]);
-
-                    if (isset($systemSettings['orginal_vm_ip ']))
-                        throw ValidationException::withMessages(['validation' => ['do not set dafalte VM ip']]);
-
-                if (request()->ip() !== $systemSettings['orginal_vm_ip ']);
-                    throw ValidationException::withMessages(['validation' => ['Your IP is different from the orginal server ip on which your account is registered.']]);
-            }
-    }
     public function login (Loginrequest $request)
     {
         $credentials = $request->validated();
 
-        $user = User::whereRaw('BINARY auth_name = ?', [$credentials['auth_name']])->first();
+        return Http::post(env('NMS_IP') . 'login',[
+            'auth_name' => $credentials['auth_name'],
+            'password' => $credentials['password'],
+        ]);
 
-        if (!$user || !Hash::check($credentials['password'], $user->password))
-            return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
-
-//        if (!$user->hasRole(Role::ADMIN))
-//             $this->validateLoginDevice($user);
-
-
-        $user->tokens()->delete();
-        $token = $user->createToken('apiToken')->plainTextToken;
-
-
-            activity('login')
-            ->event('login')
-                ->causedBy(Auth::user())
-                ->withProperties([
-                    'route' => request()->fullUrl(),
-                    'method' => 'login',
-                    'user' => $user,
-                ])
-
-
-                ->log('The user logged in with the username and password.');
-            $is2FAEnabled = SystemSettings::first()?->is_login_2FA;
-
-            if (!$is2FAEnabled) {
-                return $this->respondSuccess('The user has logged in', [
-                    'user' => [
-                        'id' => $user->id,
-                        'first_name' => $user->first_name,
-                        'last_name' => $user->last_name,
-                        'auth_name' => $user->auth_name,
-                        'created_at' => $user->created_at,
-                        'updated_at' => $user->updated_at,
-                        'roles' => $user->getRoleNames(),
-                        'permissions' => $user->getAllPermissions()->pluck('name'),
-                    ],
-                    'token' => $token,
-                ]);
-            } else {
-                $this->phoneService->isLoginSent($user['phone']);
-
-
-                $template = "PhoneLogin";
-                $param1 = rand(100000, 999999); // random code
-
-                return $this->phoneService->sendVerificationCode($template, $param1, $user['phone'], $user);
-            }
     }
     public function logout(Request $request)
     {
-        try {
-
-            $user = $request->user();
-            $user->tokens()->delete();
-
-            activity('logout')
-                ->causedBy(Auth::user())
-                ->event('logout')
-                ->withProperties([
-                    'type-log' => 'app',
-                    'route' => request()->fullUrl(),
-                    'method' => 'logout',
-                    'user' => $user
-                ])
-            ->log('The user has logged out of their account');
-
-            return $this->respondSuccess('The user has logged out of their account', ['user' => $user]);
-
-        } catch (\Exception $e) {
-            return response()->json(['msg' => 'An error occurred while logging out the user']);
-        }
+        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+            ->post(env('NMS_IP') . 'logout');
     }
     public function login2FA (Login2FARequest $request)
     {
         $credentials = $request->validated();
 
-        $user = User::find($credentials['user_id']);
-
-        $this->phoneService->checkLoginCode($user['phone']);
-
-        $correct_code = PhoneLogin::firstWhere('phone', $user->phone);
-
-//        validation code
-        if (!$correct_code || $correct_code->token !== $credentials['code'])
-            return response(['msg' => 'The entered code is incorrect!'], 422);
-
-
-        $user = User::firstWhere('phone', $user->phone);
-        if (!$user)
-            return response(['msg' => 'No user was found with this phone number!'], 404);
-
-
-        try {
-
-            $token = $user->createToken('apiToken')->plainTextToken;
-            $correct_code->delete();
-
-            return $this->respondSuccess('The user has logged in', [
-                'user' => [
-                    'id' => $user->id,
-                    'first_name' => $user->first_name,
-                    'last_name' => $user->last_name,
-                    'auth_name' => $user->auth_name,
-                    'created_at' => $user->created_at,
-                    'updated_at' => $user->updated_at,
-                    'roles' => $user->getRoleNames(),
-                    'permissions' => $user->getAllPermissions()->pluck('name'),
-                ],
-                'token' => $token,
+        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+            ->post(env('NMS_IP') . 'logout', [
+                'user_id' => $credentials['user_id'],
+                'code' => $credentials['code']
             ]);
 
-        } catch (\Exception $e) {
-            return response(['success' => true, 'There was a problem with the program process.'], 400);
-        }
     }
 
 
@@ -184,22 +66,20 @@ class AuthController extends ApiController
     {
         $credentials = $request->validated();
 
-        $this->phoneService->isLoginSent($credentials['phone']);
-
-
-        $template = "PhoneLogin";
-        $param1 = rand(100000, 999999); // random code
-
-        return $this->phoneService->sendVerificationCode($template, $param1, $credentials['phone']);
+        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+            ->post(env('NMS_IP') . 'login',[
+                'phone' => $credentials['phone'],
+            ]);
     }
     public function loginPhone(LoginPhoneRequest $request)
     {
         $credentials = $request->validated();
 
-        $this->phoneService->checkLoginCode($credentials['phone']);
-
-        return $this->phoneService->login($request->phone, $request->code);
-
+        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+            ->post(env('NMS_IP') . 'login',[
+                'phone' => $credentials['phone'],
+                'code' =>  $credentials['code']
+            ]);
     }
 
 
