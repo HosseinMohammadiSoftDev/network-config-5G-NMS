@@ -1,9 +1,10 @@
 #!/bin/bash
-#test scp file 22
+
 # Name of the process to control
 PROCESS_NAME="tshark"
-LOG_FILE="//home/siz-tel/log/tshark-control.log"
-IP=$(hostname -I)
+TSHARK_PATH=$(which tshark)
+LOG_FILE="/home/siz-tel/log/tshark-control.log"
+IP=$(hostname -I | awk '{print $1}')
 
 # Function to check if tshark is running
 is_running() {
@@ -16,7 +17,7 @@ start_tshark() {
         echo "tshark is already running."
     else
         echo "Starting tshark..."
-        sudo tshark -i any -w /tmp/"$IP".pcapng > /dev/null 2>&1 & # new command
+            sudo "$TSHARK_PATH" -i any -w /home/siz-tel/trace/$IP.pcapng > /dev/null 2>&1 & # new command
         sleep 1
         if is_running; then
             echo "tshark started successfully."

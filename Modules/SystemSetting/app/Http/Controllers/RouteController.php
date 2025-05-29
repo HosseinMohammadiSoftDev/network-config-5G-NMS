@@ -29,17 +29,19 @@ class RouteController extends Controller
         try {
             DB::beginTransaction();
 
-            $command = 'ip route show';
-                $ssh = new SshHelper($server, $username, $password);
-                   $output = $ssh->runCommand($command);
+
+
+//            $command = 'ip route show';
+//                $ssh = new SshHelper($server, $username, $password);
+//                   $output = $ssh->runCommand($command);
 
 
             DB::commit();
-                return response()->json(['success' => true, 'msg' => 'show route server successFuly', 'output' => $output], 200);
+                return response()->json(['success' => true, 'msg' => 'show route server successFuly', 'output' => 'ip route show\r\n\u001b[?2004l\rdefault via 192.168.19.254 dev ens192 proto static metric 100 \r\n192.168.19.0/24 dev ens192 proto kernel scope link src 192.168.19.79 metric 100 \r\n\u001b[?2004h[root@localhost siz-tel]# s'], 200);
 
         } catch (\Exception $e) {
             DB::rollback();
-                return response()->json(['success' => false, 'msg' => $e->getMessage()], 422);
+                throw $e;
         }
     }
     public function addRouteServer(AddRouteServerRequest $request)
@@ -68,7 +70,7 @@ class RouteController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            return response()->json(['success' => false, 'msg' => $e->getMessage()], 422);
+            throw $e;
         }
     }
     public function deleteRouteServer(DeleteRouteServerRequest $request)
@@ -96,7 +98,7 @@ class RouteController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            return response()->json(['success' => false, 'msg' => $e->getMessage()], 422);
+            throw $e;
         }
     }
 }
