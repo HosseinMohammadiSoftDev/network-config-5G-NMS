@@ -25,9 +25,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
                         // server
     Route::middleware([ 'permission:VM/read|role:admin|visitor|expert'])->get('show-all-servers', [ServerController::class, 'showAllServers']);
-    Route::middleware([ 'permission:VM/create|role:admin|expert'])->post('create-server', [ServerController::class, 'createServer']);
     Route::middleware([ 'permission:VM/update|role:admin|expert'])->put('edit-server', [ServerController::class, 'editServer']);
-    Route::middleware([ 'permission:VM/delete|role:admin|expert'])->delete('server-delete', [ServerController::class, 'deleteServer']);
     Route::post('test-connection', [ServerController::class, 'testConnection']);
 
                         // module
