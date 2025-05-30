@@ -31,15 +31,5 @@ Route::post('validation-reCaptcha', [AuthController::class, 'validateReCaptchaTo
 Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('get-me', [UserController::class, 'getMe']);
-    Route::middleware(['permission:user|role:admin'])->get('show-all-users', [UserController::class, 'showAllUsers']);
-    Route::middleware(['permission:user|role:admin'])->get('get-deleted-accounts', [UserController::class, 'getDeletedAccounts']);
 
-    Route::middleware(['permission:user|role:admin'])->post('add-member', [UserController::class, 'addMember']);
-    Route::middleware(['permission:user|role:admin'])->post('edit_member', [UserController::class, 'editMember']);
-    Route::middleware(['permission:user|role:admin'])->delete('delete-member-Account/{UserId}', [UserController::class, 'deleteAccountMember']);
-
-    Route::middleware(['role:admin|visitor|expert'])->get('show-all-roles', [RoleController::class, 'showAllRolesPermissions']);
-    Route::middleware(['role:admin|visitor|expert'])->get('show-all-permission', [RoleController::class, 'showAllPermissions']);
-    Route::middleware(['role:admin'])->post('add-permission-to-user', [RoleController::class,'addPermissionToUser']);
-    Route::middleware(['role:admin'])->post('remove-permission-to-user', [RoleController::class,'removePermissionFromUser']);
 });
