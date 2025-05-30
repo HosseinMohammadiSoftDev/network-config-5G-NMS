@@ -24,19 +24,11 @@ use Modules\User\Transformers\Auth\LoginResource;
 
 class AuthController extends ApiController
 {
-    public function __construct(private PhoneVerificationService $phoneService)
+    public function login (Request $request)
     {
-
-    }
-
-
-    public function login (Loginrequest $request)
-    {
-        $credentials = $request->validated();
-
         return Http::post(env('NMS_IP') . 'login',[
-            'auth_name' => $credentials['auth_name'],
-            'password' => $credentials['password'],
+            'auth_name' => $request['auth_name'],
+            'password' => $request['password'],
         ]);
 
     }
@@ -45,52 +37,13 @@ class AuthController extends ApiController
         return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
             ->post(env('NMS_IP') . 'logout');
     }
-    public function login2FA (Login2FARequest $request)
+
+
+    public function validateReCaptchaToken (Request $request)
     {
-        $credentials = $request->validated();
-
-        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->post(env('NMS_IP') . 'logout', [
-                'user_id' => $credentials['user_id'],
-                'code' => $credentials['code']
-            ]);
-
-    }
-
-
-
-
-
-        // Phone
-    public function sendLoginPhone(SendLoginPhoneRequest $request)
-    {
-        $credentials = $request->validated();
-
-        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->post(env('NMS_IP') . 'login',[
-                'phone' => $credentials['phone'],
-            ]);
-    }
-    public function loginPhone(LoginPhoneRequest $request)
-    {
-        $credentials = $request->validated();
-
-        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->post(env('NMS_IP') . 'login',[
-                'phone' => $credentials['phone'],
-                'code' =>  $credentials['code']
-            ]);
-    }
-
-
-
-    public function validateReCaptchaToken (ValidateReCaptchaTokenRequest $request)
-    {
-        $credentials = $request->validated();
-
         $response = Http::asForm()->post(env('RECAPTCHA_VERYFY'), [
             'secret' => env('RECAPTCHA_SECRET_KEY'),
-            'response' => $credentials['response'],
+            'response' => $request['response'],
             'remoteip' => request()->ip(),
         ]);
 

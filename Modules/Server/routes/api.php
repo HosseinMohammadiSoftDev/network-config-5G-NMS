@@ -16,41 +16,36 @@ use Modules\Server\Http\Controllers\ServiceController;
  *
 */
 
-Route::fallback(function(){
-    return response()->json(['msg' => 'The address has been entered incorrectly.']);
-});
 
-
-Route::middleware(['auth:sanctum'])->group(function () {
 
                         // server
-    Route::middleware([ 'permission:VM/read|role:admin|visitor|expert'])->get('show-all-servers', [ServerController::class, 'showAllServers']);
-    Route::middleware([ 'permission:VM/update|role:admin|expert'])->put('edit-server', [ServerController::class, 'editServer']);
-    Route::post('test-connection', [ServerController::class, 'testConnection']);
+Route::get('show-all-servers', [ServerController::class, 'showAllServers']);
+Route::put('edit-server', [ServerController::class, 'editServer']);
+Route::post('test-connection', [ServerController::class, 'testConnection']);
 
-                        // module
-    Route::middleware(['permission:module/read|role:admin|visitor|expert'])->get('show-config-module/{serverID}/{ModuleID}', [ModuleController::class, 'showConfigModule']);
-    Route::middleware(['role:admin|visitor|expert'])->get('show-all-servies-and-modules/{serverID}', [ModuleController::class, 'showAllServiseAndModulesInServer']);
-    Route::middleware(['permission:module/create|role:admin|expert'])->post('create-module', [ModuleController::class, 'createModule']);
-    Route::middleware(['permission:module/update|role:admin|expert'])->post('update-config-module', [ModuleController::class, 'updateConfigModule']);
-    Route::middleware(['permission:module/delete|role:admin|expert'])->delete('delete-module', [ModuleController::class, 'deleteModule']);
-    Route::middleware(['permission:module/update|role:admin|expert'])->delete('delete-config-module', [ModuleController::class, 'deleteConfigModule']);
-    Route::middleware(['permission:module/read|role:admin|expert'])->get('show-all-modules', [ModuleController::class, 'showAllModules']);
-    Route::middleware(['permission:module/delete|role:admin|expert'])->post('edit-module', [ModuleController::class, 'editModule']);
+                    // module
+Route::get('show-config-module/{serverID}/{ModuleID}', [ModuleController::class, 'showConfigModule']);
+Route::get('show-all-servies-and-modules/{serverID}', [ModuleController::class, 'showAllServiseAndModulesInServer']);
+Route::post('create-module', [ModuleController::class, 'createModule']);
+Route::post('update-config-module', [ModuleController::class, 'updateConfigModule']);
+Route::delete('delete-module', [ModuleController::class, 'deleteModule']);
+Route::delete('delete-config-module', [ModuleController::class, 'deleteConfigModule']);
+Route::get('show-all-modules', [ModuleController::class, 'showAllModules']);
+Route::post('edit-module', [ModuleController::class, 'editModule']);
 
-    Route::middleware(['permission:module/update|role:admin|expert'])->post('restart-service-config', [ModuleController::class, 'restartServiceModule']);
-    Route::middleware(['permission:module/update|role:admin|expert'])->post('start-service-config', [ModuleController::class, 'startServiceModule']);
-    Route::middleware(['permission:module/update|role:admin|expert'])->post('stop-service-config', [ModuleController::class, 'stopServiceModule']);
-    Route::middleware(['permission:module/update|role:admin|expert'])->post('status-service-config', [ModuleController::class, 'statusServiceModule']);
-    Route::middleware(['role:admin|expert'])->post('ping-ssh', [ModuleController::class, 'PingServer']);
+Route::post('restart-service-config', [ModuleController::class, 'restartServiceModule']);
+Route::post('start-service-config', [ModuleController::class, 'startServiceModule']);
+Route::post('stop-service-config', [ModuleController::class, 'stopServiceModule']);
+Route::post('status-service-config', [ModuleController::class, 'statusServiceModule']);
+Route::post('ping-ssh', [ModuleController::class, 'PingServer']);
 
-    Route::middleware(['permission:module/update|role:admin|expert'])->post('undo-module-config', [ModuleController::class, 'undoConfigModule']);
-    Route::middleware(['permission:module/update|role:admin|expert'])->post('undo-to-initial-config-modules', [ModuleController::class, 'undoToInitialConfigModule']);
+Route::post('undo-module-config', [ModuleController::class, 'undoConfigModule']);
+Route::post('undo-to-initial-config-modules', [ModuleController::class, 'undoToInitialConfigModule']);
 
-    Route::middleware(['permission:module/read|role:admin|expert'])->post('export-module-file', [ModuleController::class, 'expertModuleFileIsServer']);
+Route::post('export-module-file', [ModuleController::class, 'expertModuleFileIsServer']);
 
-            // power on | off server
-    Route::middleware(['permission:VM/status|role:admin|expert'])->post('server-stop', [ServerController::class, 'serverStop']);
-    Route::middleware(['permission:VM/status|role:admin|expert'])->post('server-start', [ServerController::class, 'ServerStart']);
-    Route::middleware(['role:admin|expert|visitor'])->post('server-status', [ServerController::class, 'serverStatus']);
-});
+        // power on | off server
+Route::post('server-stop', [ServerController::class, 'serverStop']);
+Route::post('server-start', [ServerController::class, 'ServerStart']);
+Route::post('server-status', [ServerController::class, 'serverStatus']);
+

@@ -18,18 +18,22 @@ use Modules\User\Http\Controllers\UserController;
 */
 
 
+// auth route
 Route::post('login', [AuthController::class, 'login']);
-Route::post('login-2FA', [AuthController::class, 'login2FA']);
-Route::middleware(['auth:sanctum'])->post('logout', [AuthController::class, 'logout']);
+Route::post('logout', [AuthController::class, 'logout']);
 
-Route::post('send-login-by-phone', [AuthController::class , 'sendLoginPhone']);
-Route::post('login-by-phone', [AuthController::class , 'loginPhone']);
 
 Route::post('validation-reCaptcha', [AuthController::class, 'validateReCaptchaToken']);
 
 
-Route::middleware(['auth:sanctum'])->group(function () {
+// user route
+Route::get('get-me', [UserController::class, 'getMe']);
 
-    Route::get('get-me', [UserController::class, 'getMe']);
 
-});
+// role, permission routes
+Route::get('show-all-permission', [UserController::class, 'showAllPermissions']);
+Route::get('show-all-roles', [UserController::class, 'showAllRolesPermissions']);
+
+
+// log route
+Route::post('show-all-logs', [UserController::class, 'showAllLogs']);

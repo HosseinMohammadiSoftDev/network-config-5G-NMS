@@ -38,55 +38,50 @@ class ServerController extends ApiController
     }
 
 
-    public function editServer (EditServerReqest $request)
+    public function editServer (Request $request)
     {
-        $credentials = $request->validated();
-
-        return Http::post(env('NMS_IP') . 'edit-server', [
-            'server_id' => $credentials['server_id'],
-            'name' => $credentials['name'] ?? null,
-            'ip' => $credentials['ip'] ?? null,
-            'path_config' => $credentials['path_config'] ?? null,
-            'path_run_config' => $credentials['path_run_config'] ?? null,
-        ]);
+        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+            ->post(env('NMS_IP') . 'edit-server', [
+                'server_id' => $request['server_id'],
+                'name' => $request['name'] ?? null,
+                'ip' => $request['ip'] ?? null,
+                'path_config' => $request['path_config'] ?? null,
+                'path_run_config' => $request['path_run_config'] ?? null,
+            ]);
     }
 
 
-    public function serverStop (StartStopComandReqest $request)
+    public function serverStop (Request $request)
     {
-        $credentials = $request->validated();
-
-        return Http::post(env('NMS_IP') . 'server-stop', [
-            'server_id' => $credentials['server_id'],
-        ]);
+        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+            ->post(env('NMS_IP') . 'server-stop', [
+                'server_id' => $request['server_id'],
+            ]);
     }
-    public function serverStart (StartStopComandReqest $request)
+    public function serverStart (Request $request)
     {
-        $credentials = $request->validated();
-
-        return Http::post(env('NMS_IP') . 'server-start', [
-            'server_id' => $credentials['server_id'],
-        ]);
+        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+            ->post(env('NMS_IP') . 'server-start', [
+                'server_id' => $request['server_id'],
+            ]);
     }
-    public function serverStatus (StartStopComandReqest $request)
+    public function serverStatus (Request $request)
     {
-        $credentials = $request->validated();
-
-        return Http::post(env('NMS_IP') . 'server-status', [
-            'server_id' => $credentials['server_id'],
-        ]);
+        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+            ->post(env('NMS_IP') . 'server-status', [
+                'server_id' => $request['server_id'],
+            ]);
     }
 
 
-    public function testConnection (TestConnectionRequest $request)
+    public function testConnection (Request $request)
     {
-        $creadtional = $request->validated();
-
-        return Http::post(env('NMS_IP') . 'test-connection', [
-            'server_id' => $creadtional['server_id'],
-            'username' => $creadtional['username'],
-            'password' => $creadtional['password'],
-        ]);
+        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+            ->post(env('NMS_IP') . 'test-connection', [
+                'server_id' => $request['server_id'],
+                'username' => $request['username'],
+                'password' => $request['password'],
+            ]);
     }
 }
 
