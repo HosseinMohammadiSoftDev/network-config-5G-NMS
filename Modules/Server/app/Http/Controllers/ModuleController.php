@@ -77,7 +77,7 @@ class ModuleController extends ApiController
         ->first();
 
         if (!$module)
-            throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.']));
+            throw ValidationException::withMessages(['error' => 'The module with the provided ID was not found on the server you specified.']);
 
 
 
@@ -110,7 +110,8 @@ class ModuleController extends ApiController
     {
         $server = Server::with(['modules:id,name,type'])->find($serverId);
             if(!$server)
-                return response()->json(['msg' => 'invalide server id'], 404);
+                throw ValidationException::withMessages(['error' => 'invalide server id.']);
+
 
 
         $modulesGroupedByType = collect();
@@ -212,11 +213,11 @@ class ModuleController extends ApiController
 
             $yamlContent = file_get_contents($file->getRealPath());
                 if (!$yamlContent)
-                    throw new \Exception('YAML file is empty or unreadable.');
+                    throw ValidationException::withMessages(['error' => 'YAML file is empty or unreadable.']);
 
             $parsedArray = Yaml::parse($yamlContent);
                 if (!is_array($parsedArray))
-                    throw new \Exception('Invalid YAML structure.');
+                    throw ValidationException::withMessages(['error' => 'Invalid YAML structure.']);
 
             return $parsedArray;
 
@@ -231,7 +232,7 @@ class ModuleController extends ApiController
         $arrayContent = json_decode($jsonContent, true, 512, JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
 
         if (json_last_error() !== JSON_ERROR_NONE)
-            throw new HttpResponseException(response()->json(['msg' => 'error in convert json to yaml'], 422));
+                throw ValidationException::withMessages(['error' => 'error in convert json to yaml']);
 
         $arrayContent = $this->convertNullKeysToComments($arrayContent);
 
@@ -310,7 +311,7 @@ class ModuleController extends ApiController
                     $failedServers[] = $serverId;
 
                 if ($server && $server['is_down'] == 1)
-                    return response()->json(['msg'=> 'server is off', 'server' => $server], 422);
+                    throw ValidationException::withMessages(['error' => 'server is off', 'server' => $server]);
 
                     $module->servers()->syncWithoutDetaching([
                         $serverId => [
@@ -360,7 +361,7 @@ class ModuleController extends ApiController
             }
 
             if (!empty($failedServers))
-                return response()->json(['msg' => 'An issue occurred while adding the module to the server', 'server-faild' => $failedServers], 422);
+                throw ValidationException::withMessages(['error' => 'An issue occurred while adding the module to the server', 'server-faild' => $failedServers]);
 
             DB::commit();
 
@@ -381,7 +382,7 @@ class ModuleController extends ApiController
         $serverModule =  $module->servers()->get();
         if (!$serverModule) {
             $module->delete();
-            return response()->json(['msg' => 'Module Deleted', 'module' => $module]);
+            throw ValidationException::withMessages(['error' => 'Module Deleted', 'module' => $module]);
         }
 
 
@@ -449,10 +450,11 @@ class ModuleController extends ApiController
         if ($user->hasPermissionTo($serverPermission))
             return true;
 
-        throw new HttpResponseException(response()->json([
-            'msg' => 'You do not have permission to use this server : ' . $server['name'],
+
+        throw ValidationException::withMessages([
+            'error' => 'You do not have permission to use this server : ' . $server['name'],
             'your-permissions' => $user->getAllPermissions()->pluck('name')
-        ], 403));
+        ]);
 
     }
     public function getArrayChanges($array1, $array2) {
@@ -512,7 +514,7 @@ class ModuleController extends ApiController
         ->first();
 
         if (!$module)
-            throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.'], 422));
+            throw ValidationException::withMessages(['error' => 'The module with the provided ID was not found on the server you specified.']);
 
         $serverIdsInModuleName = $module->servers->pluck('id');
         $data = $request->input('data', []);
@@ -570,25 +572,27 @@ class ModuleController extends ApiController
                     $separatedMessages["Error-" . ($index + 1)] = $msg;
                 }
 
-            throw new HttpResponseException(response()->json([
+
+            throw ValidationException::withMessages([
                 'msg' => 'server error!',
                 'error' => [
                     'type' => 'restart-service-error',
                     'message' => $separatedMessages
                 ]
-            ], 422));
+            ]);
+
         } catch (\Exception $e) {
             DB::rollBack();
 
             $message = $e->getMessage();
 
-            throw new HttpResponseException(response()->json([
+            throw ValidationException::withMessages([
                 'msg' => 'server error',
                 'error' => [
                     'type' => 'server-error',
                     'message' => $message
                 ]
-            ], 422));
+            ]);
         }
     }
     private function updateMultipleModules($serverIds, $request)
@@ -684,13 +688,13 @@ class ModuleController extends ApiController
     {
         // is down server
         if ($server['is_down'] == 1)
-            throw new HttpResponseException(response()->json(['msg' => 'this server: ' . $server['name'] .' is off'], 422));
+            throw ValidationException::withMessages(['error' => 'this server: ' . $server['name'] .' is off']);
 
         if (!$server['path_config'])
-            throw new HttpResponseException(response()->json(['msg' => 'You did not specify a configuration address config'], 422));
+            throw ValidationException::withMessages(['error' => 'You did not specify a configuration address config']);
 
         if (!$server['path_run_config'])
-            throw new HttpResponseException(response()->json(['msg' => 'You did not specify a configuration address run config'], 422));
+            throw ValidationException::withMessages(['error' => 'You did not specify a configuration address run config']);
 
 
 //         $sshHelper = new sshHelper($server, $username, $password);
@@ -707,12 +711,12 @@ class ModuleController extends ApiController
     private function updateModuleConfigInDatabase($moduleId, $data, $server)
     {
         if ($server['is_down'] == 1)
-            throw new HttpResponseException( response()->json(['msg' => 'server is off'], 403));
+            throw ValidationException::withMessages(['error' => 'server is off.']);
 
         $module = Module::find($moduleId);
 
         if (!$module)
-            throw new HttpResponseException(response()->json(['msg' => 'module is notfund'], 422));
+            throw ValidationException::withMessages(['error' => 'module is notfund.']);
 
             // example value in data user
         foreach ($data as $key => $value) {
@@ -757,7 +761,7 @@ class ModuleController extends ApiController
         $module = Module::find($moduleId);
 
         if (!$module)
-            throw new HttpResponseException(response()->json(['msg' => 'module is not fuond'], 422));
+            throw ValidationException::withMessages(['error' => 'module is not fuond']);
 
 
         $moduleConfig = json_decode($server->pivot['current_config'], true);
@@ -784,14 +788,14 @@ class ModuleController extends ApiController
         })->first();
 
         if (!$module)
-            throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.'], 422));
+            throw ValidationException::withMessages(['error' => 'The module with the provided ID was not found on the server you specified.']);
 
 
         $server = $module->servers()->find($request['server_id']);
         $pathConfig = $request['path_config'];
 
         if ($server['is_down'] == 1)
-            return response()->json(['msg' => 'server is off'], 403);
+            throw ValidationException::withMessages(['error' => 'server is off']);
 
         DB::beginTransaction();
 
@@ -825,11 +829,12 @@ class ModuleController extends ApiController
                     return response()->json(['error' => $filteredMessages], 500);
                 }
 
-                return response()->json(['error' => $message], 500);
+                throw ValidationException::withMessages(['error' => $message]);
             }
 
-            return response()->json(['error' => $message], 500);
+            throw ValidationException::withMessages(['error' => $message]);
         }
+
     }
 
 
@@ -937,13 +942,13 @@ class ModuleController extends ApiController
             $module = Module::find($validated['module_id']);
 
             if (!$module)
-                throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.'], 422));
+                throw ValidationException::withMessages(['error' => 'The module with the provided ID was not found on the server you specified.']);
             $serverIds = $validated['server_ids'] ?? [];
 
             $configFile = $request->file('config_file');
 
             if ($module->servers->isEmpty() && !$configFile)
-                throw new HttpResponseException(response()->json(['msg' => 'config file required'], 422));
+                throw ValidationException::withMessages(['error' => 'config file required']);
 
             // check permissions
         foreach ($serverIds as $serverId) {
@@ -951,7 +956,7 @@ class ModuleController extends ApiController
             $this->chackPermissionModule($server);
 
             if ($server['is_down'])
-                throw new HttpResponseException(response()->json(['msg' => 'server : ' . $server['name'] . ' is off'], 422));
+                throw ValidationException::withMessages(['error' => ['server : ' . $server['name'] . ' is off']]);
         }
 
         if ($serverIds) {
@@ -1010,7 +1015,7 @@ class ModuleController extends ApiController
         $command = 'cat ' . $server['path_config'] . $module['name'] . '.yaml' ;
 
         if ($server['is_down'] == 1)
-            return response()->json(['msg' => 'server is off'], 403);
+            throw ValidationException::withMessages(['error' => 'server is off']);
 
         try {
                 // download file
@@ -1055,7 +1060,7 @@ class ModuleController extends ApiController
 
             // is down server
          if ($server['is_down'] == Server::OFF)
-             throw new HttpResponseException(response()->json(['msg' => 'this server off'], 422));
+             throw ValidationException::withMessages(['error' => 'this server off.']);
 
 
         try {
@@ -1066,7 +1071,7 @@ class ModuleController extends ApiController
 
             return response()->json(['message' => $output]);
 
-        } catch (HttpResponseException $e) {
+        } catch (ValidationException $e) {
             throw $e;
         } catch (InvalidArgumentException $e) {
                 DB::rollBack();
@@ -1097,13 +1102,14 @@ class ModuleController extends ApiController
 
             $message = $e->getMessage();
 
-            throw new HttpResponseException(response()->json([
+
+            throw ValidationException::withMessages([
                 'msg' => 'server error!',
                 'error' => [
                     'type' => 'server-error',
                     'message' => $message
                 ]
-            ], 422));
+            ]);
         }
     }
     public function restartServiceModule (restartServiceModuleRequest $request)
@@ -1183,55 +1189,62 @@ class ModuleController extends ApiController
     $module = $server->modules()->where('modules.id', $creadtional['module_id'])->first();
 
     if (!$module)
-        return response()->json(['msg' => 'module is not found'], 404);
+        throw ValidationException::withMessages(['error' => 'module is not found.']);
 
 
     if ($server['is_down'] == 1)
-        return response()->json(['msg' => 'server is off'], 403);
+        throw ValidationException::withMessages(['error' => 'server is off']);
 
     $pivotData = $module->servers()->where('server_id', $creadtional['server_id'])->first()->pivot;
     $modulePreviousConfig = $pivotData['previous_config'];
 
     if ($modulePreviousConfig == null)
-        return response()->json(['msg' => 'The module does not have a previous value, you cannot revert it to the previous value'], 422);
+        throw ValidationException::withMessages(['error' => 'The module does not have a previous value, you cannot revert it to the previous value']);
 
     try {
-            // ssh to server format yaml
-            $yamlContent = $this->convertJsonToYaml($pivotData['previous_config']);
-            $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
-                 $module['name'], $yamlContent, $server);
+        DB::beginTransaction();
+
+        // ssh to server format yaml
+        $yamlContent = $this->convertJsonToYaml($pivotData['previous_config']);
+        $this->sendConfigToServer($creadtional['username'], $creadtional['password'],
+            $module['name'], $yamlContent, $server);
 
 
-                // save to datebase format json
-            $pivotData['current_config'] = $pivotData['previous_config'];
-            $pivotData->save();
+        // save to datebase format json
+        $pivotData['current_config'] = $pivotData['previous_config'];
+        $pivotData->save();
 
 
+        DB::commit();
 
-            activity('undo-config-module')
-                ->causedBy(Auth::user())
-                ->performedOn($module)
-                ->event('undo-config-module')
-                ->withProperties([
-                    'type-log' => 'server',
-                    'route' => request()->fullUrl(),
-                    'method' => 'undoConfigModule',
-                    'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                    'user_role' =>Auth::user()->roles()->pluck('name')->first(),                    'module_id' => $module['id'],
-                    'module_name' => $module['name'],
-                    'module_type'=> $module['type'],
-                    'server_id' => $server?->id
-                ])
+        activity('undo-config-module')
+            ->causedBy(Auth::user())
+            ->performedOn($module)
+            ->event('undo-config-module')
+            ->withProperties([
+                'type-log' => 'server',
+                'route' => request()->fullUrl(),
+                'method' => 'undoConfigModule',
+                'user' => Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                'user_role' => Auth::user()->roles()->pluck('name')->first(), 'module_id' => $module['id'],
+                'module_name' => $module['name'],
+                'module_type' => $module['type'],
+                'server_id' => $server?->id
+            ])
             ->log('The module configuration has been reverted to the previous step');
 
 
-            return response()->json([
-                'success' => 'ture',
-                'msg' => 'The module configuration has been reverted to the previous step',
-                'config' => json_decode($pivotData['current_config'], true)
-            ], 200);
+        return response()->json([
+            'success' => 'ture',
+            'msg' => 'The module configuration has been reverted to the previous step',
+            'config' => json_decode($pivotData['current_config'], true)
+        ], 200);
 
+    } catch (ValidationException $e) {
+        DB::rollBack();
+        throw $e;
     } catch (\Exception $e) {
+        DB::rollBack();
         return response()->json(['Error' => $e->getMessage()], 422);
     }
   }
@@ -1244,22 +1257,24 @@ class ModuleController extends ApiController
 
 
         if (!$module)
-            return response()->json(['msg' => 'module is not found'], 404);
+            throw ValidationException::withMessages(['error' => 'module is not found']);
 
 
     $server = Server::find($creadtional['server_id']);
 
     if ($server && $server['is_down'] == 1)
-        return response()->json(['msg'=> 'server is off'], 422);
+        throw ValidationException::withMessages(['error' => 'server is off']);
 
     $pivotData = $module->servers()->where('server_id', $creadtional['server_id'])->first()->pivot;
     $moduleInitialConfig = $pivotData['initial_config'];
 
     try {
-                // ssh to server format yaml
+        DB::beginTransaction();
+
+        // ssh to server format yaml
         $yamlContent = $this->convertJsonToYaml($moduleInitialConfig);
 
-        $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
+        $this->sendConfigToServer($creadtional['username'], $creadtional['password'],
             $module['name'], $yamlContent, $server);
 
 
@@ -1267,6 +1282,8 @@ class ModuleController extends ApiController
         $pivotData['current_config'] = $pivotData['initial_config'];
         $pivotData->save();
 
+
+        DB::commit();
 
         activity('undo-config-module')
             ->causedBy(Auth::user())
@@ -1276,14 +1293,14 @@ class ModuleController extends ApiController
                 'type-log' => 'server',
                 'route' => request()->fullUrl(),
                 'method' => 'undoConfigModule',
-                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                'user_role' =>Auth::user()->roles()->pluck('name')->first(),
+                'user' => Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                'user_role' => Auth::user()->roles()->pluck('name')->first(),
                 'module_id' => $module['id'],
                 'module_name' => $module['name'],
                 'module_type' => $module['type'],
                 'server_id' => $server?->id
             ])
-        ->log('The module configuration has been reverted to its initial state');
+            ->log('The module configuration has been reverted to its initial state');
 
 
         return response()->json([
@@ -1291,8 +1308,13 @@ class ModuleController extends ApiController
             'msg' => 'The module configuration has been reverted to its initial state',
             'config' => json_decode($pivotData['initial_config'], true)
         ], 200);
+
+    } catch (ValidationException $e) {
+        DB::rollBack();
+        throw $e;
     } catch (\Exception $e) {
-        return response()->json(['error'=> $e->getMessage()], 422);
+        DB::rollBack();
+
     }
   }
 

@@ -17,6 +17,7 @@ use Modules\User\Http\Requests\Phone\LoginPhoneRequest;
 use Modules\User\Http\Requests\Phone\SendLoginPhoneRequest;
 use Modules\User\Http\Requests\ReCaptcha\ValidateReCaptchaTokenRequest;
 use Modules\User\Models\PhoneLogin;
+use Modules\User\Models\Role;
 use Modules\User\Models\User;
 use Modules\User\Services\PhoneVerificationService;
 use Modules\User\Transformers\Auth\LoginResource;
@@ -40,17 +41,6 @@ class AuthController extends ApiController
 
                 if ($server['is_down'])
                     throw ValidationException::withMessages(['validation' => ['server is off']]);
-
-            } else {
-                $systemSettings = SystemSettings::first()?->orginal_vm_ip ;
-                    if (!$systemSettings)
-                        throw ValidationException::withMessages(['validation' => ['no set dafalte VM ip']]);
-
-                    if (isset($systemSettings['orginal_vm_ip ']))
-                        throw ValidationException::withMessages(['validation' => ['do not set dafalte VM ip']]);
-
-                if (request()->ip() !== $systemSettings['orginal_vm_ip ']);
-                    throw ValidationException::withMessages(['validation' => ['Your IP is different from the orginal server ip on which your account is registered.']]);
             }
     }
     public function login (Loginrequest $request)
@@ -59,11 +49,11 @@ class AuthController extends ApiController
 
         $user = User::whereRaw('BINARY auth_name = ?', [$credentials['auth_name']])->first();
 
-        if (!$user || !Hash::check($credentials['password'], $user->password))
-            return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
+//        if (!$user || !Hash::check($credentials['password'], $user->password))
+//          return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
 
-//        if (!$user->hasRole(Role::ADMIN))
-//             $this->validateLoginDevice($user);
+        if (!$user->hasRole(Role::ADMIN))
+             $this->validateLoginDevice($user);
 
 
         $user->tokens()->delete();
@@ -143,12 +133,12 @@ class AuthController extends ApiController
 
 //        validation code
         if (!$correct_code || $correct_code->token !== $credentials['code'])
-            return response(['msg' => 'The entered code is incorrect!'], 422);
+            throw ValidationException::withMessages(['error' => 'The entered code is incorrect!']);
 
 
         $user = User::firstWhere('phone', $user->phone);
         if (!$user)
-            return response(['msg' => 'No user was found with this phone number!'], 404);
+            throw ValidationException::withMessages(['error' => 'No user was found with this phone number!']);
 
 
         try {
@@ -170,6 +160,8 @@ class AuthController extends ApiController
                 'token' => $token,
             ]);
 
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (\Exception $e) {
             return response(['success' => true, 'There was a problem with the program process.'], 400);
         }

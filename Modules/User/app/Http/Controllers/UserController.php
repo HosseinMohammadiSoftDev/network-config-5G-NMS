@@ -2,8 +2,10 @@
 
 namespace Modules\User\Http\Controllers;
 
+use Illuminate\Auth\Events\Validated;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Modules\User\Models\User;
 use function PHPSTORM_META\map;
 use Modules\Server\Models\Server;

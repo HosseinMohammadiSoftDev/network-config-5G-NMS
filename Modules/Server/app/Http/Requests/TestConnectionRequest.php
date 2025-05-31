@@ -16,7 +16,7 @@ class TestConnectionRequest extends FormRequest
             'server_id' => ['required', 'exists:servers,id', 'integer', function ($attribute, $value, $fail) {
                 $server = DB::table('servers')->where('id', $value)->first();
                     if (!$server) {
-                        $fail("The selected server ID ($value) is invalid.");
+//                        $fail("The selected server ID ($value) is invalid.");
                         return;
                     }
 

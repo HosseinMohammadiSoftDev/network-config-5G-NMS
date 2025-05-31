@@ -17,11 +17,12 @@
       async
       defer
     ></script> -->
-    <script type="module" crossorigin src="/assets/login-DfPhdh77.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/logo-mci-02 (1)-CIi6MUcD.js">
+    <script type="module" crossorigin src="/assets/login-BU7E8UOo.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/useApi-BfG3Hg_d.js">
     <link rel="modulepreload" crossorigin href="/assets/jquery-CP0Zt4UW.js">
-    <link rel="stylesheet" crossorigin href="/assets/logo-mci-02 (1)-BHbPscNU.css">
-    <link rel="stylesheet" crossorigin href="/assets/login-BJUy82cP.css">
+    <link rel="modulepreload" crossorigin href="/assets/logo white-B4cZC4YV.js">
+    <link rel="stylesheet" crossorigin href="/assets/useApi-BHbPscNU.css">
+    <link rel="stylesheet" crossorigin href="/assets/login-CA0eq36-.css">
   </head>
   <body>
     <div class="container containerLogin">
@@ -114,7 +115,7 @@
                 id="authNameLogin"
               />
             </div>
-            <div class="mb-2">
+            <div class="mb-3">
               <label
                 for="passwordLogin"
                 class="form-label mb-1"
@@ -127,14 +128,30 @@
                 id="passwordLogin"
               />
             </div>
-            <div class="mb-3 d-flex flex-column justify-content-center" id="chptchaOffline">
-              <div class="d-flex justify-content-between align-items-center">
+            <div
+              class="mb-3 d-none flex-column justify-content-center"
+              id="chptchaOffline"
+            >
+              <div class="d-flex align-items-center">
+                <input
+                  type="text"
+                  class="form-control rounded-0"
+                  name="nameCaptchaLogin"
+                  id="captchaLogin"
+                />
                 <div
-                  class="CAPTCHA"
-                  id="CAPTCHA"
-                ></div>
+                  class="divCaptcha"
+                  id="reloadCaptcha"
+                >
+                  <div
+                    class="CAPTCHA"
+                    id="CAPTCHA"
+                  ></div>
+                </div>
+              </div>
+              <!-- <div class="d-flex justify-content-end align-items-center">
                 <button
-                  class="reload p-0 me-4"
+                  class="reload p-0"
                   id="reloadCaptcha"
                 >
                   <svg
@@ -154,35 +171,16 @@
                     />
                   </svg>
                 </button>
-              </div>
-
-              <label
-                for="captchaLogin"
-                class="form-label"
-              >
-              </label>
-              <div class="input-group mb-3">
-                <div class="input-group-text">Captcha</div>
-                <input
-                  type="text"
-                  class="form-control"
-                  name="nameCaptchaLogin"
-                  id="captchaLogin"
-                />
-              </div>
+              </div> -->
             </div>
-            <!-- <div class="mb-3 d-none flex-column justify-content-center" id="reCaptchaOnline">
-              <form
-                action=""
-                method="POST"
-              >
-                <div
-                  class="g-recaptcha"
-                  data-sitekey="6Lc0XCwrAAAAAIPZFP4yuIm5gRCXugbM580wNK_H"
-                  data-action="LOGIN"
-                ></div>
-              </form>
-            </div> -->
+            <div
+              id="reCaptchaOnline"
+              class="my-3 d-none flex-column justify-content-center"
+            >
+              <div id="recaptcha-widget"></div>
+              <!-- <button type="button" id="btnForm2">ریست کردن reCAPTCHA</button> -->
+            </div>
+
             <div id="inputPhoneNumber"></div>
             <div
               id="otp-input"
@@ -283,7 +281,7 @@
             </div>
             <a
               id="loginBtn"
-              class="btn btn-primary d-flex justify-content-center align-items-center w-100"
+              class="btn btn-primary d-flex justify-content-center align-items-center w-100 text-white"
               role="button"
             >
               <div
@@ -347,6 +345,22 @@
             </button>
           </div>
         </div>
+        <div
+          class="position-relative"
+          id="mainDivBBDH"
+        >
+          <div
+            class="d-flex justify-content-evenly align-items-center position-absolute divIconBBDH"
+          >
+            <div class="divImgBBDH">
+              <img
+                class="imgBBDH"
+                src="/assets/logo%20white-C7adMC3s.png"
+              />
+            </div>
+            <p class="m-0 textBBDH">In partnership with BBDH</p>
+          </div>
+        </div>
       </div>
 
       <div
@@ -408,5 +422,6 @@
         </svg>
       </div>
     </div>
+    <!-- <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script> -->
   </body>
 </html>

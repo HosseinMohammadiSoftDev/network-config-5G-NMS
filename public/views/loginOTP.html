@@ -12,18 +12,77 @@
       rel="icon"
       type="image/x-icon"
     />
-    <script type="module" crossorigin src="/assets/loginOTP-VN65whMj.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/logo-mci-02 (1)-CIi6MUcD.js">
-    <link rel="stylesheet" crossorigin href="/assets/logo-mci-02 (1)-BHbPscNU.css">
-    <link rel="stylesheet" crossorigin href="/assets/loginOTP-eb3c3BlQ.css">
+    <script type="module" crossorigin src="/assets/loginOTP-DEdJdwoA.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/useApi-BfG3Hg_d.js">
+    <link rel="modulepreload" crossorigin href="/assets/logo-mci-02 (1)-XjHcq-Mn.js">
+    <link rel="stylesheet" crossorigin href="/assets/useApi-BHbPscNU.css">
+    <link rel="stylesheet" crossorigin href="/assets/loginOTP-BOjLPZG0.css">
   </head>
   <body>
     <div class="container containerLogin">
       <div class="d-flex justify-content-center align-items-center divLogin">
         <div
-          class="bg-body-tertiary rounded-3 d-flex flex-column justify-content-center align-items-center divContainer"
+          class="bg-body-tertiary rounded-3 d-flex flex-column justify-content-center align-items-center divContainer position-relative"
           id="idDivContainer"
         >
+        <div
+            id="idLoadingLogin"
+            class="loadingLogin"
+          >
+            <svg
+              class="pl"
+              width="240"
+              height="240"
+              viewBox="0 0 240 240"
+            >
+              <circle
+                class="pl__ring pl__ring--a"
+                cx="120"
+                cy="120"
+                r="105"
+                fill="none"
+                stroke="#000"
+                stroke-width="20"
+                stroke-dasharray="0 660"
+                stroke-dashoffset="-330"
+                stroke-linecap="round"
+              ></circle>
+              <circle
+                class="pl__ring pl__ring--b"
+                cx="120"
+                cy="120"
+                r="35"
+                fill="none"
+                stroke="#000"
+                stroke-width="20"
+                stroke-dasharray="0 220"
+                stroke-dashoffset="-110"
+                stroke-linecap="round"
+              ></circle>
+              <circle
+                class="pl__ring pl__ring--c"
+                cx="85"
+                cy="120"
+                r="70"
+                fill="none"
+                stroke="#000"
+                stroke-width="20"
+                stroke-dasharray="0 440"
+                stroke-linecap="round"
+              ></circle>
+              <circle
+                class="pl__ring pl__ring--d"
+                cx="155"
+                cy="120"
+                r="70"
+                fill="none"
+                stroke="#000"
+                stroke-width="20"
+                stroke-dasharray="0 440"
+                stroke-linecap="round"
+              ></circle>
+            </svg>
+          </div>
           <div
             id="backLogoOTP"
             class="d-flex justify-content-center align-items-center mb-4"
@@ -47,8 +106,8 @@
                 id="phoneNamber"
               />
             </div>
-            <div class="mb-3 d-flex flex-column justify-content-center">
-              <div class="d-flex align-items-center">
+            <div class="mb-3 d-none flex-column justify-content-center" id="chptchaOffline">
+              <!-- <div class="d-flex align-items-center">
                 <div
                   class="CAPTCHA"
                   id="CAPTCHA"
@@ -74,21 +133,33 @@
                     />
                   </svg>
                 </button>
-              </div>
+              </div> -->
               <label
                 for="captchaLogin"
                 class="form-label"
               >
               </label>
-              <div class="input-group mb-3">
-                <div class="input-group-text">Captcha</div>
+              <div class="d-flex align-items-center mb-3">
                 <input
                   type="text"
                   class="form-control"
                   name="nameCaptchaLogin"
                   id="captchaLogin"
                 />
+                <div
+                  class="divCaptcha"
+                  id="reloadCaptcha"
+                >
+                  <div
+                    class="CAPTCHA"
+                    id="CAPTCHA"
+                  ></div>
+                </div>
               </div>
+            </div>
+            <div id="reCaptchaOnline" class="my-3 d-none flex-column justify-content-center">
+              <div id="recaptcha-widget"></div>                
+              <!-- <button type="button" id="btnForm2">ریست کردن reCAPTCHA</button> -->
             </div>
             <div
               id="otp-input"
