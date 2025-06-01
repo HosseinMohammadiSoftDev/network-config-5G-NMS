@@ -30,7 +30,7 @@ class ModuleController extends ApiController
 
 
         // create New Module And Upload File .Yaml Convert to Json Upload To database
-    public function createModule (CreateModulesRequest $request)
+    public function createModule (Request $request)
     {
         return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
             ->post(env('NMS_IP') . "create-module", [
