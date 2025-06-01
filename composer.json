@@ -65,6 +65,8 @@
             "php artisan module:migrate user",
             "php artisan module:migrate server",
             "php artisan module:migrate log",
+            "php artisan module:migrate SystemSetting",
+            "php artisan module:migrate Backup",
             "php artisan db:seed"
         ]
     },
