@@ -17,6 +17,7 @@ use Modules\User\Http\Requests\Phone\LoginPhoneRequest;
 use Modules\User\Http\Requests\Phone\SendLoginPhoneRequest;
 use Modules\User\Http\Requests\ReCaptcha\ValidateReCaptchaTokenRequest;
 use Modules\User\Models\PhoneLogin;
+use Modules\User\Models\Role;
 use Modules\User\Models\User;
 use Modules\User\Services\PhoneVerificationService;
 use Modules\User\Transformers\Auth\LoginResource;
@@ -38,18 +39,12 @@ class AuthController extends ApiController
                 if (request()->ip() !== $server['ip'])
                     throw ValidationException::withMessages(['validation' => ['Your IP is different from the server on which your account is registered.']]);
 
-                if ($server['is_down'])
+                    if ($server['is_down'])
                     throw ValidationException::withMessages(['validation' => ['server is off']]);
 
             } else {
-                $systemSettings = SystemSettings::first()?->orginal_vm_ip ;
-                    if (!$systemSettings)
-                        throw ValidationException::withMessages(['validation' => ['no set dafalte VM ip']]);
 
-                    if (isset($systemSettings['orginal_vm_ip ']))
-                        throw ValidationException::withMessages(['validation' => ['do not set dafalte VM ip']]);
-
-                if (request()->ip() !== $systemSettings['orginal_vm_ip ']);
+                if (request()->ip() !== '127.0.0.1')
                     throw ValidationException::withMessages(['validation' => ['Your IP is different from the orginal server ip on which your account is registered.']]);
             }
     }
@@ -62,11 +57,12 @@ class AuthController extends ApiController
         if (!$user || !Hash::check($credentials['password'], $user->password))
             return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
 
-//        if (!$user->hasRole(Role::ADMIN))
-//             $this->validateLoginDevice($user);
+        if (!$user->hasRole(Role::ADMIN))
+            $this->validateLoginDevice($user);
 
 
-        $user->tokens()->delete();
+
+//        $user->tokens()->delete();
         $token = $user->createToken('apiToken')->plainTextToken;
 
 
