@@ -746,7 +746,7 @@ class ModuleController extends ApiController
     {
         $request->validated();
 
-        $serverIds = $request->input('servers', []);
+        $serverIds = $request->input('servers_ids', []);
 
         if (!empty($serverIds))
             return $this->updateMultipleModules($serverIds, $request);
