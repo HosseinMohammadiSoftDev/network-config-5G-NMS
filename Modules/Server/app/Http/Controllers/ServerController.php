@@ -34,13 +34,15 @@ class ServerController extends ApiController
 
     public function showAllServers (Request $request)
     {
-        return Http::get(env('NMS_IP') . 'show-all-servers');
+        $response = Http::get(env('NMS_IP') . 'show-all-servers');
+
+        return response()->json($response->json(), $response->status());
     }
 
 
     public function editServer (Request $request)
     {
-        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
             ->post(env('NMS_IP') . 'edit-server', [
                 'server_id' => $request['server_id'],
                 'name' => $request['name'] ?? null,
@@ -48,40 +50,50 @@ class ServerController extends ApiController
                 'path_config' => $request['path_config'] ?? null,
                 'path_run_config' => $request['path_run_config'] ?? null,
             ]);
+
+        return response()->json($response->json(), $response->status());
     }
 
 
     public function serverStop (Request $request)
     {
-        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
             ->post(env('NMS_IP') . 'server-stop', [
                 'server_id' => $request['server_id'],
             ]);
+
+        return response()->json($response->json(), $response->status());
     }
     public function serverStart (Request $request)
     {
-        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
             ->post(env('NMS_IP') . 'server-start', [
                 'server_id' => $request['server_id'],
             ]);
+
+        return response()->json($response->json(), $response->status());
     }
     public function serverStatus (Request $request)
     {
-        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
             ->post(env('NMS_IP') . 'server-status', [
                 'server_id' => $request['server_id'],
             ]);
+
+        return response()->json($response->json(), $response->status());
     }
 
 
     public function testConnection (Request $request)
     {
-        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
             ->post(env('NMS_IP') . 'test-connection', [
                 'server_id' => $request['server_id'],
                 'username' => $request['username'],
                 'password' => $request['password'],
             ]);
+
+        return response()->json($response->json(), $response->status());
     }
 }
 

@@ -26,16 +26,19 @@ class AuthController extends ApiController
 {
     public function login (Request $request)
     {
-        return Http::post(env('NMS_IP') . 'login',[
+        $response = Http::post(env('NMS_IP') . 'login', [
             'auth_name' => $request['auth_name'],
             'password' => $request['password'],
         ]);
 
+        return response()->json($response->json(), $response->status());
     }
     public function logout(Request $request)
     {
-        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
             ->post(env('NMS_IP') . 'logout');
+
+        return response()->json($response->json(), $response->status());
     }
 
 

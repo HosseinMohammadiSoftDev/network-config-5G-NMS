@@ -10,8 +10,10 @@ class UserController extends ApiController
 {
     public function getMe (Request $request)
     {
-        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
             ->get(env('NMS_IP') . 'get-me');
+
+        return response()->json($response->json(), $response->status());
     }
 
 
@@ -20,21 +22,27 @@ class UserController extends ApiController
 //    role, permission methods
     public function showAllRolesPermissions (Request $request)
     {
-        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
             ->get(env('NMS_IP') . 'show-all-roles');
+
+        return response()->json($response->json(), $response->status());
     }
     public function showAllPermissions (Request $request)
     {
-        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
             ->get(env('NMS_IP') . 'show-all-permission');
+
+        return response()->json($response->json(), $response->status());
     }
 
 
 //    log method
     public function showAllLogs (Request $request)
     {
-        return Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
             ->get(env('NMS_IP') . 'show-all-logs');
+
+        return response()->json($response->json(), $response->status());
     }
 
 }
