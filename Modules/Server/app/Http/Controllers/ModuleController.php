@@ -394,7 +394,6 @@ class ModuleController extends ApiController
 
         activity('create-module')
         ->causedBy(Auth::user())
-        ->performedOn(Module::latest()->first())
         ->event('create-module')
         ->withProperties([
             'type-log' => 'server',

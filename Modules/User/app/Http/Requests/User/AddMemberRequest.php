@@ -20,7 +20,7 @@ class AddMemberRequest extends FormRequest
             'first_name' => ['required', 'string', 'max:191', 'min:3'],
             'last_name' => ['required', 'string', 'max:191', 'min:3'],
             'auth_name' => ['required', 'string', 'unique:users,auth_name', 'min:3', 'max:255'],
-//            'phone' => ['required', 'string', 'regex:/^09\d{9}$/', 'unique:users,phone'],
+            'phone' => ['required', 'string', 'regex:/^09\d{9}$/', 'unique:users,phone'],
             'role' => ['required', 'in:visitor,expert'],
             'permission_name' => ['nullable', 'array'],
             'permission_name.*' => ['required', 'string', 'exists:permissions,name'],

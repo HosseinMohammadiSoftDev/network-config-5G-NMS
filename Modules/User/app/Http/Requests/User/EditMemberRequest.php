@@ -22,21 +22,19 @@ class EditMemberRequest extends FormRequest
 
             'auth_name' => ['nullable',
             'string',
-            // 'unique:users,auth_name',
             Rule::unique('users', 'auth_name')->ignore($this->user_id, 'id'),
             'min:3',
             'max:60'],
 
             'password' => ['nullable', Password::min(8), 'max:40', 'confirmed'],
-            'role' => ['nullable', 'string', 'in:expert,visitor'],
             'first_name' => ['nullable', 'min:3', 'max:256'],
             'last_name' => ['nullable', 'min:3', 'max:256'],
 
-//            'phone' => [
-//                'string',
-//                'regex:/^09\d{9}$/',
-//                Rule::unique('users', 'phone')->ignore($this->user_id, 'id')
-//            ],
+            'phone' => [
+                'string',
+                'regex:/^09\d{9}$/',
+                Rule::unique('users', 'phone')->ignore($this->user_id, 'id')
+            ],
 
             'role' => ['nullable', 'string', Rule::exists('roles', 'name'), Rule::notIn('admin')],
             'permission_name' => ['nullable', 'array'],
@@ -79,7 +77,7 @@ class EditMemberRequest extends FormRequest
 
         $serverPermissions = Permission::where('name', 'like', 'server/%')->pluck('name')->toArray();
         if (! $serverPermissions)
-            throw ValidationException::withMessages(['validation' => ['server permission empity']]);
+            throw ValidationException::withMessages(['validation' => ['You did not create a server, server permission empity']]);
 
         if (empty(array_intersect($permissionNames, $serverPermissions)))
             throw ValidationException::withMessages(['validation' => ['At least one server-related permission is required']]);

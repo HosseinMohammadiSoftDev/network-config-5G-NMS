@@ -30,8 +30,8 @@ class User extends Authenticatable
         'password',
         'added_by',
         'phone',
-        'server_id'
-        // 'phone_verified_at'
+        'server_id',
+        'phone_verified_at'
     ];
 
     protected $guard_name = 'web';
