@@ -43,14 +43,8 @@ class AuthController extends ApiController
                     throw ValidationException::withMessages(['validation' => ['server is off']]);
 
             } else {
-                $systemSettings = SystemSettings::first()?->orginal_vm_ip ;
-                    if (!$systemSettings)
-                        throw ValidationException::withMessages(['validation' => ['no set dafalte VM ip']]);
 
-                    if (isset($systemSettings['orginal_vm_ip ']))
-                        throw ValidationException::withMessages(['validation' => ['do not set dafalte VM ip']]);
-
-                if (request()->ip() !== $systemSettings['orginal_vm_ip ']);
+                if (request()->ip() !== '127.0.0.1')
                     throw ValidationException::withMessages(['validation' => ['Your IP is different from the orginal server ip on which your account is registered.']]);
             }
     }
