@@ -82,10 +82,10 @@ class ServerController extends ApiController
 
                 $server = Server::create($credentials);
                     $permission = Permission::firstOrCreate(['name' => "server/{$server->name}", 'guard_name' => 'web']);
-                        $role = Role::firstOrCreate(['name' => "server/{$server->name}", 'guard_name' => 'web']);
+//                        $role = Role::firstOrCreate(['name' => "server/{$server->name}", 'guard_name' => 'web']);
 
                             // $this->givePermissionServerToRoleUsers($permission);
-                            $this->giveRoleServerToServer($role, $server, $permission);
+//                            $this->giveRoleServerToServer($role, $server, $permission);
 
 
             activity('create-server')

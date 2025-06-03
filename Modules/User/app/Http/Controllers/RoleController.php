@@ -8,6 +8,7 @@ use Modules\User\Models\User;
 use App\Http\Controllers\Contract\ApiController;
 use Modules\User\Http\Requests\Role\AddPermissionToUser;
 use Modules\User\Models\Permission;
+use Modules\User\Transformers\Role\ShowAllRoleResource;
 
 class RoleController extends ApiController
 {
@@ -23,13 +24,15 @@ class RoleController extends ApiController
         $roles = [
             [
                 'name' => 'admin',
-                'permissions' => Permission::pluck('name')->toArray(),
+                'permissions' => Permission::where('name', 'not like', 'server%')
+                        ->pluck('name')
+                        ->toArray(),
             ],
             [
                 'name' => 'visitor',
                 'permissions' => array_merge(
                     ['VM/read', 'module/read'],
-                    $serverPermissions
+//                    $serverPermissions
                 ),
             ],
             [
@@ -40,7 +43,7 @@ class RoleController extends ApiController
                         'module/read', 'module/create', 'module/update', 'module/delete',
                         'monitoring'
                     ],
-                    $serverPermissions
+//                    $serverPermissions
                 ),
             ]
         ];

@@ -25,13 +25,13 @@ class Module extends Model
         'current_config'
     ];
 
-    // public function getActivitylogOptions(): LogOptions
-    // {
-    //     return LogOptions::defaults()
-    //     ->logOnlyDirty()
-    //     ->useLogName('module')
-    //     ->logOnly(['id', 'name', 'type', 'server_id', 'created_at', 'updated_at']);
-    // }
+//     public function getActivitylogOptions(): LogOptions
+//     {
+//         return LogOptions::defaults()
+//         ->logOnlyDirty()
+//         ->useLogName('module')
+//         ->logOnly(['id', 'name', 'type', 'server_id', 'created_at', 'updated_at']);
+//     }
 
         // oen to mony
     // public function server()

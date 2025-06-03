@@ -41,6 +41,17 @@ class AuthController extends ApiController
 
                 if ($server['is_down'])
                     throw ValidationException::withMessages(['validation' => ['server is off']]);
+
+            } else {
+                $systemSettings = SystemSettings::first()?->orginal_vm_ip ;
+                    if (!$systemSettings)
+                        throw ValidationException::withMessages(['validation' => ['no set dafalte VM ip']]);
+
+                    if (isset($systemSettings['orginal_vm_ip ']))
+                        throw ValidationException::withMessages(['validation' => ['do not set dafalte VM ip']]);
+
+                if (request()->ip() !== $systemSettings['orginal_vm_ip ']);
+                    throw ValidationException::withMessages(['validation' => ['Your IP is different from the orginal server ip on which your account is registered.']]);
             }
     }
     public function login (Loginrequest $request)
@@ -49,8 +60,8 @@ class AuthController extends ApiController
 
         $user = User::whereRaw('BINARY auth_name = ?', [$credentials['auth_name']])->first();
 
-//        if (!$user || !Hash::check($credentials['password'], $user->password))
-//          return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
+        if (!$user || !Hash::check($credentials['password'], $user->password))
+            return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
 
         if (!$user->hasRole(Role::ADMIN))
              $this->validateLoginDevice($user);
@@ -133,12 +144,12 @@ class AuthController extends ApiController
 
 //        validation code
         if (!$correct_code || $correct_code->token !== $credentials['code'])
-            throw ValidationException::withMessages(['error' => 'The entered code is incorrect!']);
+            return response(['msg' => 'The entered code is incorrect!'], 422);
 
 
         $user = User::firstWhere('phone', $user->phone);
         if (!$user)
-            throw ValidationException::withMessages(['error' => 'No user was found with this phone number!']);
+            return response(['msg' => 'No user was found with this phone number!'], 404);
 
 
         try {
@@ -160,8 +171,6 @@ class AuthController extends ApiController
                 'token' => $token,
             ]);
 
-        } catch (ValidationException $e) {
-            throw $e;
         } catch (\Exception $e) {
             return response(['success' => true, 'There was a problem with the program process.'], 400);
         }

@@ -28,7 +28,6 @@ class Server extends Model
         'path_config',
         'path_run_config',
         'is_down',
-        'config'
     ];
 
 
