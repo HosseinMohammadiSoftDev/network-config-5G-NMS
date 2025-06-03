@@ -26,12 +26,18 @@ class AuthController extends ApiController
 {
     public function login (Request $request)
     {
-        $response = Http::post(env('NMS_IP') . 'login', [
-            'auth_name' => $request['auth_name'],
-            'password' => $request['password'],
-        ]);
+        try {
 
-        return response()->json($response->json(), $response->status());
+            $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
+                ->post(env('NMS_IP') . 'login', [
+                    'auth_name' => $request['auth_name'],
+                    'password' => $request['password'],
+                ])->throw();
+
+            return response()->json($response->json(), $response->status());
+        }catch (\Throwable $e) {
+            return response()->json(['msg' => 'An error occurred while connecting to the external system.',  'error' => $e->getMessage()], 422);
+        }
     }
     public function logout(Request $request)
     {
