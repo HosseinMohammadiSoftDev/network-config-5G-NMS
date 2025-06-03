@@ -12,23 +12,29 @@ class ModuleController extends ApiController
         // show Config in database
     public function showConfigModule (Request $request, $serverId, $moduleId)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->get(env('NMS_IP') . "show-config-module/{$serverId}/{$moduleId}");
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->get(env('NMS_IP') . "show-config-module/{$serverId}/{$moduleId}");
 
         return response()->json($response->json(), $response->status());
     }
     public function showAllServiseAndModulesInServer (Request $request, $serverId)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->get(env('NMS_IP') . "show-all-servies-and-modules/{$serverId}");
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->get(env('NMS_IP') . "show-all-servies-and-modules/{$serverId}");
 
         return response()->json($response->json(), $response->status());
     }
 
     public function ShowAllModules (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->get(env('NMS_IP') . "show-all-modules");
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->get(env('NMS_IP') . "show-all-modules");
 
         return response()->json($response->json(), $response->status());
     }
@@ -38,8 +44,10 @@ class ModuleController extends ApiController
         // create New Module And Upload File .Yaml Convert to Json Upload To database
     public function createModule (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->post(env('NMS_IP') . "create-module", [
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->post(env('NMS_IP') . "create-module", [
                 'name' => $request['name'],
                 'type' => $request['type'],
                 'server_id' => $request['server_id'],
@@ -52,8 +60,10 @@ class ModuleController extends ApiController
     }
     public function deleteModule (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->delete(env('NMS_IP') . 'delete-module', [
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->delete(env('NMS_IP') . 'delete-module', [
                 'module_id' => $request['module_id'],
             ]);
 
@@ -65,8 +75,10 @@ class ModuleController extends ApiController
         // update Config Module
     public function updateConfigModule (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->post(env('NMS_IP') . 'update-config-module', [
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->post(env('NMS_IP') . 'update-config-module', [
                 'server_id' => $request['server_id'],
                 'module_id' => $request['module_id'],
                 'data' => $request['data'],
@@ -82,8 +94,10 @@ class ModuleController extends ApiController
         // delete config module
     public function deleteConfigModule (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->delete(env('NMS_IP') . 'delete-config-module', [
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->delete(env('NMS_IP') . 'delete-config-module', [
                 'module_id' => $request['module_id'],
                 'server_id' => $request['server_id'],
                 'path_config' => $request['path_config'],
@@ -99,8 +113,10 @@ class ModuleController extends ApiController
         // edit config module
     public function editModule(Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->post(env('NMS_IP') . 'edit-module', [
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->post(env('NMS_IP') . 'edit-module', [
                 'module_id' => $request['module_id'],
                 'name' => $request['name'] ?? null,
                 'type' => $request['type'] ?? null,
@@ -119,8 +135,10 @@ class ModuleController extends ApiController
         // expert file
     public function expertModuleFileIsServer (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->post(env('NMS_IP') . 'export-module-file', [
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->post(env('NMS_IP') . 'export-module-file', [
                 'module_id' => $request['module_id'],
                 'server_id' => $request['server_id'],
                 'username' => $request['username'],
@@ -135,8 +153,10 @@ class ModuleController extends ApiController
         // service module
     public function restartServiceModule (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->post(env('NMS_IP') . 'restart-service-config', [
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->post(env('NMS_IP') . 'restart-service-config', [
                 'module_id' => $request['module_id'],
                 'server_id' => $request['server_id'],
                 'username' => $request['username'],
@@ -147,8 +167,10 @@ class ModuleController extends ApiController
     }
     public function startServiceModule (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->post(env('NMS_IP') . 'start-service-config', [
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->post(env('NMS_IP') . 'start-service-config', [
                 'module_id' => $request['module_id'],
                 'server_id' => $request['server_id'],
                 'username' => $request['username'],
@@ -159,8 +181,10 @@ class ModuleController extends ApiController
     }
     public function stopServiceModule (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->post(env('NMS_IP') . 'stop-service-config', [
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->post(env('NMS_IP') . 'stop-service-config', [
                 'module_id' => $request['module_id'],
                 'server_id' => $request['server_id'],
                 'username' => $request['username'],
@@ -171,8 +195,10 @@ class ModuleController extends ApiController
     }
     public function statusServiceModule (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->post(env('NMS_IP') . 'status-service-config', [
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->post(env('NMS_IP') . 'status-service-config', [
                 'module_id' => $request['module_id'],
                 'server_id' => $request['server_id'],
                 'username' => $request['username'],
@@ -188,8 +214,10 @@ class ModuleController extends ApiController
         // Undo Config module
     public function undoConfigModule (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->post(env('NMS_IP') . 'undo-module-config', [
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->post(env('NMS_IP') . 'undo-module-config', [
                 'module_id' => $request['module_id'],
                 'server_id' => $request['server_id'],
                 'username' => $request['username'],
@@ -200,8 +228,10 @@ class ModuleController extends ApiController
     }
     public function undoToInitialConfigModule (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->post(env('NMS_IP') . 'undo-to-initial-config-modules', [
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->post(env('NMS_IP') . 'undo-to-initial-config-modules', [
                 'module_id' => $request['module_id'],
                 'server_id' => $request['server_id'],
                 'username' => $request['username'],

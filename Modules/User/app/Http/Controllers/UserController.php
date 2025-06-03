@@ -10,8 +10,10 @@ class UserController extends ApiController
 {
     public function getMe (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->get(env('NMS_IP') . 'get-me');
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->get(env('NMS_IP') . 'get-me');
 
         return response()->json($response->json(), $response->status());
     }
@@ -22,15 +24,19 @@ class UserController extends ApiController
 //    role, permission methods
     public function showAllRolesPermissions (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->get(env('NMS_IP') . 'show-all-roles');
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->get(env('NMS_IP') . 'show-all-roles');
 
         return response()->json($response->json(), $response->status());
     }
     public function showAllPermissions (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->get(env('NMS_IP') . 'show-all-permission');
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->get(env('NMS_IP') . 'show-all-permission');
 
         return response()->json($response->json(), $response->status());
     }
@@ -39,8 +45,10 @@ class UserController extends ApiController
 //    log method
     public function showAllLogs (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->get(env('NMS_IP') . 'show-all-logs');
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->get(env('NMS_IP') . 'show-all-logs');
 
         return response()->json($response->json(), $response->status());
     }

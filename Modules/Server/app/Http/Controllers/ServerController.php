@@ -34,7 +34,10 @@ class ServerController extends ApiController
 
     public function showAllServers (Request $request)
     {
-        $response = Http::get(env('NMS_IP') . 'show-all-servers');
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->get(env('NMS_IP') . 'show-all-servers');
 
         return response()->json($response->json(), $response->status());
     }
@@ -42,8 +45,10 @@ class ServerController extends ApiController
 
     public function editServer (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->post(env('NMS_IP') . 'edit-server', [
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->post(env('NMS_IP') . 'edit-server', [
                 'server_id' => $request['server_id'],
                 'name' => $request['name'] ?? null,
                 'ip' => $request['ip'] ?? null,
@@ -57,8 +62,10 @@ class ServerController extends ApiController
 
     public function serverStop (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->post(env('NMS_IP') . 'server-stop', [
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->post(env('NMS_IP') . 'server-stop', [
                 'server_id' => $request['server_id'],
             ]);
 
@@ -66,8 +73,10 @@ class ServerController extends ApiController
     }
     public function serverStart (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->post(env('NMS_IP') . 'server-start', [
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->post(env('NMS_IP') . 'server-start', [
                 'server_id' => $request['server_id'],
             ]);
 
@@ -75,8 +84,10 @@ class ServerController extends ApiController
     }
     public function serverStatus (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->post(env('NMS_IP') . 'server-status', [
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->post(env('NMS_IP') . 'server-status', [
                 'server_id' => $request['server_id'],
             ]);
 
@@ -86,8 +97,10 @@ class ServerController extends ApiController
 
     public function testConnection (Request $request)
     {
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . $request->header('Authorization')])
-            ->post(env('NMS_IP') . 'test-connection', [
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $request->header('Authorization'),
+            'Accept' => 'application/json'
+        ])->post(env('NMS_IP') . 'test-connection', [
                 'server_id' => $request['server_id'],
                 'username' => $request['username'],
                 'password' => $request['password'],
