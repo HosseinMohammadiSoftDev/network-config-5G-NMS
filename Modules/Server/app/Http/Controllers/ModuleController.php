@@ -60,9 +60,7 @@ use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
 class ModuleController extends ApiController
 {
     public function __construct(private PaginationService $paginationService)
-    {
-
-    }
+    {}
 
         // show Config in database
     public function showConfigModule ($serverId, $moduleId)
