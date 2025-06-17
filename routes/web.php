@@ -6,7 +6,8 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 
 Route::get('/', function () {
-    return response()->file(public_path('views/login.html'));
+    return view('welcome');
+//    return response()->file(public_path('views/login.html'));
 });
 
 
