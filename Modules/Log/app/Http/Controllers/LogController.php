@@ -5,6 +5,7 @@ namespace Modules\Log\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Rap2hpoutre\FastExcel\FastExcel;
 use Spatie\Activitylog\Models\Activity;
 use Modules\User\Services\PaginationService;
 use App\Http\Controllers\Contract\ApiController;
@@ -40,5 +41,13 @@ class LogController extends ApiController
         $logs = $this->paginationService->paginate($logsQuery, $request, ['id', 'log_name', 'description', 'created_at', 'updated_at']);
 
         return $this->respondSuccess('show log successFuly', $logs);
+    }
+
+
+    public function ExportLogToExcel ()
+    {
+        $log = Activity::all();
+
+        return (new FastExcel($log))->download('log.xlsx');
     }
 }
