@@ -22,24 +22,6 @@ class AuthController extends ApiController
     {}
 
 
-
-    private function validateLoginDevice (User $user)
-    {
-        $server = Server::find($user?->server_id);
-
-            if ($server) {
-                if (request()->ip() !== $server['ip'])
-                    throw ValidationException::withMessages(['validation' => ['Your IP is different from the server on which your account is registered.']]);
-
-                    if ($server['is_down'])
-                    throw ValidationException::withMessages(['validation' => ['server is off']]);
-
-            } else {
-
-                if (request()->ip() !== '127.0.0.1')
-                    throw ValidationException::withMessages(['validation' => ['Your IP is different from the orginal server ip on which your account is registered.']]);
-            }
-    }
     public function login (Loginrequest $request)
     {
         $credentials = $request->validated();
@@ -48,9 +30,6 @@ class AuthController extends ApiController
 
         if (!$user || !Hash::check($credentials['password'], $user->password))
             return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
-
-        if (!$user->hasRole(Role::ADMIN))
-            $this->validateLoginDevice($user);
 
 
 
