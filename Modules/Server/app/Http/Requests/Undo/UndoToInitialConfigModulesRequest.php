@@ -21,11 +21,6 @@ class UndoToInitialConfigModulesRequest extends FormRequest
                         $fail("The selected server ID ($value) is invalid.");
                         return;
                     }
-
-                    if (empty($server->path_config) || empty($server->path_run_config)) {
-                        $fail("The selected server ($value) is missing required configuration paths (path_config and path_run_config).");
-                        return;
-                    }
                 }
             ],
 
