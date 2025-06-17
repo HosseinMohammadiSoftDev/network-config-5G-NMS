@@ -25,8 +25,6 @@ class Server extends Model
     protected $fillable = [
         'name',
         'ip',
-        'path_config',
-        'path_run_config',
         'is_down',
     ];
 
@@ -52,7 +50,13 @@ class Server extends Model
     public function modules ()
     {
         return $this->belongsToMany(Module::class)
-        ->withPivot('initial_config', 'previous_config', 'current_config');
+        ->withPivot(
+            'initial_config_json',
+            'previous_config_json',
+            'current_config_json',
+            'initial_config_conf',
+            'previous_config_conf'
+        );
     }
 
     public function users ()

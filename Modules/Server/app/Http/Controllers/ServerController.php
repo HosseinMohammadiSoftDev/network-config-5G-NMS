@@ -2,6 +2,7 @@
 
 namespace Modules\Server\Http\Controllers;
 
+use Illuminate\Validation\ValidationException;
 use Spyc;
 use Exception;
 use Illuminate\Http\Request;
@@ -56,11 +57,6 @@ class ServerController extends ApiController
     }
 
 
-    public function giveRoleServerToServer ($role, $server, $permission)
-    {
-        $role->syncPermissions($permission);
-            $server->assignRole($role);
-    }
     private function givePermissionServerToRoleUsers ($permission)
     {
         $roles = Role::whereIn('name', ['expert'])->get();
@@ -82,10 +78,8 @@ class ServerController extends ApiController
 
                 $server = Server::create($credentials);
                     $permission = Permission::firstOrCreate(['name' => "server/{$server->name}", 'guard_name' => 'web']);
-//                        $role = Role::firstOrCreate(['name' => "server/{$server->name}", 'guard_name' => 'web']);
+//                         $this->givePermissionServerToRoleUsers($permission);
 
-                            // $this->givePermissionServerToRoleUsers($permission);
-//                            $this->giveRoleServerToServer($role, $server, $permission);
 
 
             activity('create-server')
@@ -200,10 +194,11 @@ class ServerController extends ApiController
                 'route' => request()->fullUrl(),
                 'method' => 'deleteServer',
                 'server' => $server,
-                'server' => $server?->id,
                 'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                'user_role' =>Auth::user()->roles()->pluck('name')->first(),            ])
-            ->log('An issue occurred while deleting all server modules');
+                'user_role' =>Auth::user()->roles()->pluck('name')->first(),
+            ])->log('An issue occurred while deleting all server modules');
+
+            return response()->json(['msg' => $e->getMessage()],422);
         }
     }
 
@@ -287,6 +282,30 @@ class ServerController extends ApiController
     }
 
 
+
+
+
+
+    public function showAllServiseAndModulesInServer ($serverId) : array
+    {
+        $server = Server::with(['modules:id,name,type'])->find($serverId);
+
+        $modulesGroupedByType = collect();
+        foreach ($server->modules as $module) {
+            $types = array_map('trim', explode(',', $module->type));
+
+            foreach ($types as $type) {
+                if (!$modulesGroupedByType->has($type))
+                    $modulesGroupedByType->put($type, collect());
+                $modulesGroupedByType->get($type)->push($module);
+            }
+        }
+
+
+        return [
+            'allModules' => $server->modules->makeHidden('pivot')
+        ];
+    }
     public function testConnection (TestConnectionRequest $request)
     {
 
@@ -297,18 +316,22 @@ class ServerController extends ApiController
         $serverPermission = 'server/' . $server['name'];
 
         if (!Auth::user()->hasPermissionTo($serverPermission) && !Auth::user()->hasRole('admin'))
-            throw new HttpResponseException(response()->json(['msg' => 'You do not have the Permission to use this server.'], 422));
+            throw ValidationException::withMessages(['user_permission' => 'You do not have the Permission to use this server.']);
+
 
 
                 // is stop server
         if ($server['is_down'] == Server::OFF)
-            return response()->json(['msg' => 'this off server'], 403);
+            throw ValidationException::withMessages(['server' => 'this off server']);
 
 
             try {
 
-//                 $sshHelper = new sshHelper($server, $creadtional['username'], $creadtional['password']);
-//                 $sshHelper->testConnection();
+                 $sshHelper = new sshHelper($server, $creadtional['username'], $creadtional['password']);
+                 $sshHelper->testConnection();
+
+//                show module server to test connection server
+                $moduleServer = $this->showAllServiseAndModulesInServer($server['id']);
 
             activity('test-connection')
             ->causedBy(Auth::user())
@@ -324,10 +347,10 @@ class ServerController extends ApiController
             ])
             ->log('The connection to the server was successful');
 
-            return response()->json(['msg'=> 'connect successful.'], 200);
+            return response()->json(['success' => true, 'msg'=> 'connect successful.', 'modules_server' => $moduleServer], 200);
 
         } catch (Exception $e) {
-            return response()->json(['msg' => 'The connection to the server failed:' . $e->getMessage()], 500);
+                throw ValidationException::withMessages(['server_conenction' => 'The connection to the server failed:' . $e->getMessage()]);
         }
     }
 }

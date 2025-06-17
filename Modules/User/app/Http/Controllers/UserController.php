@@ -5,7 +5,6 @@ namespace Modules\User\Http\Controllers;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Modules\User\Models\User;
-use function PHPSTORM_META\map;
 use Modules\Server\Models\Server;
 use Illuminate\Support\Facades\DB;
 use Modules\User\Models\Permission;
@@ -25,6 +24,26 @@ class UserController extends ApiController
         $this->paginationService = $paginationService;
     }
 
+    private function showAllServiseAndModulesInServer ($serverId) : array
+    {
+        $server = Server::with(['modules:id,name,type'])->find($serverId);
+
+        $modulesGroupedByType = collect();
+        foreach ($server->modules as $module) {
+            $types = array_map('trim', explode(',', $module->type));
+
+            foreach ($types as $type) {
+                if (!$modulesGroupedByType->has($type))
+                    $modulesGroupedByType->put($type, collect());
+                $modulesGroupedByType->get($type)->push($module);
+            }
+        }
+
+
+        return [
+            'allModules' => $server->modules->makeHidden('pivot')
+        ];
+    }
     public function getMe ()
     {
         $serverIds = Server::whereIn(
@@ -35,6 +54,10 @@ class UserController extends ApiController
                 ->map(fn($name) => str_replace('server/', '', $name))
         )->pluck('id');
 
+
+        Server::first()
+            ? $serverModules = $this->showAllServiseAndModulesInServer(Server::first()['id'])
+            : $serverModules = collect();
 
         return $this->respondSuccess('The user was successfully displayed', [
             'user' => [
@@ -50,6 +73,7 @@ class UserController extends ApiController
                 'permissions' => Auth::user()->getAllPermissions()->pluck('name'),
                 'permissionServerIds' => $serverIds
             ],
+            'serverModules' => $serverModules
         ]);
     }
 
