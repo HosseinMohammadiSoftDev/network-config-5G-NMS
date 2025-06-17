@@ -7,15 +7,18 @@
     "require": {
         "php": "^8.2",
         "arcanedev/log-viewer": "^11.0",
+        "hassankhan/config": "^3.2",
         "laravel/framework": "^11.9",
         "laravel/sanctum": "^4.0",
-        "laravel/telescope": "^5.7",
         "laravel/tinker": "^2.9",
         "mustangostang/spyc": "^0.6.3",
+        "nette/neon": "^3.4",
         "nwidart/laravel-modules": "^11.1",
         "phpseclib/phpseclib": "^3.0",
+        "rap2hpoutre/fast-excel": "^5.6",
         "spatie/laravel-activitylog": "^4.9",
         "spatie/laravel-permission": "^6.10",
+        "symfony/config": "^7.3",
         "symfony/process": "^7.2",
         "symfony/serializer": "^7.2",
         "symfony/yaml": "^7.2"
@@ -65,8 +68,6 @@
             "php artisan module:migrate user",
             "php artisan module:migrate server",
             "php artisan module:migrate log",
-            "php artisan module:migrate SystemSetting",
-            "php artisan module:migrate Backup",
             "php artisan db:seed"
         ]
     },
