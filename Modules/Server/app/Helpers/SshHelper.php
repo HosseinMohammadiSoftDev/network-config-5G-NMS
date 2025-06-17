@@ -4,6 +4,7 @@ namespace Modules\Server\Helpers;
 
 use Exception;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use phpseclib3\Net\SFTP;
 use phpseclib3\Net\SSH2;
 use InvalidArgumentException;
 use PHPUnit\Event\Code\Throwable;
@@ -18,7 +19,9 @@ class SshHelper
 
     public function __construct(private $server, private $username, private $password)
     {
-        $this->ssh = new SSH2($server['ip']);
+
+        if (!$this->ssh || !$this->ssh->isConnected())
+            $this->ssh = new SSH2($this->server['ip']);
 
         if (!$this->ssh->login($username, $password)) {
             $this->logActivity('failed-connection-server', 'constructor');
@@ -37,7 +40,8 @@ class SshHelper
                 'route' => request()->fullUrl(),
                 'method' => $method,
                 'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                'user_role' =>Auth::user()->roles()->pluck('name')->first(),                'host' => $this->server['ip'],
+                'user_role' =>Auth::user()->roles()->pluck('name')->first(),
+                'host' => $this->server['ip'],
                 'username' => $this->username,
                 'server' => $this->server
             ], $extra))
