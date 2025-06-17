@@ -25,12 +25,18 @@ return new class extends Migration
                     ->onUpdate('cascade');
 
                             // config module
-                    $table->text('initial_config')->nullable()->comment('config module');
-                    $table->text('previous_config')->nullable()->comment('config module');
-                    $table->text('current_config')->nullable()->comment('config module');
+//                                    json format
+                    $table->text('initial_config_json')->nullable()->comment('initial config module to format son');
+                    $table->text('previous_config_json')->nullable()->comment('previous config module to foram json');
+                    $table->text('current_config_json')->nullable()->comment('config module');
+
+//                                    conf format
+                    $table->text('initial_config_conf')->nullable()->comment('initial config module to foram conf');;
+                    $table->text('previous_config_conf')->nullable()->comment('previous config module to foram conf');;
 
 
-            // $table->timestamps();
+
+//             $table->timesstamps();
         });
     }
 
