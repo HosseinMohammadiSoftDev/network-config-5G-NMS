@@ -15,7 +15,10 @@ return new class extends Migration
             $table->id();
 
             $table->string('name');
+            $table->string('extension');
             $table->string('type');
+
+            $table->string('path_config')->default('/home/siz-tel/bbdh-2.6.6-noCg/install/etc/bbdh/');
 
             $table->timestamps();
         });

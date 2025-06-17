@@ -14,9 +14,6 @@ class CreateServerRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'unique:servers,name', 'min:3', 'max:255'],
             'ip' => ['required', 'unique:servers,ip', 'regex:/^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/'],
-
-            'path_config' => ['nullable', 'string',  'min:1', 'max:1024'],
-            'path_run_config' => ['nullable', 'string',  'min:1', 'max:1024'],
         ];
     }
 
