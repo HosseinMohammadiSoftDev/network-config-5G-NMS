@@ -34,7 +34,7 @@ class AdminSeeder extends Seeder
             'VM/status',
 
                 // subscriber
-            'subscriber',
+//            'subscriber',
 
                 // monitoring
             'monitoring',
@@ -65,7 +65,7 @@ class AdminSeeder extends Seeder
             [
                 'first_name' => 'Admin',
                 'last_name' => 'Admin',
-                'phone' => '09120000000',
+//                'phone' => '09120000000',
                 'password' => Hash::make('password'),
             ],
         );
