@@ -12,6 +12,7 @@ class JsonUpdater
     public static function updateJsonValue(array $json, string $path, $value)
     {
         $path = preg_replace('/\[(\d+)\]/', '.$1', $path);
+        $path = preg_replace('/\.(\d+)(?=\.|$)/', '[$1]', $path);
         $keys = explode('.', $path);
         $currentNode = &$json;
 
@@ -24,18 +25,18 @@ class JsonUpdater
             if (is_numeric($key) && is_array($currentNode)) {
                 if (isset($currentNode[(int)$key])) {
                     $currentNode = &$currentNode[(int)$key];
-                } else {
-                    $currentNode[$key] = [];
-                    $currentNode = &$currentNode[$key]; // find or create
+//                } else {
+//                    $currentNode[$key] = [];
+//                    $currentNode = &$currentNode[$key]; // find or create
                 }
             }
                 // string
             elseif (isset($currentNode[$key])) {
                 $currentNode = &$currentNode[$key];
 
-            }elseif (!isset($currentNode[$key])) {
-                $currentNode[$key] = [];
-                $currentNode = &$currentNode[$key]; // find or create
+//            }elseif (!isset($currentNode[$key])) {
+//                $currentNode[$key] = [];
+//                $currentNode = &$currentNode[$key]; // find or create
 
             }else
                 return $json;
