@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('auth_name')->unique();
             $table->string('password');
 
-            $table->string('phone')->unique()->nullable();
 
             $table->foreignId('added_by')->nullable();
             $table->foreign('added_by')->references('id')->on('users')->onDelete('cascade');

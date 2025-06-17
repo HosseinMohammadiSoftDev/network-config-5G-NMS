@@ -29,7 +29,6 @@ class User extends Authenticatable
         'auth_name',
         'password',
         'added_by',
-        'phone',
         'server_id',
         'phone_verified_at'
     ];
