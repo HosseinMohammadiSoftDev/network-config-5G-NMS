@@ -2,48 +2,27 @@
 
 namespace Modules\Server\Http\Controllers;
 
-use Spyc;
 use Exception;
-use RuntimeException;
-use phpseclib3\Net\SSH2;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationData;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
-use Symfony\Component\Yaml\Yaml;
-use Illuminate\Http\JsonResponse;
+use Modules\Server\Helpers\FtpHelper;
 use Modules\Server\Models\Module;
 use Modules\Server\Models\Server;
-use PHPUnit\Event\Code\Throwable;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\Yaml\Dumper;
-use Illuminate\Support\Facades\Log;
+use Modules\Server\Services\ConfigManager;
+use Modules\Server\Services\ConfService;
+use Modules\Server\Services\Paeser\NeonPaeser;
 use Modules\User\Models\Permission;
-use App\Http\Controllers\Controller;
-use function Laravel\Prompts\select;
 use Illuminate\Support\Facades\Auth;
 use Modules\Server\Helpers\SshHelper;
-use PhpParser\Node\Expr\Cast\Object_;
-use Illuminate\Support\Facades\Storage;
 use Modules\Server\Helpers\JsonUpdater;
-use Spatie\Activitylog\Models\Activity;
 use Modules\User\Services\PaginationService;
-use Symfony\Component\Serializer\Serializer;
-use Illuminate\Routing\Controllers\Middleware;
 use App\Http\Controllers\Contract\ApiController;
-use Illuminate\Validation\UnauthorizedException;
-use Illuminate\Routing\Controllers\HasMiddleware;
 use Modules\Server\Http\Requests\EditModuleRequest;
-use Symfony\Component\Yaml\Exception\ParseException;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\ValidationException;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Spatie\Permission\Middleware\PermissionMiddleware;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Modules\Server\Http\Requests\Modules\ShowAllModules;
-use PharIo\Version\UnsupportedVersionConstraintException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\Serializer\Encoder\DecoderInterface;
-use Symfony\Component\Serializer\Encoder\EncoderInterface;
-use Modules\Server\Http\Requests\Server\UploadModuleRequest;
 use Modules\Server\Http\Requests\SshServer\SshServerRequest;
 use Modules\Server\Http\Requests\Modules\deleteModuleRequest;
 use Modules\Server\Http\Requests\Modules\CreateModulesRequest;
@@ -59,7 +38,10 @@ use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
 
 class ModuleController extends ApiController
 {
-    public function __construct(private PaginationService $paginationService)
+    public function __construct(
+        private PaginationService $paginationService,
+        private ConfService $confService
+    )
     {}
 
         // show Config in database
@@ -75,7 +57,7 @@ class ModuleController extends ApiController
         ->first();
 
         if (!$module)
-            throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.']));
+            throw ValidationException::withMessages(['module' => 'The module with the provided ID was not found on the server you specified.']);
 
 
 
@@ -90,7 +72,7 @@ class ModuleController extends ApiController
 
         $currentConfig = $module->servers
         ->where('pivot.server_id', $serverId)
-        ->first()?->pivot->current_config;
+        ->first()?->pivot->current_config_json;
 
 
         return response()->json([
@@ -123,8 +105,8 @@ class ModuleController extends ApiController
         }
 
         $response = [
-            'Epc' => $modulesGroupedByType->get('Epc', []),
-            '5gc' => $modulesGroupedByType->get('5gc', []),
+            'LTE' => $modulesGroupedByType->get('LTE', []),
+            'GSM' => $modulesGroupedByType->get('GSM', []),
             'allModules' => $server->modules->makeHidden('pivot')
         ];
 
@@ -183,6 +165,8 @@ class ModuleController extends ApiController
               'module_id' => $module->id,
               'module_name' => $module->name,
               'module_type' => $module->type,
+              'module_path_config' => $module->path_config,
+              'module_path_run_config' => $module->path_run_config,
               'server_detaile' => $module->servers->map(fn($server) => [
                   'id' => $server->id,
                   'name' => $server->name,
@@ -203,85 +187,44 @@ class ModuleController extends ApiController
 
 
 
-        // convet format
-    private function parseYamlToArray(UploadedFile $file)
-    {
-        try {
-
-            $yamlContent = file_get_contents($file->getRealPath());
-                if (!$yamlContent)
-                    throw new \Exception('YAML file is empty or unreadable.');
-
-            $parsedArray = Yaml::parse($yamlContent);
-                if (!is_array($parsedArray))
-                    throw new \Exception('Invalid YAML structure.');
-
-            return $parsedArray;
-
-        } catch (ParseException $e) {
-            throw ValidationException::withMessages(['error' => 'YAML Parse Error', 'message' => $e->getMessage()]);
-        } catch (\Exception $e) {
-            throw ValidationException::withMessages(['error' => 'General Error', 'message' => $e->getMessage()]);
-        }
-    }
-    private function convertJsonToYaml($jsonContent)
-    {
-        $arrayContent = json_decode($jsonContent, true, 512, JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
-
-        if (json_last_error() !== JSON_ERROR_NONE)
-            throw new HttpResponseException(response()->json(['msg' => 'error in convert json to yaml'], 422));
-
-        $arrayContent = $this->convertNullKeysToComments($arrayContent);
-
-        $yamlContent = yaml::dump($arrayContent, 10,2);
-
-        // $yamlContent = preg_replace('/^(\s*)-\s*/m', '$1', $yamlContent);
-        $yamlContent = preg_replace('/^(\s*)-\s*/m', '$1- ', $yamlContent);
-
-        return $yamlContent;
-
-    }
-    private function convertNullKeysToComments(array $array)
-    {
-        foreach ($array as $key => $value) {
-            if (is_array($value)) {
-                $array[$key] = $this->convertNullKeysToComments($value);
-            } elseif ($value === null || $value === "" || $value === '') {
-                $array["# $key"] = null;
-                unset($array[$key]);
-            }
-        }
-
-        return $array;
-    }
 
 
-
-        // create New Module And Upload File .Yaml Convert to Json Upload To database
-    private function uploadModuleFile ($file)
+        // create New Module And Upload File .config Convert to Json Upload To database
+    private function uploadModuleFile ($file) : string
     {
 
         try {
-
-            $arrayContent = $this->parseYamlToArray($file);
+                $convertContent = $this->confService->parseConfToArrayAsFile($file);
 
         } catch (Exception $e) {
             throw $e;
         }
 
-        $jsonContent = json_encode($arrayContent, JSON_PRETTY_PRINT);
+            return json_encode($convertContent, JSON_PRETTY_PRINT);
 
-        return $jsonContent;
+    }
+    private function createConfigFileToServer (string $confContent, string $username, string $password
+            , Server $server, Module $module) : void
+    {
+        $fullPath = $module['path_config'] . $module['name'] . '.' . $module['extension'];
+
+        $command = 'mkdir -p ' . escapeshellarg($module['path_config']) .
+            ' && echo ' . escapeshellarg($confContent) . ' > ' .
+            escapeshellarg($fullPath);
+
+        $ssh = new SshHelper($server, $username, $password);
+            $ssh->runCommand($command);
+
+//        $ftp = new FtpHelper($server, $username, $password);
+//            $ftp->uploadFile($module['path_config'], $fullPath);
 
     }
     public function createModule (CreateModulesRequest $request)
     {
         $creadtional = $request->validated();
-        $serverIds = $creadtional['server_id'];
+            $serverIds = $creadtional['server_id'];
 
         $jsonContent = $this->uploadModuleFile($request->file('config_file'));
-
-        $yamlContent = $this->convertJsonToYaml($jsonContent);
 
         if (is_array($jsonContent) || is_object($jsonContent))
             return $jsonContent;
@@ -289,13 +232,14 @@ class ModuleController extends ApiController
         $failedServers = [];
         $createdModules = [];
 
-
         try {
             DB::beginTransaction();
 
             $module = Module::create([
                 'name' => $creadtional['name'],
                 'type' => $creadtional['type'],
+                'extension' => $request->file('config_file')->getClientOriginalExtension(),
+                'path_config' => $creadtional['path_config'],
             ]);
 
 
@@ -307,19 +251,22 @@ class ModuleController extends ApiController
                 if (!$server)
                     $failedServers[] = $serverId;
 
-                if ($server && $server['is_down'] == 1)
-                    return response()->json(['msg'=> 'server is off', 'server' => $server], 422);
+                if ($server && $server['is_down'] == Server::OFF)
+                    throw ValidationException::withMessages(['server'=> 'server is off : ' . $server['name']]);
+
 
                     $module->servers()->syncWithoutDetaching([
                         $serverId => [
-                            'current_config' => $jsonContent,
-                            'initial_config' => $jsonContent
+                            'current_config_json' => $jsonContent,
+                            'initial_config_json' => $jsonContent,
+                            'initial_config_conf' => $request->file('config_file')->getContent(),
+                            'previous_config_conf' => $request->file('config_file')->getContent(),
                         ]
                     ]);
 
 
-                $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
-                    $creadtional['name'], $yamlContent, $server);
+            $this->createConfigFileToServer($request->file('config_file')->getContent(), $creadtional['username'],
+                    $creadtional['password'], $server, $module);
 
 
             $module->servers()->syncWithoutDetaching([$serverId]);
@@ -332,8 +279,9 @@ class ModuleController extends ApiController
                     ],
                     'module' => [
                         'module_id' => $module['id'],
+                        'module_type' => $module['type'],
                         'module_name' => $module['name'],
-                        'module_type' => $module['type']
+                        'module_path_config' => $module['path_config'],
                     ]
                 ];
 
@@ -401,10 +349,8 @@ class ModuleController extends ApiController
             'method' => 'createModule',
             'module' => [
                 'name' => $module['name'],
-                'type' => $module['type'],
-                'server_id' => $serverModule,
-            ],
-            'server' => $server
+                'type' => $module['type']
+            ]
         ])
         ->log('A new module has been created');
 
@@ -415,6 +361,26 @@ class ModuleController extends ApiController
 
 
         // update Config Module
+    private function catConfigFileContent (Module $module, Server $server, string $username, string $password) : string
+    {
+//            local cat file
+//        $filePath = $module['path_config'] . '/' . $module['name'] . '.'  . $module['extension'];
+//            $content = file_get_contents($filePath);
+
+
+
+        $remoteFilePath = $module['path_config'] . '/' . $module['name'] . '.' . $module['extension'];
+        $localTempPath = storage_path('app/tmp/' . uniqid('remote_config_') . '.' . $module['extension']);
+
+        $sshHelper = new FtpHelper($server, $username, $password);
+            $sshHelper->downloadFile($remoteFilePath, $localTempPath);
+
+        $content = file_get_contents($localTempPath);
+
+        @unlink($localTempPath);
+
+        return $content;
+    }
     public function createAndDeletePermission ()
     {
         $servers = Server::pluck('name')->toArray();
@@ -446,11 +412,10 @@ class ModuleController extends ApiController
         if ($user->hasPermissionTo($serverPermission))
             return true;
 
-        throw new HttpResponseException(response()->json([
+        throw ValidationException::withMessages([
             'msg' => 'You do not have permission to use this server : ' . $server['name'],
             'your-permissions' => $user->getAllPermissions()->pluck('name')
-        ], 403));
-
+        ]);
     }
     public function getArrayChanges($array1, $array2) {
         $changes = [];
@@ -477,7 +442,7 @@ class ModuleController extends ApiController
     }
     private function logModuleUpdate($module, $server, $array2)
     {
-        $array1 = json_decode($module->pivot->current_config, true);
+        $array1 = json_decode($module->pivot->current_config_json, true);
         $change = json_encode($this->getArrayChanges($array1, $array2));
 
         activity('update-module-config')
@@ -509,7 +474,7 @@ class ModuleController extends ApiController
         ->first();
 
         if (!$module)
-            throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.'], 422));
+            throw ValidationException::withMessages(['error' => 'The module with the provided ID was not found on the server you specified.']);
 
         $serverIdsInModuleName = $module->servers->pluck('id');
         $data = $request->input('data', []);
@@ -519,19 +484,29 @@ class ModuleController extends ApiController
 
         try {
 
-            foreach ($module->servers as $moduleServer)
-            {
-                $this->chackPermissionModule($moduleServer);
+            $this->chackPermissionModule($module);
 
-                $currentConfig = $this->updateModuleConfigInDatabase($module['id'], $data, $moduleServer);
+//                content config file
+            $configContent = $this->catConfigFileContent($module, $server
+                    , $request['username'], $request['password']);
 
-                $yamlContent = $this->convertJsonToYaml($currentConfig);
 
-                $this->sendConfigToServer($request['username'], $request['password'],
-                            $module['name'], $yamlContent, $moduleServer);
+//                update change to json fromat
+            $configManaager = new ConfigManager($configContent);
+                $newConfigContent = $configManaager->applyChanges($data);
 
-                $this->logModuleUpdate($moduleServer, $server, $data);
-            }
+
+
+//                update change to json content to database
+            $currentConfig = $this->updateModuleConfigInDatabase($module['id'], $data, $server, $newConfigContent);
+
+
+//                send conf file content to server
+            $this->sendConfigToServer($request['username'], $request['password'],
+                        $module, $newConfigContent, $server);
+
+            $this->logModuleUpdate($module->servers->find($server['id']), $server, $data);
+
 
             DB::commit();
 
@@ -549,7 +524,7 @@ class ModuleController extends ApiController
                 'serverIdsInModuleName' => $serverIdsInModuleName
             ]);
 
-        } catch (HttpResponseException $e) {
+        } catch (ValidationException $e) {
             throw $e;
         } catch (InvalidArgumentException $e) {
                 DB::rollBack();
@@ -567,25 +542,13 @@ class ModuleController extends ApiController
                     $separatedMessages["Error-" . ($index + 1)] = $msg;
                 }
 
-            throw new HttpResponseException(response()->json([
-                'msg' => 'server error!',
-                'error' => [
-                    'type' => 'restart-service-error',
-                    'message' => $separatedMessages
-                ]
-            ], 422));
+            throw ValidationException::withMessages(['warning' => $separatedMessages]);
         } catch (\Exception $e) {
             DB::rollBack();
 
             $message = $e->getMessage();
 
-            throw new HttpResponseException(response()->json([
-                'msg' => 'server error',
-                'error' => [
-                    'type' => 'server-error',
-                    'message' => $message
-                ]
-            ], 422));
+            throw ValidationException::withMessages(['warning' => $message]);
         }
     }
     private function updateMultipleModules($serverIds, $request)
@@ -596,12 +559,16 @@ class ModuleController extends ApiController
         $serverIdsInModuleName = $module->servers->pluck('id');
         foreach ($serverIds as $serverId) {
             if (!in_array($serverId, $serverIdsInModuleName->toArray()))
-                throw new HttpResponseException(response()->json(['msg' => 'An invalid server ID has been sent among the server IDs'], 422));
+                throw ValidationException::withMessages(['msg' => 'An invalid server ID has been sent among the server IDs']);
         }
 
         $servers = $module->servers()
             ->whereIn('server_id', $serverIds)
             ->get();
+
+        $serverIdsInModuleName = $module->servers->pluck('id');
+        $data = $request->input('data', []);
+
 
 
         DB::beginTransaction();
@@ -609,16 +576,28 @@ class ModuleController extends ApiController
             foreach ($servers as $server) {
                 $module = $server->modules()->wherePivot('module_id', $request['module_id'])->first();
 
+
                 $this->chackPermissionModule($module, $server);
 
-                $updatedModule = $this->updateModuleConfigInDatabase($module['id'], $request->input('data'), $server);
+//                content config file
+                $configContent = $this->catConfigFileContent($module, $server
+                    , $request['username'], $request['password']);
 
-                $yamlContent = $this->convertJsonToYaml($updatedModule);
 
-                $this->sendConfigToServer( $request['username'], $request['password'],
-                     $module['name'], $yamlContent, $server);
+//                update change to json fromat
+                $configManaager = new ConfigManager($configContent);
+                    $newConfigContent = $configManaager->applyChanges($data);
 
-                $this->logModuleUpdate($module, $server,  $request->input('data'));
+
+//                    update change to json content to database
+                $updatedModule = $this->updateModuleConfigInDatabase($module['id'], $data, $server, $newConfigContent);
+
+
+//                send yaml file content to server
+                $this->sendConfigToServer($request['username'], $request['password'],
+                    $module, $newConfigContent, $server);
+
+                $this->logModuleUpdate($module->servers->find($server['id']), $server, $data);
             }
 
             DB::commit();
@@ -638,7 +617,7 @@ class ModuleController extends ApiController
                 'serverIdsInModuleName' => $serverIdsInModuleName
             ]);
 
-        } catch (HttpResponseException $e) {
+        } catch (ValidationException $e) {
             throw $e;
         } catch (InvalidArgumentException $e) {
                 DB::rollBack();
@@ -656,60 +635,47 @@ class ModuleController extends ApiController
                     $separatedMessages["Error-" . ($index + 1)] = $msg;
                 }
 
-            throw new HttpResponseException(response()->json([
-                'msg' => 'server error!',
-                'error' => [
-                    'type' => 'restart-service-error',
-                    'message' => $separatedMessages
-                ]
-            ], 422));
+            throw ValidationException::withMessages(['warning' => $separatedMessages]);
         } catch (\Exception $e) {
             DB::rollBack();
 
             $message = $e->getMessage();
 
-            throw new HttpResponseException(response()->json([
-                'msg' => 'server error!',
-                'error' => [
-                    'type' => 'server-error',
-                    'message' => $message
-                ]
-            ], 422));
+            throw ValidationException::withMessages(['warning' => $message]);
         }
     }
-    private function sendConfigToServer($username, $password, $moduleName, $yamlContent, $server)
+    private function sendConfigToServer(string $username, string $password, Module $module, string $confContent, Server $server)
     {
         // is down server
-        if ($server['is_down'] == 1)
-            throw new HttpResponseException(response()->json(['msg' => 'this server: ' . $server['name'] .' is off'], 422));
+        if ($server['is_down'] == Server::OFF)
+            throw ValidationException::withMessages(['server' => 'this server: ' . $server['name'] .' is off']);
 
-        if (!$server['path_config'])
-            throw new HttpResponseException(response()->json(['msg' => 'You did not specify a configuration address config'], 422));
-
-        if (!$server['path_run_config'])
-            throw new HttpResponseException(response()->json(['msg' => 'You did not specify a configuration address run config'], 422));
+        if (!$module['path_config'])
+            throw ValidationException::withMessages(['path_config' => 'You did not specify a configuration address config']);
 
 
-//         $sshHelper = new sshHelper($server, $username, $password);
+         $sshHelper = new sshHelper($server, $username, $password);
 
-            // update module
-//         $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $server['path_config'] . $moduleName . '.yaml';
-//         $sshHelper->runCommand($commandUpdateFileModule );
+            // update module command
+         $commandUpdateFileModule = 'echo ' . escapeshellarg($confContent)
+                . ' > ' . $module['path_config'] . $module['name'] . '.' . $module['extension'];
+
+         $sshHelper->runCommand($commandUpdateFileModule);
 
             // restart module
-        $commandRestart = $server['path_run_config'] . 'bbdh-' . $moduleName . 'd' . ' restart';
-        // $output = $sshHelper->restartModule($commandRestart );
+//        $commandRestart = $module['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' restart';
+//            $output = $sshHelper->restartModule($commandRestart );
 
     }
-    private function updateModuleConfigInDatabase($moduleId, $data, $server)
+    private function updateModuleConfigInDatabase($moduleId, $data, Server $server, string $confContent)
     {
-        if ($server['is_down'] == 1)
-            throw new HttpResponseException( response()->json(['msg' => 'server is off'], 403));
-
+        if ($server['is_down'] == Server::OFF)
+            throw ValidationException::withMessages(['msg' => 'server is off']);
         $module = Module::find($moduleId);
 
         if (!$module)
-            throw new HttpResponseException(response()->json(['msg' => 'module is notfund'], 422));
+            throw ValidationException::withMessages(['msg' => 'module is notfund']);
+
 
             // example value in data user
         foreach ($data as $key => $value) {
@@ -719,21 +685,24 @@ class ModuleController extends ApiController
 
         $serverModel = $module->servers()->find($server['id']);
 
-        // $moduleConfig = json_decode($serverModel->pivot['current_config'], true);
-        $moduleCurrentConfig = $serverModel->pivot['current_config'];
-        $serverModel->pivot['previous_config'] = $moduleCurrentConfig;
+//            update previous config json
+        $moduleConfig = json_decode($serverModel->pivot['current_config_json'], true);
+        $moduleCurrentConfig = $serverModel->pivot['current_config_json'];
+        $serverModel->pivot['previous_config_json'] = $moduleCurrentConfig;
 
-        // foreach ($data as $key => $value)
-        //     $moduleConfig = JsonUpdater::updateJsonValue($moduleConfig, $key, $value);
+
+//             update json content to parser config service
+            $moduleConfig = $this->confService->parseConfToArrayAsContentFile($confContent, $module['extension']);
 
 
         $module->servers()->updateExistingPivot($server->id, [
-            'current_config' => json_encode($data, JSON_PRETTY_PRINT),
-            'previous_config' => $moduleCurrentConfig
+            'current_config_json' => json_encode($moduleConfig, JSON_PRETTY_PRINT),
+            'previous_config_json' => $moduleCurrentConfig,
+            'previous_config_conf' => $confContent
         ]);
 
 
-        return json_encode($data);
+        return json_encode($moduleConfig);
     }
     public function updateConfigModule(UpdateConfigModuleRequest $request)
     {
@@ -844,40 +813,50 @@ class ModuleController extends ApiController
             if ($serverModule) {
 
                 $pivotData = $serverModule->pivot;
-                $pivotData->previous_config = $pivotData->current_config;
-                $pivotData->initial_config = $encodedConfig;
-                $pivotData->current_config = $encodedConfig;
+                $pivotData->previous_config_json = $pivotData->current_config_jsom;
+                $pivotData->initial_config_json = $encodedConfig;
+                $pivotData->current_config_json = $encodedConfig;
+// update history config .conf
+//                $pivotData->initial_config_conf = $configContent;
+//                $pivotData->previous_config_conf = $configContent;
 
-                $yamlContent = $this->convertJsonToYaml($pivotData->current_config);
-                $this->sendConfigToServer($request['username'], $request['password'], $module->name, $yamlContent, $server);
+
+
+//      conf updator
+//                $this->sendConfigToServer($request['username'], $request['password'],
+//                    $module, $configContent, $server);
 
                 $pivotData->save();
             }
         }
     }
-    private function sendDefaultConfigToServers(array $serverIds, Request $request, Module $module)
+    private function sendDefaultConfigToServers(array $serverIds, Request $request, Module $module, $configContent)
     {
-        $yamlContent = $request->file('config_file')->getContent();
         $jsonContent = $this->uploadModuleFile($request->file('config_file'));
 
         foreach ($serverIds as $serverId) {
             $server = Server::find($serverId);
 
             $defaultConfig = [
-                'initial_config' => $jsonContent,
-                'current_config' => $jsonContent,
+                'initial_config_json' => $jsonContent,
+                'current_config_json' => $jsonContent,
+                'initial_config_conf' => $configContent,
+                'previous_config_conf' => $configContent,
             ];
 
             $module->servers()->attach($serverId,$defaultConfig);
 
-            $yamlContent = $this->convertJsonToYaml($defaultConfig['initial_config']);
-            $this->sendConfigToServer($request['username'], $request['password'], 'default_module', $yamlContent, $server);
+
+//      conf updator
+//            $this->sendConfigToServer( $request['username'], $request['password'],
+//                $module, $configContent, $server);
+
         }
     }
-    private function addModules(Module $module, array $serverIds, Request $request)
+    private function addModules(Module $module, array $serverIds, Request $request, $configContent)
     {
         if ($module->servers->isEmpty()) {
-            $this->sendDefaultConfigToServers($serverIds, $request, $module);
+            $this->sendDefaultConfigToServers($serverIds, $request, $module, $configContent);
             return;
         }
 
@@ -888,25 +867,25 @@ class ModuleController extends ApiController
 
             if (!$module->servers->contains($serverId)) {
                 $module->servers()->attach($serverId, [
-                    'initial_config' => $pivotData->initial_config,
-                    'current_config' => $pivotData->initial_config,
+                    'initial_configـjson' => $pivotData->initial_config_json,
+                    'current_config_json' => $pivotData->initial_config_json,
                 ]);
             }
 
-            $yamlContent = $this->convertJsonToYaml($pivotData['initial_config']);
-            $this->sendConfigToServer( $request['username'], $request['password'],
-                 $module['name'], $yamlContent, $server);
+//      conf updator
+//            $this->sendConfigToServer( $request['username'], $request['password'],
+//                $module, $configContent, $server);
 
         }
     }
-    private function deleteModules(array $serverIds, Module $module, $request)
+    private function deleteModules(array $serverIds, Module $module, $request, $configContent)
     {
         foreach ($serverIds as $serverId) {
 
                 $server = Server::find($serverId);
 
-                $this->sendConfigToServer( $request['username'], $request['password'],
-                     $module['name'], null, $server);
+//                $this->sendConfigToServer( $request['username'], $request['password'],
+//                     $module, $configContent, $server);
 
                 $module->servers()->detach($serverId);
 
@@ -914,6 +893,11 @@ class ModuleController extends ApiController
     }
     private function syncModuleWithServers(Module $module, array $serverIds, $request)
     {
+        if ($request->file('config_file'))
+            $configContent = file_get_contents($request->file('config_file'));
+        else
+            $configContent = $module['previous_config_conf'];
+
 
         $existingServerIds = $module->servers->pluck('id')->toArray();
 
@@ -921,8 +905,8 @@ class ModuleController extends ApiController
         $serversToAdd = array_diff($serverIds, $existingServerIds);
 
 
-        $this->addModules($module, $serversToAdd, $request);
-        $this->deleteModules($serversToDelete, $module, $request);
+        $this->addModules($module, $serversToAdd, $request, $configContent);
+        $this->deleteModules($serversToDelete, $module, $request, $configContent);
 
     }
     public function editModule(EditModuleRequest $request)
@@ -934,13 +918,14 @@ class ModuleController extends ApiController
             $module = Module::find($validated['module_id']);
 
             if (!$module)
-                throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.'], 422));
+                throw ValidationException::withMessages(['module' => 'The module with the provided ID was not found on the server you specified.']);
+
             $serverIds = $validated['server_ids'] ?? [];
 
             $configFile = $request->file('config_file');
 
             if ($module->servers->isEmpty() && !$configFile)
-                throw new HttpResponseException(response()->json(['msg' => 'config file required'], 422));
+                throw ValidationException::withMessages(['config_file' => 'config file required']);
 
             // check permissions
         foreach ($serverIds as $serverId) {
@@ -948,7 +933,7 @@ class ModuleController extends ApiController
             $this->chackPermissionModule($server);
 
             if ($server['is_down'])
-                throw new HttpResponseException(response()->json(['msg' => 'server : ' . $server['name'] . ' is off'], 422));
+                throw ValidationException::withMessages(['server' => 'server : ' . $server['name'] . ' is off']);
         }
 
         if ($serverIds) {
@@ -971,6 +956,7 @@ class ModuleController extends ApiController
             $module->update([
                 'name' => $validated['name'] ?? $module->name,
                 'type' => $types,
+                'path_config' => $validated['path_config'] ?? $module->path_config,
             ]);
 
             $module->load('servers');
@@ -982,6 +968,7 @@ class ModuleController extends ApiController
                 'module' => [
                     'module_name' => $module['name'],
                     'module_type' => $module['type'],
+                    'module_path_config' => $module['path_config'],
                     'module_server' => $module->servers->pluck('id')->toArray(),
                     'module_server_name' => $module->servers->pluck('name')->toArray(),
                 ]
@@ -1004,22 +991,28 @@ class ModuleController extends ApiController
         $server = Server::find($validation['server_id']);
 
 
-        $command = 'cat ' . $server['path_config'] . $module['name'] . '.yaml' ;
-
         if ($server['is_down'] == 1)
             return response()->json(['msg' => 'server is off'], 403);
 
         try {
                 // download file
-            $sshHelper = new sshHelper($server, $validation['username'], $validation['password']);
-            $output = $sshHelper->getFileContent($command);
 
-                // defalte headers
-            return response($output, 200, [
+            $remoteFilePath = $module['path_config'] . '/' . $module['name'] . '.' . $module['extension'];
+            $localTempPath = storage_path('app/tmp/' . uniqid('remote_config_') . '.' . $module['extension']);
+
+            $ftpHelper = new FtpHelper($server, $validation['username'], $validation['password']);
+                $ftpHelper->downloadFile($remoteFilePath, $localTempPath);
+
+            $content = file_get_contents($localTempPath);
+
+            @unlink($localTempPath);
+
+            // defalte headers
+            return response($content, 200, [
                 'Content-Type' => 'application/octet-stream',
-                'Content-Disposition' => "attachment; filename={$module->name}.yaml",
-                'X-Name-Header' => "{$module->name}.yaml",
-                'Content-Length' => strlen($output),
+                'Content-Disposition' => "attachment; filename={$module->name}.{$module->extension}",
+                'X-Name-Header' => "{$module->name}.{$module->extension}",
+                'Content-Length' => strlen($content),
             ], 200);
 
         } catch (Exception $e) {
@@ -1033,7 +1026,6 @@ class ModuleController extends ApiController
                 'method' => 'expertModuleFileIsServer',
                 'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
                 'user_role' =>Auth::user()->roles()->pluck('name')->first(),                'module' => $module,
-                'command' => $command,
                 'server_id' => $server?->id
             ])
             ->log('The configuration values have been changed');
@@ -1044,165 +1036,40 @@ class ModuleController extends ApiController
 
 
 
-        // service module
-    private function runCommandModuleToServer ($validate, $command, server $server, $typeCommand, $method)
-    {
-        $username = $validate['username'];
-        $password = $validate['password'];
 
-            // is down server
-         if ($server['is_down'] == Server::OFF)
-             throw new HttpResponseException(response()->json(['msg' => 'this server off'], 422));
+        // Undo Config module
+    public function undoConfigModule (UndoConfigModulesRequest $request)
+    {
+        $creadtional = $request->validated();
+            $server = Server::find($creadtional['server_id']);
+
+
+        $module = $server->modules()->where('modules.id', $creadtional['module_id'])->first();
+        if (!$module)
+            throw ValidationException::withMessages(['module' => 'module is not found']);
+
+        if ($server['is_down'] == 1)
+            throw ValidationException::withMessages(['server'=> 'server is off']);
+
+
+        $pivotData = $module->servers()->where('server_id', $creadtional['server_id'])->first()->pivot;
+        $modulePreviousConfig = $pivotData['previous_config_json'];
+
+        if ($modulePreviousConfig == null)
+            throw ValidationException::withMessages(['previous_config' => 'The module does not have a previous value, you cannot revert it to the previous value']);
 
 
         try {
+//               ssh to server format yaml
+            $confContent = $pivotData['previous_config_conf'];
 
-            $sshHelper = new sshHelper($server, $username, $password);
-
-            $output = $sshHelper->runCommandModule($command, $typeCommand, $method, $server);
-
-            return response()->json(['message' => $output]);
-
-        } catch (HttpResponseException $e) {
-            throw $e;
-        } catch (InvalidArgumentException $e) {
-                DB::rollBack();
-
-                $message = $e->getMessage();
-
-                $message = preg_replace('/\x1b\[[0-9;]*m/', '', $message); // حذف کدهای ANSI
-                $message = preg_replace('/\r?\n.*?\[root@localhost.*?$/', '', $message); // حذف اطلاعات اضافی مربوط به خط فرمان
-
-                preg_match_all('/\b(FATAL|ERROR):\s.*?(?=\s\(.*?\)|$)/m', $message, $matches);
-
-                $formattedMessages = $matches[0] ?? [];
-
-                $separatedMessages = [];
-                foreach ($formattedMessages as $index => $msg) {
-                    $separatedMessages["Error-" . ($index + 1)] = $msg;
-                }
-
-            throw new HttpResponseException(response()->json([
-                'msg' => 'server error!',
-                'error' => [
-                    'type' => 'restart-service-error',
-                    'message' => $separatedMessages
-                ]
-            ], 422));
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            $message = $e->getMessage();
-
-            throw new HttpResponseException(response()->json([
-                'msg' => 'server error!',
-                'error' => [
-                    'type' => 'server-error',
-                    'message' => $message
-                ]
-            ], 422));
-        }
-    }
-    public function restartServiceModule (restartServiceModuleRequest $request)
-    {
-        $validate = $request->validated();
-
-        $server = server::find($validate['server_id']);
-        $module = Module::find($validate['module_id']);
-
-        // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' restart';  // command as bbdh
-        $command = 'systemctl restart ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
-
-            return $this->runCommandModuleToServer($validate, $command, $server,'restartModel', 'restartServiceModule');
-    }
-    public function startServiceModule (restartServiceModuleRequest $request)
-    {
-        $validate = $request->validated();
-
-        $server = server::find($validate['server_id']);
-        $module = Module::find($validate['module_id']);
-
-        // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' start';  // command as bbdh
-        $command = 'systemctl start ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
-
-            return $this->runCommandModuleToServer($validate, $command, $server, 'startModule', 'startServiceModule');
-    }
-    public function stopServiceModule (restartServiceModuleRequest $request)
-    {
-        $validate = $request->validated();
-
-        $server = server::find($validate['server_id']);
-        $module = Module::find($validate['module_id']);
-
-        // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' stop'; // command as bbdh
-        $command = 'systemctl stop ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
-
-            return $this->runCommandModuleToServer($validate, $command, $server,'stopModule', 'stopServiceModule');
-    }
-    public function statusServiceModule (restartServiceModuleRequest $request)
-    {
-        $validate = $request->validated();
-
-        $server = server::find($validate['server_id']);
-        $module = Module::find($validate['module_id']);
+                $this->sendConfigToServer($creadtional['username'], $creadtional['password'],
+                     $module, $confContent, $server);
 
 
-        // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' status'; // command as bbdh
-        $command = 'systemctl status ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
-
-            return $this->runCommandModuleToServer($validate, $command, $server, 'statusModule', 'statusServiceModule');
-    }
-    public function pingServer (SshServerRequest $request)
-    {
-        $validate = $request->validated();
-
-            // return response()->json(['message' => "ping 192.168.19.79\r\n\u001b[?2004l\rPING 192.168.19.79 (192.168.19.79) 56(84) bytes of data.\r\n64 bytes from 192.168.19.79: icmp_seq=1 ttl=64 time=0.558 ms\r\n64 bytes from 192.168.19.79: icmp_seq=2 ttl=64 time=0.383 ms\r\n64 bytes from 192.168.19.79: icmp_seq=3 ttl=64 time=0.387 ms\r\n64 bytes from 192.168.19.79: icmp_seq=4 ttl=64 time=0.384 ms\r\n64 bytes from 192.168.19.79: icmp_seq=5 ttl=64 time=0.424 ms\r\n64 bytes from 192.168.19.79: icmp_seq=6 ttl=64 time=0.383 ms\r\n64 bytes from 192.168.19.79: icmp_seq=7 ttl=64 time=0.509 ms\r\n64 bytes from 192.168.19.79: icmp_seq=8 ttl=64 time=0.407 ms\r\n64 bytes from 192.168.19.79: icmp_seq=9 ttl=64 time=0.455 ms\r\n64 bytes from 192.168.19.79: icmp_seq=10 ttl=64 time=0.359 ms\r\n"]);
-
-        $server = server::find($validate['server_id']);
-
-        $validate['interface'] ?? null
-            ? $command = 'ping ' . '-I ' . $validate['interface'] . ' ' . $validate['ipـdestination']
-            : $command = 'ping ' . $validate['ipـdestination'];
-
-
-            return $this->runCommandModuleToServer($validate, $command, $server,'pingServer', 'pingServer');
-    }
-
-
-
-
-        // Undo Config module
-  public function undoConfigModule (UndoConfigModulesRequest $request)
-  {
-    $creadtional = $request->validated();
-    $server = Server::find($creadtional['server_id']);
-
-    $module = $server->modules()->where('modules.id', $creadtional['module_id'])->first();
-
-    if (!$module)
-        return response()->json(['msg' => 'module is not found'], 404);
-
-
-    if ($server['is_down'] == 1)
-        return response()->json(['msg' => 'server is off'], 403);
-
-    $pivotData = $module->servers()->where('server_id', $creadtional['server_id'])->first()->pivot;
-    $modulePreviousConfig = $pivotData['previous_config'];
-
-    if ($modulePreviousConfig == null)
-        return response()->json(['msg' => 'The module does not have a previous value, you cannot revert it to the previous value'], 422);
-
-    try {
-            // ssh to server format yaml
-            $yamlContent = $this->convertJsonToYaml($pivotData['previous_config']);
-            $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
-                 $module['name'], $yamlContent, $server);
-
-
-                // save to datebase format json
-            $pivotData['current_config'] = $pivotData['previous_config'];
-            $pivotData->save();
-
+            // save to datebase format json
+            $pivotData['current_config_json'] = $pivotData['previous_config_json'];
+                $pivotData->save();
 
 
             activity('undo-config-module')
@@ -1213,13 +1080,13 @@ class ModuleController extends ApiController
                     'type-log' => 'server',
                     'route' => request()->fullUrl(),
                     'method' => 'undoConfigModule',
-                    'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                    'user_role' =>Auth::user()->roles()->pluck('name')->first(),                    'module_id' => $module['id'],
+                    'user' => Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                    'user_role' => Auth::user()->roles()->pluck('name')->first(), 'module_id' => $module['id'],
                     'module_name' => $module['name'],
-                    'module_type'=> $module['type'],
+                    'module_type' => $module['type'],
                     'server_id' => $server?->id
                 ])
-            ->log('The module configuration has been reverted to the previous step');
+                ->log('The module configuration has been reverted to the previous step');
 
 
             return response()->json([
@@ -1228,69 +1095,72 @@ class ModuleController extends ApiController
                 'config' => json_decode($pivotData['current_config'], true)
             ], 200);
 
-    } catch (\Exception $e) {
-        return response()->json(['Error' => $e->getMessage()], 422);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            return response()->json(['Error' => $e->getMessage()], 422);
+        }
     }
-  }
-  public function undoToInitialConfigModule (UndoToInitialConfigModulesRequest $request)
-  {
-    $creadtional = $request->validated();
-    $server = Server::find($creadtional['server_id']);
-
-    $module = $server->modules()->where('modules.id', $creadtional['module_id'])->first();
+    public function undoToInitialConfigModule (UndoToInitialConfigModulesRequest $request)
+    {
+        $creadtional = $request->validated();
+            $server = Server::find($creadtional['server_id']);
 
 
-        if (!$module)
-            return response()->json(['msg' => 'module is not found'], 404);
+        $module = $server->modules()->where('modules.id', $creadtional['module_id'])->first();
+            if (!$module)
+                throw ValidationException::withMessages(['module' => 'module is not found']);
 
 
-    $server = Server::find($creadtional['server_id']);
-
-    if ($server && $server['is_down'] == 1)
-        return response()->json(['msg'=> 'server is off'], 422);
-
-    $pivotData = $module->servers()->where('server_id', $creadtional['server_id'])->first()->pivot;
-    $moduleInitialConfig = $pivotData['initial_config'];
-
-    try {
-                // ssh to server format yaml
-        $yamlContent = $this->convertJsonToYaml($moduleInitialConfig);
-
-        $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
-            $module['name'], $yamlContent, $server);
+        if ($server && $server['is_down'] == 1)
+            throw ValidationException::withMessages(['server'=> 'server is off']);
 
 
-        // save to datebase format json
-        $pivotData['current_config'] = $pivotData['initial_config'];
-        $pivotData->save();
+        $pivotData = $module->servers()->where('server_id', $creadtional['server_id'])->first()->pivot;
+            $moduleInitialConfig = $pivotData['initial_config_json'];
+
+        try {
+            // ssh to server format yaml
+        $confContent = $pivotData['initial_config_conf'];
+
+        $this->sendConfigToServer($creadtional['username'], $creadtional['password'],
+            $module, $confContent, $server);
 
 
-        activity('undo-config-module')
-            ->causedBy(Auth::user())
-            ->performedOn($module)
-            ->event('undo-config-module')
-            ->withProperties([
-                'type-log' => 'server',
-                'route' => request()->fullUrl(),
-                'method' => 'undoConfigModule',
-                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                'user_role' =>Auth::user()->roles()->pluck('name')->first(),
-                'module_id' => $module['id'],
-                'module_name' => $module['name'],
-                'module_type' => $module['type'],
-                'server_id' => $server?->id
-            ])
-        ->log('The module configuration has been reverted to its initial state');
+            // save to datebase format json
+            $pivotData['current_config_json'] = $pivotData['initial_config_json'];
+                $pivotData->save();
 
 
-        return response()->json([
-            'success' => 'ture',
-            'msg' => 'The module configuration has been reverted to its initial state',
-            'config' => json_decode($pivotData['initial_config'], true)
-        ], 200);
-    } catch (\Exception $e) {
-        return response()->json(['error'=> $e->getMessage()], 422);
+            activity('undo-config-module')
+                ->causedBy(Auth::user())
+                ->performedOn($module)
+                ->event('undo-config-module')
+                ->withProperties([
+                    'type-log' => 'server',
+                    'route' => request()->fullUrl(),
+                    'method' => 'undoConfigModule',
+                    'user' => Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                    'user_role' => Auth::user()->roles()->pluck('name')->first(),
+                    'module_id' => $module['id'],
+                    'module_name' => $module['name'],
+                    'module_type' => $module['type'],
+                    'server_id' => $server?->id
+                ])
+                ->log('The module configuration has been reverted to its initial state');
+
+
+            return response()->json([
+                'success' => 'ture',
+                'msg' => 'The module configuration has been reverted to its initial state',
+                'config' => json_decode($pivotData['initial_config_json'], true)
+            ], 200);
+
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            return response()->json(['error'=> $e->getMessage()], 422);
+        }
     }
-  }
 
 }

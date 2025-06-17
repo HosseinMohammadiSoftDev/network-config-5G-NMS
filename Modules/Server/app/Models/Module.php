@@ -19,19 +19,29 @@ class Module extends Model
     protected $fillable = [
         'name',
         'type',
+        'extension',
         'server_id',
-        'initial_config',
-        'previous_config',
-        'current_config'
+
+//        json fild
+        'initial_config_json',
+        'previous_config_json',
+        'current_config_json',
+
+//        .conf fild
+        'initial_config_conf',
+        'previous_config_conf',
+
+        'path_config',
+        'path_run_config',
     ];
 
-     public function getActivitylogOptions(): LogOptions
-     {
-         return LogOptions::defaults()
-         ->logOnlyDirty()
-         ->useLogName('module')
-         ->logOnly(['id', 'name', 'type', 'server_id', 'created_at', 'updated_at']);
-     }
+//     public function getActivitylogOptions(): LogOptions
+//     {
+//         return LogOptions::defaults()
+//         ->logOnlyDirty()
+//         ->useLogName('module')
+//         ->logOnly(['id', 'name', 'type', 'server_id', 'created_at', 'updated_at']);
+//     }
 
         // oen to mony
     // public function server()
@@ -42,6 +52,12 @@ class Module extends Model
     public function servers()
     {
         return $this->belongsToMany(Server::class)
-        ->withPivot('initial_config', 'previous_config', 'current_config');
+        ->withPivot(
+            'initial_config_json',
+            'previous_config_json',
+            'current_config_json',
+            'initial_config_conf',
+            'previous_config_conf'
+        );
     }
 }
