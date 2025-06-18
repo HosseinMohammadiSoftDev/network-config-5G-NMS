@@ -46,12 +46,14 @@ class ModuleController extends ApiController
     {
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $request->header('Authorization'),
-            'Accept' => 'application/json'
+            'Accept' => 'application/json',
+            'Content-Type' => 'multipart/form-data'
         ])->post(env('NMS_IP') . "create-module", [
                 'name' => $request['name'],
                 'type' => $request['type'],
                 'server_id' => $request['server_id'],
                 'config_file' => $request['config_file'],
+                'path_config' => $request['path_config'],
                 'username' => $request['username'],
                 'password' => $request['password'],
             ]);
@@ -77,7 +79,8 @@ class ModuleController extends ApiController
     {
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $request->header('Authorization'),
-            'Accept' => 'application/json'
+            'Accept' => 'application/json',
+            'Content-Type' => 'multipart/form-data'
         ])->post(env('NMS_IP') . 'update-config-module', [
                 'server_id' => $request['server_id'],
                 'module_id' => $request['module_id'],
@@ -115,11 +118,13 @@ class ModuleController extends ApiController
     {
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $request->header('Authorization'),
-            'Accept' => 'application/json'
+            'Accept' => 'application/json',
+            'Content-Type' => 'multipart/form-data'
         ])->post(env('NMS_IP') . 'edit-module', [
                 'module_id' => $request['module_id'],
                 'name' => $request['name'] ?? null,
                 'type' => $request['type'] ?? null,
+                'path_config' => $request['path_config'] ?? null,
                 'config_file' => $request['config_file'] ?? null,
                 'server_ids' => $request['server_ids'] ?? null,
                 'username' => $request['username'],
