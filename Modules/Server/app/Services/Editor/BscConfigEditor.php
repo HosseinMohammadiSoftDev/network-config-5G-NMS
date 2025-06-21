@@ -4,68 +4,13 @@ namespace Modules\Server\Services\Editor;
 
 class BscConfigEditor
 {
-
-//    old update value
-//    public static function updateValue(string $text, string $dotPath, string $newValue): string
-//    {
-//        $lines = explode("\n", $text);
-//        $pathInfo = self::parsePath($dotPath);
-//        $lineStack = [];
-//        $currentPath = [];
-//        $currentIndent = 0;
-//
-//
-//        // --- BTS FEATURE START ---
-//        if ($dotPath === 'BTS') {
-//            $activeIndex = (int) $newValue;
-//            if (in_array($activeIndex, [0, 1, 2], true)) {
-//                $lines = self::applyBtsCommenting($lines, $activeIndex);
-//                return implode("\n", $lines);
-//            }
-//        }
-//        // --- BTS FEATURE END ---
-//
-//
-//        foreach ($lines as $i => $line) {
-//            $trimmed = trim($line);
-//            if ($trimmed === '' || str_starts_with($trimmed, '!')) {
-//                continue;
-//            }
-//
-//            $indent = strlen($line) - strlen(ltrim($line));
-//
-//            while (!empty($lineStack) && $lineStack[count($lineStack) - 1]['indent'] >= $indent) {
-//                array_pop($lineStack);
-//            }
-//
-//            if (preg_match('/^([a-zA-Z0-9_\-\[\]]+)(?:\s+(.*))?$/', $trimmed, $matches)) {                $key = $matches[1];
-//                $value = $matches[2] ?? null;
-//
-//                $lineStack[] = [
-//                    'key' => $key,
-//                    'value' => $value,
-//                    'indent' => $indent,
-//                    'lineIndex' => $i,
-//                ];
-//
-//                if (self::isMatchingPath($lineStack, $pathInfo)) {
-//                    if ($value !== null) {
-//                        $lines[$i] = self::replaceLineValue($line, $newValue);
-//                        return implode("\n", $lines);
-//                    }
-//                }
-//            }
-//        }
-//
-//        throw new \RuntimeException("Path '{$dotPath}' not found in configuration");
-//    }
-
-//    new update value
+//        editor
     public static function updateValue(string $text, string $dotPath, string $newValue): string
     {
-        $lines    = explode("\n", $text);
+        $lines = explode("\n", $text);
         $pathInfo = self::parsePath($dotPath);
-        $pi       = 0;
+        $stack = [];
+
 
         // --- BTS FEATURE START ---
         if ($dotPath === 'BTS') {
@@ -77,36 +22,51 @@ class BscConfigEditor
         }
         // --- BTS FEATURE END ---
 
+
+
         foreach ($lines as $i => $line) {
             $trimmed = trim($line);
+            if ($trimmed === '') continue;
+            $indent = strlen($line) - strlen(ltrim($line));
+            while (!empty($stack) && end($stack)['indent'] >= $indent) {
+                array_pop($stack);
+            }
+            $isComment = str_starts_with($trimmed, '!');
+            $content = $isComment ? ltrim(substr($trimmed, 1)) : $trimmed;
+            $parts = preg_split('/\s+/', $content);
+            if (count($parts) === 0) continue;
 
-            if ($trimmed === '' || str_starts_with($trimmed, '!'))
+            if (count($parts) === 1) {
+                $stack[] = ['key'=>$parts[0], 'index'=>null, 'indent'=>$indent];
                 continue;
+            }
+
+            $value = array_pop($parts);
+            $keys = $parts;
 
 
-            if (!preg_match('/^([a-zA-Z0-9_\-]+)(?:\s+(.*))?$/', $trimmed, $m))
-                continue;
 
-            $key   = $m[1];
-            $value = $m[2] ?? null;
-
-
-            $expected = $pathInfo[$pi];
-            if ($expected['key'] === $key) {
-
-                if ($expected['index'] !== null) {
-                    static $counts = [];
-                    $counts[$key] = ($counts[$key] ?? 0) + 1;
-
-                    if ($counts[$key] - 1 !== $expected['index']) {
-                        continue;
-                    }
+            // determine index only for keys expected to have an index in pathInfo
+            $lineIndex = null;
+            if (count($keys) === 1 && is_numeric($value)) {
+                // depth in full path would be current stack length
+                $depth = count($stack);
+                if (isset($pathInfo[$depth]) && $pathInfo[$depth]['key'] === $keys[0] && $pathInfo[$depth]['index'] !== null) {
+                    $lineIndex = (int)$value;
+                    $value = null;
                 }
+            }
 
-                $pi++;
+            foreach ($keys as $key) {
+                $stack[] = ['key'=>$key, 'index'=>$lineIndex, 'indent'=>$indent];
+                $lineIndex = null;
+            }
 
-                if ($pi === count($pathInfo) && $value !== null) {
-                    $lines[$i] = self::replaceLineValue($line, $newValue);
+            if (!$isComment && $value !== null) {
+                if (self::pathMatches($stack, $pathInfo)) {
+                    $origParts = preg_split('/\s+/', ltrim($line));
+                    $origParts[count($origParts)-1] = $newValue;
+                    $lines[$i] = str_repeat(' ', $indent) . implode(' ', $origParts);
                     return implode("\n", $lines);
                 }
             }
@@ -114,69 +74,42 @@ class BscConfigEditor
 
         throw new \RuntimeException("Path '{$dotPath}' not found in configuration");
     }
-
-
-    private static function isMatchingPath(array $lineStack, array $pathInfo): bool
+    private static function pathMatches(array $stack, array $pathInfo): bool
     {
-        if (count($lineStack) < count($pathInfo))
-            return false;
-
-
-        for ($i = 0; $i < count($pathInfo); $i++) {
-            $expected = $pathInfo[$i];
-            $actual = $lineStack[$i];
-
-            if ($expected['key'] !== $actual['key']) {
-                return false;
-            }
-
-            if ($expected['index'] !== null) {
-                $count = 0;
-                for ($j = 0; $j <= $i; $j++) {
-                    if ($lineStack[$j]['key'] === $expected['key']) {
-                        $count++;
-                    }
-                }
-                if ($count - 1 !== $expected['index']) {
-                    return false;
-                }
-            }
+        $built = [];
+        $counters = [];
+        foreach ($stack as $entry) {
+            $k = $entry['key'];
+            if (!isset($counters[$k])) $counters[$k]=0;
+            $idx = $entry['index'] ?? $counters[$k];
+            $built[] = ['key'=>$k,'index'=>$idx];
+            $counters[$k]++;
         }
-
-
+        $n = count($built);
+        $m = count($pathInfo);
+        if ($n < $m) return false;
+        $offset = $n - $m;
+        for ($i = 0; $i < $m; $i++) {
+            if ($built[$offset+$i]['key'] !== $pathInfo[$i]['key']) return false;
+            if ($pathInfo[$i]['index'] !== null && $built[$offset+$i]['index'] !== $pathInfo[$i]['index']) return false;
+        }
         return true;
     }
-
-    private static function replaceLineValue(string $line, string $newValue): string
-    {
-        $indent = strlen($line) - strlen(ltrim($line));
-        $trimmed = ltrim($line);
-        $parts = preg_split('/\s+/', $trimmed);
-
-        if (count($parts) > 1) {
-            $parts[count($parts) - 1] = $newValue;
-            return str_repeat(' ', $indent) . implode(' ', $parts);
-        }
-
-        return str_repeat(' ', $indent) . $parts[0] . ' ' . $newValue;
-    }
-
     private static function parsePath(string $dotPath): array
     {
-        $segments = explode('.', $dotPath);
-        $result = [];
-
-        foreach ($segments as $seg) {
-            if (preg_match('/^(\w+)\[(\d+)\]$/', $seg, $m)) {
-                $result[] = ['key' => $m[1], 'index' => (int)$m[2]];
+        $res = [];
+        foreach (explode('.', $dotPath) as $p) {
+            if (preg_match('/^(\w+)\[(\d+)\]$/',$p,$m)) {
+                $res[]=['key'=>$m[1],'index'=>(int)$m[2]];
             } else {
-                $result[] = ['key' => $seg, 'index' => null];
+                $res[]=['key'=>$p,'index'=>null];
             }
         }
-
-        return $result;
+        return $res;
     }
 
+
+//        Validation
     public static function isValidOsmoBscConfig(string $configContent): bool
     {
         $requiredKeywords = [
@@ -222,6 +155,7 @@ class BscConfigEditor
     }
 
 
+//        commeting BTS
     private static function processLineComment(string $line, bool $shouldComment): string
     {
         $trimmed = ltrim($line);
