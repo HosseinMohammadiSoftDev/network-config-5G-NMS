@@ -285,27 +285,6 @@ class ServerController extends ApiController
 
 
 
-
-    public function showAllServiseAndModulesInServer ($serverId) : array
-    {
-        $server = Server::with(['modules:id,name,type'])->find($serverId);
-
-        $modulesGroupedByType = collect();
-        foreach ($server->modules as $module) {
-            $types = array_map('trim', explode(',', $module->type));
-
-            foreach ($types as $type) {
-                if (!$modulesGroupedByType->has($type))
-                    $modulesGroupedByType->put($type, collect());
-                $modulesGroupedByType->get($type)->push($module);
-            }
-        }
-
-
-        return [
-            'allModules' => $server->modules->makeHidden('pivot')
-        ];
-    }
     public function testConnection (TestConnectionRequest $request)
     {
 
@@ -330,8 +309,6 @@ class ServerController extends ApiController
                  $sshHelper = new sshHelper($server, $creadtional['username'], $creadtional['password']);
                  $sshHelper->testConnection();
 
-//                show module server to test connection server
-                $moduleServer = $this->showAllServiseAndModulesInServer($server['id']);
 
             activity('test-connection')
             ->causedBy(Auth::user())
@@ -347,7 +324,7 @@ class ServerController extends ApiController
             ])
             ->log('The connection to the server was successful');
 
-            return response()->json(['success' => true, 'msg'=> 'connect successful.', 'modules_server' => $moduleServer], 200);
+            return response()->json(['success' => true, 'msg'=> 'connect successful.'], 200);
 
         } catch (Exception $e) {
                 throw ValidationException::withMessages(['server_conenction' => 'The connection to the server failed:' . $e->getMessage()]);
