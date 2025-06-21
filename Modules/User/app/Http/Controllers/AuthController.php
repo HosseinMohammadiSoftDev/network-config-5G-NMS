@@ -22,6 +22,21 @@ class AuthController extends ApiController
     {}
 
 
+    public function validationBbuServer (User $user)
+    {
+        $user['server_id']
+            ? $server = server::find($user['server_id'])
+            : $server = null;
+
+
+
+        if ($user->hasRole('admin') && request()->ip() === env('BBU_SERVER_IP'))
+            throw ValidationException::withMessages(['admin' => 'Only BBU user can login in to this BBU server.']);
+
+//        validation bbu user
+        if ($server['ip'] !== request()->ip())
+            throw ValidationException::withMessages(['bbu_user' => 'Your request IP is different from your BBU.']);
+    }
     public function login (Loginrequest $request)
     {
         $credentials = $request->validated();
@@ -31,6 +46,10 @@ class AuthController extends ApiController
         if (!$user || !Hash::check($credentials['password'], $user->password))
             return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
 
+
+//          validation bbu server
+        if ($user['server_id'] || request()->ip() === env('BBU_SERVER_IP'))
+            $this->validationBbuServer($user);
 
 
 //        $user->tokens()->delete();
