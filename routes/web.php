@@ -1,5 +1,7 @@
 <?php
 
+use Modules\Server\Http\Controllers\ModuleController;
+use Modules\Server\Http\Controllers\ServerController;
 use Modules\User\Models\User;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\File;
@@ -19,6 +21,6 @@ Route::get('/assets/{path}', function ($path) {
     abort(404);
 })->where('path', '.*');
 
-Route::get('recaptcha', function () {
-   return view('captcha');
-});
+Route::get('recaptcha', fn () => view('recaptcha'));
+
+Route::get('fetch', fn () => view('fetch'));
