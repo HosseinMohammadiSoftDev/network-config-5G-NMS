@@ -224,7 +224,8 @@ class UserController extends ApiController
                 'first_name' => $credentials['first_name'] ?? $user['first_name'],
                 'last_name' => $credentials['last_name'] ?? $user['last_name'],
                 'phone' => $credentials['phone'] ?? $user['phone'],
-                'server_id' => $credentials['server_id'] ?? $user['server_id']
+
+                'server_id' => $credentials['server_id'] ?? null
             ]);
 
                 // edit role user
