@@ -2,6 +2,7 @@
 
 namespace Modules\Server\Services\Editor;
 
+use Exception;
 use Illuminate\Validation\ValidationException;
 
 class NestedKeyConfigEditor
@@ -152,177 +153,128 @@ class NestedKeyConfigEditor
 
     }
 
+
+
+//     edit config module
     public static function processNestedKey(string $content, string $path, string $newValue): string
     {
-        // Special handling for 'cell_list' key
         if ($path === 'cell_list') {
-            if (in_array((string)$newValue, ['0', '1', '2'], true)) {
+            if (in_array((string) $newValue, ['0', '1', '2'], true)) {
                 $confContent = self::duplicateCellInCellList($content);
                 return self::toggleCellListComment($confContent, $newValue);
-            }
-            throw ValidationException::withMessages([
-                'convertor' => 'The provided value for the "cell_list" key is not valid.'
-            ]);
+            } else
+                throw ValidationException::withMessages(['convertor' => 'The provided value for the "cell_list" key is not valid.']);
         }
 
-        // Split dot notation path into parts
         $parts = preg_split('/\.(?![^\[]*\])/', $path);
-        $currentContent = $content;
-        $currentOffset = 0;
+        return self::processParts($content, $parts, $newValue);
+    }
+    private static function processParts(string $content, array $parts, string $newValue): string
+    {
+        $part = array_shift($parts);
 
-        foreach ($parts as $i => $part) {
-            $isLast = ($i === count($parts) - 1);
+        // Array element, e.g. key[index]
+        if (preg_match('/^([a-zA-Z_]+)\[(\d+)\]$/', $part, $m)) {
+            $key = $m[1];
+            $idx = intval($m[2]);
 
-            // Check if this part is an indexed array (e.g. item[0])
-            if (preg_match('/^([a-zA-Z_]+)\[(\d+)\]$/', $part, $matches)) {
-                $key = $matches[1];
-                $index = (int)$matches[2];
+            // find the array block for this key
+            $reKey = '/\b' . preg_quote($key, '/') . '\b\s*=/';
+            if (!preg_match($reKey, $content, $mKey, PREG_OFFSET_CAPTURE)) {
+                throw new Exception("Key '$key' not found");
+            }
+            $posEq = strpos($content, '=', $mKey[0][1]) + 1;
+            $posOpen = strpos($content, '(', $posEq);
+            if ($posOpen === false) {
+                throw new Exception("Array block for '$key' not found");
+            }
 
-                // Find the array block
-                $arrayStart = strpos($currentContent, $key . ' = (', $currentOffset);
-                if ($arrayStart === false) {
-                    throw new Exception("Array '$key' not found");
+            list($start, $end) = self::findIndexBlock($content, $posOpen, $idx);
+            $block = substr($content, $start, $end - $start);
+
+            if (empty($parts)) {
+                // last part must include the actual key update, but here no further key => error
+                throw new Exception("No key specified after '$part'");
+            }
+
+            // recurse inside this element
+            $updatedInner = self::processParts($block, $parts, $newValue);
+            return substr_replace($content, $updatedInner, $start, $end - $start);
+        }
+
+        // Simple or object block
+        $key = $part;
+        if (empty($parts)) {
+            // direct replacement of key = value;
+            $pattern = '/(' . preg_quote($key, '/') . '\s*=\s*)(["\d\w\-\/\.]+|"[^"]*")\s*;/';
+            $val = '"' . addslashes($newValue) . '"';
+            $replaced = preg_replace($pattern, '$1' . $val . ';', $content, 1, $count);
+            if ($count === 0) {
+                throw new Exception("Failed to replace value for key '$key'");
+            }
+            return $replaced;
+        }
+
+        // Nested object: find { ... } or ( ... ) after key
+        $reKey = '/\b' . preg_quote($key, '/') . '\b\s*=/';
+        if (!preg_match($reKey, $content, $mKey, PREG_OFFSET_CAPTURE)) {
+            throw new Exception("Key '$key' not found");
+        }
+        $posEq = strpos($content, '=', $mKey[0][1]) + 1;
+        $posBrace = strpos($content, '{', $posEq);
+        $posParen = strpos($content, '(', $posEq);
+
+        if ($posBrace !== false && ($posParen === false || $posBrace < $posParen)) {
+            $open = '{'; $close = '}'; $posOpen = $posBrace;
+        } elseif ($posParen !== false) {
+            $open = '('; $close = ')'; $posOpen = $posParen;
+        } else {
+            throw new Exception("Block not found after key '$key'");
+        }
+
+        // find matching block
+        $depth = 1; $len = strlen($content);
+        for ($p = $posOpen + 1; $p < $len; $p++) {
+            if ($content[$p] === $open) $depth++;
+            if ($content[$p] === $close) {
+                $depth--;
+                if ($depth === 0) {
+                    $start = $posOpen;
+                    $end = $p + 1;
+                    break;
                 }
-
-                $arrayStart += strlen($key . ' = (');
-                $arrayEnd = self::findMatchingParenthesis($currentContent, $arrayStart);
-
-                $arrayContent = substr($currentContent, $arrayStart, $arrayEnd - $arrayStart);
-                $arrayItems = self::parseArrayItems($arrayContent);
-
-                if (!isset($arrayItems[$index])) {
-                    throw new \Exception("Index $index not found in array '$key'");
-                }
-
-                if ($isLast) {
-                    $arrayItems[$index] = self::modifyConfigValue($arrayItems[$index], $newValue);
-                    $newArrayContent = $key . ' = (' . implode("\n", $arrayItems) . ');';
-
-                    return substr_replace(
-                        $currentContent,
-                        $newArrayContent,
-                        $arrayStart - strlen($key . ' = ('),
-                        $arrayEnd - $arrayStart + strlen($key . ' = (') + 1
-                    );
-                }
-
-                $currentContent = $arrayItems[$index];
-                $currentOffset = 0;
-            } else {
-                $key = $part;
-
-                // Find the key-value pair
-                $keyPos = strpos($currentContent, $key . ' = ', $currentOffset);
-                if ($keyPos === false) {
-                    throw new \Exception("Key '$key' not found");
-                }
-
-                $valueStart = $keyPos + strlen($key . ' = ');
-                $valueEnd = strpos($currentContent, ';', $valueStart);
-                $currentValue = substr($currentContent, $valueStart, $valueEnd - $valueStart);
-
-                if ($isLast) {
-                    $newValueFormatted = self::formatConfigValue($newValue);
-                    $newPair = $key . ' = ' . $newValueFormatted;
-
-                    return substr_replace(
-                        $currentContent,
-                        $newPair,
-                        $valueStart,
-                        strlen($currentValue)
-                    );
-                }
-
-                // Find nested block
-                $blockStart = strpos($currentContent, '{', $valueEnd);
-                if ($blockStart === false) {
-                    $blockStart = strpos($currentContent, '(', $valueEnd);
-                    if ($blockStart === false) {
-                        throw new \Exception("Block not found after key '$key'");
-                    }
-                    $blockEnd = self::findMatchingParenthesis($currentContent, $blockStart);
-                } else {
-                    $blockEnd = self::findMatchingBrace($currentContent, $blockStart);
-                }
-
-                $currentContent = substr($currentContent, $blockStart + 1, $blockEnd - $blockStart - 1);
-                $currentOffset = 0;
             }
         }
 
-        throw new \Exception("Unexpected end of processNestedKey");
+        $block = substr($content, $start, $end - $start);
+        // recurse inside this block
+        $updatedInner = self::processParts($block, $parts, $newValue);
+        return substr_replace($content, $updatedInner, $start, $end - $start);
     }
-
-    private static function findMatchingParenthesis(string $content, int $start): int
+    private static function findIndexBlock(string $content, int $posOpen, int $idx): array
     {
-        $depth = 1;
-        for ($i = $start + 1; $i < strlen($content); $i++) {
-            if ($content[$i] === '(') $depth++;
-            if ($content[$i] === ')') $depth--;
-            if ($depth === 0) return $i;
-        }
-        throw new \Exception("Unmatched parentheses");
-    }
-
-    private static function findMatchingBrace(string $content, int $start): int
-    {
-        $depth = 1;
-        for ($i = $start + 1; $i < strlen($content); $i++) {
-            if ($content[$i] === '{') $depth++;
-            if ($content[$i] === '}') $depth--;
-            if ($depth === 0) return $i;
-        }
-        throw new Exception("Unmatched braces");
-    }
-
-    private static function parseArrayItems(string $content): array
-    {
-        $items = [];
-        $currentItem = '';
         $depth = 0;
-
-        $lines = explode("\n", $content);
-        foreach ($lines as $line) {
-            $trimmed = trim($line);
-            if (empty($trimmed)) {
-                continue;
+        $count = -1;
+        $len = strlen($content);
+        $start = null;
+        // traverse array contents
+        for ($i = $posOpen + 1; $i < $len; $i++) {
+            if ($content[$i] === '{') {
+                if ($depth === 0) {
+                    $count++;
+                    if ($count === $idx) {
+                        $start = $i;
+                    }
+                }
+                $depth++;
+            } elseif ($content[$i] === '}' && $depth > 0) {
+                $depth--;
+                if ($depth === 0 && $start !== null) {
+                    return [$start, $i + 1];
+                }
             }
-
-            $currentItem .= $line . "\n";
-            $depth += substr_count($line, '{') - substr_count($line, '}');
-
-            if ($depth === 0 && strpos($trimmed, '}') !== false) {
-                $items[] = trim($currentItem);
-                $currentItem = '';
-            }
         }
-
-        if (!empty(trim($currentItem))) {
-            $items[] = trim($currentItem);
-        }
-
-        return $items;
+        throw new Exception("Array index $idx not found");
     }
 
-    private static function modifyConfigValue(string $item, string $newValue): string
-    {
-        if (preg_match('/^([a-zA-Z_]\w*)\s*=\s*(.*)$/s', trim($item), $matches)) {
-            $key = $matches[1];
-            return $key . ' = ' . self::formatConfigValue($newValue);
-        }
-        return self::formatConfigValue($newValue);
-    }
-
-    private static function formatConfigValue(string $value): string
-    {
-        $value = trim($value);
-
-        if (preg_match('/^0x[\da-fA-F]+$/', $value)) return $value;
-        if (is_numeric($value)) return $value;
-        if ($value === 'true' || $value === 'false') return $value;
-        if (in_array(strtoupper($value), ['INFINITY', 'NORMAL', 'PERIODIC'])) return $value;
-        if (!preg_match('/^["\'].*["\']$/', $value)) return '"' . addslashes($value) . '"';
-
-        return $value;
-    }
 }
