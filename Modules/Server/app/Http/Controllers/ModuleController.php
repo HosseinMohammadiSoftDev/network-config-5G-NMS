@@ -813,9 +813,10 @@ class ModuleController extends ApiController
             if ($serverModule) {
 
                 $pivotData = $serverModule->pivot;
-                $pivotData->previous_config_json = $pivotData->current_config_jsom;
+                $pivotData->previous_config_json = $pivotData->current_config_json;
                 $pivotData->initial_config_json = $encodedConfig;
                 $pivotData->current_config_json = $encodedConfig;
+
 // update history config .conf
 //                $pivotData->initial_config_conf = $configContent;
 //                $pivotData->previous_config_conf = $configContent;
