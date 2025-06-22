@@ -29,9 +29,11 @@ class AuthController extends ApiController
             : $server = null;
 
 
-
         if ($user->hasRole('admin') && request()->ip() === env('BBU_SERVER_IP'))
             throw ValidationException::withMessages(['admin' => 'Only BBU user can login in to this BBU server.']);
+
+            if (!$user['server_id'])
+                throw ValidationException::withMessages(['user' => 'You are not a BBU user.']);
 
 //        validation bbu user
         if ($server['ip'] !== request()->ip())

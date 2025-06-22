@@ -35,7 +35,7 @@ class ConfService {
     public function parseConfToArrayAsFile (UploadedFile $file): mixed
     {
         try {
-            $confContent = file_get_contents($file->getRealPath());
+            $confContent = $file->getContent();
 
             $format = $this->detectConfigFormat($confContent, $file->getClientOriginalExtension());
             if (!$confContent)

@@ -25,10 +25,6 @@ class ConfigManager
     private function validateChanges(array $changes): void
     {
         foreach ($changes as $path => $value) {
-//       check is string value to path value
-//            if (!is_string($value))
-//                throw ValidationException::withMessages(['value' => "The value for path \"{$path}\" must be a string, " . gettype($value) . " given."]);
-
 
             if (empty(trim($path)))
                 throw ValidationException::withMessages(['path' => "The path cannot be empty.",]);
