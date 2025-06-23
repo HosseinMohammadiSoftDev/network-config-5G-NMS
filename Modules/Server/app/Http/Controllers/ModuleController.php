@@ -82,12 +82,12 @@ class ModuleController extends ApiController
             'Accept' => 'application/json',
             'Content-Type' => 'multipart/form-data'
         ])->post(env('NMS_IP') . 'update-config-module', [
-                'server_id' => $request['server_id'],
-                'module_id' => $request['module_id'],
-                'data' => $request['data'],
-                'servers' => $request['servers'],
-                'username' => $request['username'],
-                'password' => $request['password'],
+            'server_id' => (int) $request['server_id'],
+            'module_id' => (int) $request['module_id'],
+            'data'      => (object) $request['data'],
+            'servers'   => $request['servers'],
+            'username'  => $request['username'],
+            'password'  => $request['password'],
             ]);
 
         return response()->json($response->json(), $response->status());
