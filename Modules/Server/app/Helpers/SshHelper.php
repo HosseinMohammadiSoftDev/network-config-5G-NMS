@@ -74,14 +74,14 @@ class SshHelper
 
         return $fileContent;
     }
-    public function testConnection()
+    public function testConnection(): bool
     {
         return true;
     }
 
 
 
-    public function runCommandModule($command, $typeCommand, $method, $server)
+    public function runCommandModule($command, $typeCommand, $method, $server): string
     {
         $output = $this->runCommand($command);
 
@@ -97,5 +97,22 @@ class SshHelper
 
         return $output;
     }
+    public function execRunCommand ($command, $typeCommand, $method, $server): string
+    {
+        $output = $this->ssh->exec($command);
+            $this->ssh->disconnect();
 
+
+            if (str_contains($output, 'FATAL') || str_contains($output, 'ERROR')) {
+                $this->logActivity('module-error', $method,
+                    ['command' => $command, 'output' => $output, 'server_id' => $server?->id]);
+                throw new InvalidArgumentException($output);
+            }
+            else
+                $this->logActivity($typeCommand, $method,
+                    ['command' => $command, 'output' => $output, 'server_id' => $server?->id]);
+
+
+        return $output;
+    }
 }
