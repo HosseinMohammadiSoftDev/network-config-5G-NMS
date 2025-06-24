@@ -5,24 +5,93 @@ namespace Modules\Server\Services\Editor;
 class BscConfigEditor
 {
 //        editor
+//    public static function updateValue(string $text, string $dotPath, string $newValue): string
+//    {
+//        $lines = explode("\n", $text);
+//        $pathInfo = self::parsePath($dotPath);
+//        $stack = [];
+//
+//
+//        // --- BTS FEATURE START ---
+//        if ($dotPath === 'BTS') {
+//            $activeIndex = (int) $newValue;
+//            if (in_array($activeIndex, [0, 1, 2], true)) {
+//                $lines = self::applyBtsCommenting($lines, $activeIndex);
+////                return implode("\n", $lines);
+//            }
+//        }
+//        // --- BTS FEATURE END ---
+//
+//
+//
+//        foreach ($lines as $i => $line) {
+//            $trimmed = trim($line);
+//            if ($trimmed === '') continue;
+//            $indent = strlen($line) - strlen(ltrim($line));
+//            while (!empty($stack) && end($stack)['indent'] >= $indent) {
+//                array_pop($stack);
+//            }
+//            $isComment = str_starts_with($trimmed, '!');
+//            $content = $isComment ? ltrim(substr($trimmed, 1)) : $trimmed;
+//            $parts = preg_split('/\s+/', $content);
+//            if (count($parts) === 0) continue;
+//
+//            if (count($parts) === 1) {
+//                $stack[] = ['key'=>$parts[0], 'index'=>null, 'indent'=>$indent];
+//                continue;
+//            }
+//
+//            $value = array_pop($parts);
+//            $keys = $parts;
+//
+//
+//
+//            // determine index only for keys expected to have an index in pathInfo
+//            $lineIndex = null;
+//            if (count($keys) === 1 && is_numeric($value)) {
+//                // depth in full path would be current stack length
+//                $depth = count($stack);
+//                if (isset($pathInfo[$depth]) && $pathInfo[$depth]['key'] === $keys[0] && $pathInfo[$depth]['index'] !== null) {
+//                    $lineIndex = (int)$value;
+//                    $value = null;
+//                }
+//            }
+//
+//            foreach ($keys as $key) {
+//                $stack[] = ['key'=>$key, 'index'=>$lineIndex, 'indent'=>$indent];
+//                $lineIndex = null;
+//            }
+//
+//            if (!$isComment && $value !== null) {
+//                if (self::pathMatches($stack, $pathInfo)) {
+//                    $origParts = preg_split('/\s+/', ltrim($line));
+//                    $origParts[count($origParts)-1] = $newValue;
+//                    $lines[$i] = str_repeat(' ', $indent) . implode(' ', $origParts);
+//                    return implode("\n", $lines);
+//                }
+//            }
+//        }
+//
+//        throw new \RuntimeException("Path '{$dotPath}' not found in configuration");
+//    }
+
+
     public static function updateValue(string $text, string $dotPath, string $newValue): string
     {
         $lines = explode("\n", $text);
         $pathInfo = self::parsePath($dotPath);
         $stack = [];
-
+        $btsProcessed = false; // Flag to track if BTS was processed
 
         // --- BTS FEATURE START ---
         if ($dotPath === 'BTS') {
             $activeIndex = (int) $newValue;
             if (in_array($activeIndex, [0, 1, 2], true)) {
                 $lines = self::applyBtsCommenting($lines, $activeIndex);
-                return implode("\n", $lines);
+                $btsProcessed = true; // Mark BTS as processed
             }
         }
         // --- BTS FEATURE END ---
-
-
 
         foreach ($lines as $i => $line) {
             $trimmed = trim($line);
@@ -36,15 +105,17 @@ class BscConfigEditor
             $parts = preg_split('/\s+/', $content);
             if (count($parts) === 0) continue;
 
+            // Check if the key is 'BTS' and skip processing it
+            if (count($parts) === 1 && $parts[0] === 'BTS') {
+                continue;
+            }
+
             if (count($parts) === 1) {
                 $stack[] = ['key'=>$parts[0], 'index'=>null, 'indent'=>$indent];
                 continue;
             }
-
             $value = array_pop($parts);
             $keys = $parts;
-
-
 
             // determine index only for keys expected to have an index in pathInfo
             $lineIndex = null;
@@ -56,12 +127,10 @@ class BscConfigEditor
                     $value = null;
                 }
             }
-
             foreach ($keys as $key) {
                 $stack[] = ['key'=>$key, 'index'=>$lineIndex, 'indent'=>$indent];
                 $lineIndex = null;
             }
-
             if (!$isComment && $value !== null) {
                 if (self::pathMatches($stack, $pathInfo)) {
                     $origParts = preg_split('/\s+/', ltrim($line));
@@ -72,8 +141,14 @@ class BscConfigEditor
             }
         }
 
-        throw new \RuntimeException("Path '{$dotPath}' not found in configuration");
+        // Throw exception only if BTS was not processed and path was not found
+        if (!$btsProcessed && $dotPath !== 'BTS') {
+            throw new \RuntimeException("Path '{$dotPath}' not found in configuration");
+        }
+
+        return implode("\n", $lines);
     }
+
     private static function pathMatches(array $stack, array $pathInfo): bool
     {
         $built = [];

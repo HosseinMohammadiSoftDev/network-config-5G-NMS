@@ -160,8 +160,8 @@ class NestedKeyConfigEditor
     {
         if ($path === 'cell_list') {
             if (in_array((string) $newValue, ['0', '1', '2'], true)) {
-                $confContent = self::duplicateCellInCellList($content);
-                return self::toggleCellListComment($confContent, $newValue);
+                $confContent = self::duplicateCellInCellList($content); // create cell_list
+                    return self::toggleCellListComment($confContent, $newValue); // comment and unComment Cell_list
             } else
                 throw ValidationException::withMessages(['convertor' => 'The provided value for the "cell_list" key is not valid.']);
         }

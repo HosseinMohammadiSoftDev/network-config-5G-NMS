@@ -41,12 +41,10 @@ class ConfigManager
 //               section
             if (SectionConfigEditor::isBlockStyleSection($content)) {
                 $content = SectionConfigEditor::processBracketSection($content, $path, $newValue);
-                break;
 
 //                OsmoBSC
             } elseif (BscConfigEditor::isValidOsmoBscConfig($content)) {
                 $content = BscConfigEditor::updateValue($content, $path, $newValue);
-                break;
 
 //                key value
             } else {
