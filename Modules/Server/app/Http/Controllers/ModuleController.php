@@ -484,7 +484,7 @@ class ModuleController extends ApiController
 
         try {
 
-            $this->chackPermissionModule($module);
+            $this->chackPermissionModule($server);
 
 //                content config file
             $configContent = $this->catConfigFileContent($module, $server
