@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\User\Services;
+namespace Modules\Server\Services\Paginate;
 
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Builder;
