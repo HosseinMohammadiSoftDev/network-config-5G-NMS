@@ -35,7 +35,7 @@ class CommandController extends Controller
 
         $server = server::find($validate['server_id']);
 
-        return CommandManager::runServiceLTE($server, $validate['username'], $validate['password']);
+        return CommandManager::runServiceGSM($server, $validate['username'], $validate['password']);
     }
 
 }
