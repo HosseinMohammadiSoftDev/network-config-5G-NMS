@@ -5,6 +5,7 @@ namespace Modules\SystemSetting\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Modules\Server\Helpers\SshHelper;
 use Modules\SystemSetting\Http\Requests\Trace\TraceServerRequest;
 use Symfony\Component\Process\Exception\ProcessFailedException;
@@ -39,13 +40,16 @@ class TraceController extends Controller
     }
     private function processStarter ($process, $server)
     {
-        $process->start(function ($type, $buffer) use ($server, &$output) {
+        $output = '';
+
+        $process->start(function ($type, $buffer) use ($server, &$output, &$hasError) {
             $output .= $buffer;
 
-            if (Process::OUT === $type)
-                echo "$server->ip OUT $buffer";
-            else
-                echo "$server->ip ERR $buffer";
+            if (Process::OUT === $type) {
+                echo "$server->ip OUT: $buffer";
+            } else {
+                echo "$server->ip ERR: $buffer";
+            }
         });
 
         return [
@@ -53,174 +57,122 @@ class TraceController extends Controller
             'output' => $output,
         ];
     }
-    private function commandHelperStartServer ($bashScripPath, $remotePath, $username, $password, $server)
+    private function commandHelperStartServer ($username, $password, $server)
     {
+        $ip = $server['ip'];
 
-//                   read content bash script AND echo to VM server
-        $scriptContent = file_get_contents($bashScripPath);
+        $tsharkControllPath  = base_path('Modules/SystemSetting/app/Http/Services/Bash/tshark-control.sh');
+        $setShPath = base_path('Modules/SystemSetting/app/Http/Services/Bash/set.sh');
+        $remotePath      = '/home/siz-tel/trace/';
 
-        $command =
-            <<<EOT
-                    cat > {$remotePath}
-                    {$scriptContent}
-            EOT;
+        $makeDirCommand = "sshpass -p '{$password}' ssh -o StrictHostKeyChecking=no {$username}@{$ip} 'mkdir -p /home/siz-tel/trace'";
 
-        $commandEchoBashToVM =
-            <<<EOT
-                    sshpass -p '{$password}' ssh -o StrictHostKeyChecking=no {$username}@{$server['ip']}
-                            'echo {$command} > {$remotePath} && chmod 777 {$remotePath} && {$remotePath} start'
-            EOT;
+        $commandScpTsharkControl = "sshpass -p '{$password}' scp -o StrictHostKeyChecking=no {$tsharkControllPath} {$username}@{$ip}:{$remotePath} ";
 
+        $commandScpSetSh = "sshpass -p '{$password}' scp -o StrictHostKeyChecking=no {$setShPath} {$username}@{$ip}:{$remotePath}";
 
+        $permissionCommand =
+            "sshpass -p '{$password}' ssh -T -o StrictHostKeyChecking=no {$username}@{$ip} "
+            . "'echo \"{$password}\" | sudo -S -p \"\" chmod 777 -R /home/siz-tel/trace'";
 
-//            make directory
-        $makeDirCommand = "sshpass -p '{$password}' ssh -o StrictHostKeyChecking=no {$username}@{$server['ip']} 'mkdir -p /home/siz-tel/trace'";
-
-//            SCP bash script command
-        $commandSCP = "sshpass -p '{$password}' scp -o StrictHostKeyChecking=no " .
-            "{$bashScripPath} {$username}@{$server['ip']}:{$remotePath}";
-
-
-//            permission and controly command
-        $permissionCommand = "sshpass -p '{$password}' ssh -o StrictHostKeyChecking=no {$username}@{$server['ip']} "
-            . "'echo {$password} | sudo -S chmod 777 -R /home/siz-tel/trace'";
-
-//            run script command
-        $commandRunScript = "sshpass -p '{$password}' ssh -o StrictHostKeyChecking=no {$username}@{$server['ip']}"
-            . " 'echo \"{$password}\" | sudo -S bash {$remotePath} start'";
-
+        $commandRunScript =
+            "sshpass -p '{$password}' ssh -T -o StrictHostKeyChecking=no {$username}@{$ip} "
+            . "'echo \"{$password}\" | sudo -S nohup bash {$remotePath}tshark-control.sh start > /home/siz-tel/trace/tshark.log 2>&1 &'";
 
         return [
-            'permissionCommand' => $permissionCommand,
-            'makeDirCommand' => $makeDirCommand,
-            'commandSCP' => $commandSCP,
-//            'commandEchoBashToVM' => $commandEchoBashToVM,
-            'commandRunScript' => $commandRunScript,
+            'makeDirCommand'            => $makeDirCommand,
+            'commandScpTsharkControl'   => $commandScpTsharkControl,
+            'commandScpSetSh'           => $commandScpSetSh,
+            'permissionCommand'         => $permissionCommand,
+            'commandRunScript'          => $commandRunScript,
         ];
     }
-    public function traceServerStart (TraceServerRequest $request)
+    public function traceServerStart(TraceServerRequest $request)
     {
-        $credentials = $request->validated();
+        $credentials     = $request->validated();
+        $username        = $credentials['username'];
+        $password        = $credentials['password'];
+        $servers         = $request['servers'];
 
-        $username = $credentials['username'];
-        $password = $credentials['password'];
-        $servers = $request['servers'];
 
         try {
             DB::beginTransaction();
 
-                $bashScripPath = base_path('Modules/SystemSetting/app/Http/Services/Bash/tshark-control.sh');;
-                    $remotePath = '/home/siz-tel/trace/tshark-control.sh';
-
-
-
+            $results   = [];
             $processes = [];
-            $outputs = [];
 
             foreach ($servers as $server) {
-                $command = $this->commandHelperStartServer($bashScripPath, $remotePath, $username, $password, $server);
-//dd($command);
-                try {
-//                      mkdir run command
-                    $process = Process::fromShellCommandline($command['makeDirCommand']);
-                       $processStart = $this->processStarter($process, $server); // process starter
+                $commands = $this->commandHelperStartServer($username, $password, $server);
 
-                    $processes[$server['ip']] = [
-                        'process' => $process,
-                        'output' => $processStart['output'],
-                        'makeDirCommand' => $command['makeDirCommand']
+                foreach (['makeDirCommand', 'commandScpTsharkControl', 'commandScpSetSh',
+                             'permissionCommand', 'commandRunScript'] as $key) {
+                    $proc = Process::fromShellCommandline($commands[$key]);
+                    $started = $this->processStarter($proc, $server);
+                    $processes[$server['ip']][] = [
+                        'name'    => $key,
+                        'process' => $started['process'],
+                        'output'  => $started['output'],
                     ];
-
-
-
-//                        SCP run command
-                    $process = Process::fromShellCommandline($command['commandSCP']);
-                        $processStart = $this->processStarter($process, $server); // process starter
-
-                    $processes[$server['ip']] = [
-                        'process' => $process,
-                        'output' => $processStart['output'],
-                        'commandSCP' => $command['commandSCP']
-                    ];
-
-
-
-//                        run bash command
-                    $process = Process::fromShellCommandline($command['permissionCommand']);
-                        $processStart = $this->processStarter($process, $server); // process starter
-
-                    $processes[$server['ip']] = [
-                        'process' => $process,
-                        'output' => $processStart['output'],
-                        'permissionCommand' => $command['permissionCommand']
-                    ];
-
-
-
-//                    permission trace directory and sombolink tshark
-                    $process = Process::fromShellCommandline($command['permissionCommand']);
-                        $processStart = $this->processStarter($process, $server); // process starter
-
-                    $processes[$server['ip']] = [
-                        'process' => $process,
-                        'output' => $processStart['output'],
-                        'permissionCommand' => $command['permissionCommand']
-                    ];
-
-                } catch (ProcessFailedException $e) {
-                    $results[$server['ip']] = ['status' => false, 'error' => $e->getMessage()];
                 }
             }
 
-            foreach ($processes as $ip => $processe) {
-                $processe['process']->wait();
-                $results[$ip] = [
-                    'status' => true,
-                    'output' => $processe['output']
-                ];
+            foreach ($processes as $ip => $list) {
+                foreach ($list as $item) {
+                    $item['process']->wait();
+                    $results[$ip][$item['name']] = [
+                        'status' => true,
+                    ];
+                }
             }
 
-
             DB::commit();
-                return response()->json(['status' => true, 'message' => 'Trace server success.'], 200);
+                return response()->json(['status' => true, 'message'=> 'Trace server success.', 'data' => $results], 200);
 
         } catch (\Exception $e) {
             DB::rollBack();
-                return response()->json(['status' => false, 'message' => $e->getMessage()], 422);
+                return response()->json(['status' => false, 'message'=> $e->getMessage(),], 422);
         }
     }
 
 
 
 
-
 //        stop trace
-    private function commandHelperStopServer ($server, $username, $password)
+    private function commandHelperStopServer ($username, $password, $server)
     {
-        $localPath = '/home/siz-tel/trace/';
+        $localPath = '/home/siz/trace/';
             $setShCommand = $localPath . 'bash ./set.sh ';
 
-
-        $remotePath = '/home/siz-tel/trace/' . $server['ip'] . '.pcapng';
+        $remotePath = '/tmp/' . $server['ip'] . '.pcapng';
+        $mmeLogFile = '/var/log/bbdh/mme1.log';
 
 
         $commandStopTshark = "sshpass -p '{$password}' ssh -o StrictHostKeyChecking=no {$username}@{$server['ip']}"
             . " 'echo \"{$password}\" | sudo -S bash /home/siz-tel/trace/tshark-control.sh stop'";
 
 
-        $commandSCP = "sshpass -p '{$password}' scp -o StrictHostKeyChecking=no " .
+        $commandScpPcapFile = "sshpass -p '{$password}' scp -o StrictHostKeyChecking=no " .
             "{$username}@{$server['ip']}:{$remotePath} {$localPath}";
 
 
         $commandMergePcap = 'cd ' . $localPath . '&& mergecap -w final.pcapng ' . $server['ip'] . '.pcapng';
 
+        $scpMmeLogCommand = "sshpass -p '{$password}' scp -o StrictHostKeyChecking=no " .
+            "{$username}@{$server['ip']}:{$mmeLogFile} {$localPath}";
+
+        $mergeMmeLogCommand = 'cd ' . $localPath . 'cat mme1.log mme2.log mme3.log > /home/siz-tel/trace/mme.log';
+
+        $setShRun = '/home/siz-tel/trace/set.sh ';
+
+
         return [
-            'localPath' => $localPath,
-            'setShCommand' => $setShCommand,
-            'remotePath' => $remotePath,
-            'commandSCP' => $commandSCP,
-            'commandMergePcap' => $commandMergePcap,
             'commandStopTshark' => $commandStopTshark,
+            'commandScpPcapFile' => $commandScpPcapFile,
+            'scpMmeLogCommand'=> $scpMmeLogCommand,
+            'mergeMmeLogCommand' => $mergeMmeLogCommand,
+            'commandMergePcap' => $commandMergePcap,
+            'setShCommand' => $setShCommand,
+            'setShRun' => $setShRun,
         ];
     }
     public function traceServerStop (TraceServerRequest $request)
@@ -229,83 +181,46 @@ class TraceController extends Controller
 
         $username = $credentials['username'];
         $password = $credentials['password'];
-        $servers = $request['servers'];
+        $servers  = $request['servers'];
 
         try {
             DB::beginTransaction();
 
+                $results   = [];
+                $processes = [];
 
-            foreach ($servers as $server) {
-                $command = $this->commandHelperStopServer($server, $username, $password);
+            try {
+                foreach ($servers as $server) {
+                    $commands = $this->commandHelperStopServer($username, $password, $server);
 
-                try {
+                    foreach (['commandStopTshark', 'commandScpPcapFile', 'commandMergePcap', 'scpMmeLogCommand',
+                                 'mergeMmeLogCommand', 'setShRun'] as $key) {
 
-//                        stop tshark VMs
-                    $process = Process::fromShellCommandline($command['commandStopTshark']);
-                        $processStart = $this->processStarter($process, $server); // process starter
-
-                    $processes[$server['ip']] = [
-                        'process' => $process,
-                        'output' => $processStart['output'],
-                        'commandStopTshark' => $command['commandStopTshark']
-                    ];
-
-
-
-//                        scp .pcapng files VMs
-                    $process = Process::fromShellCommandline($command['commandSCP']);
-                        $processStart = $this->processRuner($process, $server); // process starter
-
-                    $processes[$server['ip']] = [
-                        'process' => $process,
-                        'output' => $processStart['output'],
-                        'commandSCP' => $command['commandSCP']
-                    ];
-
-
-
-
-//                        merge pcap VMS to VM nms
-                    $process = Process::fromShellCommandline($command['commandMergePcap']);
-                        $processStart = $this->processStarter($process, $server); // process starter
-
-                    $processes[$server['ip']] = [
-                        'process' => $process,
-                        'output' => $processStart['output'],
-                        'commandMergePcap' => $command['commandMergePcap']
-                    ];
-
-
-
-                } catch (ProcessFailedException $e) {
-                    $results[$server['ip']] = ['status' => false, 'error' => $e->getMessage()];
+                        $proc = Process::fromShellCommandline($commands[$key]);
+                        $started = $this->processStarter($proc, $server);
+                        $processes[$server['ip']][] = [
+                            'name'    => $key,
+                            'process' => $started['process'],
+                            'output'  => $started['output'],
+                        ];
+                    }
                 }
+
+                foreach ($processes as $ip => $list) {
+                    foreach ($list as $item) {
+                        $item['process']->wait();
+                        $results[$ip][$item['name']] = [
+                            'status' => true,
+                            'output' => $item['output'],
+                        ];
+                    }
+                }
+
+            } catch (ProcessFailedException $e) {
+                $results[$server['ip']] = ['status' => false, 'error' => $e->getMessage()];
             }
 
 
-//                merge log command
-            foreach ($servers as $server) {
-
-                $mergeLogCommand = 'cat mme1.log mme2.log mme3.log > /home/siz-tel/trace/mme.log';
-
-                $process = Process::fromShellCommandline($mergeLogCommand);
-                $process->start();
-                $processes[$server['ip']] = $process;
-
-            }
-
-
-//                wate process
-            while (array_filter($processes, fn($p) => $p->isRunning()))
-                usleep(100000); // 100ms تاخیر
-
-
-//                run bash scrript
-            $mergeLogCommand = '/home/siz-tel/trace/set.sh ';
-
-            $process = Process::fromShellCommandline($mergeLogCommand);
-            $process->start();
-            $processes[$server['ip']] = $process;
 
 
             DB::commit();
