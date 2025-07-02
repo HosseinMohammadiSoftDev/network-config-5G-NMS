@@ -5,6 +5,7 @@ PROCESS_NAME="tshark"
 TSHARK_PATH=$(which tshark)
 LOG_FILE="/home/siz-tel/log/tshark-control.log"
 IP=$(hostname -I | awk '{print $1}')
+OUTPUT_FILE="/tmp/$IP.pcapng"
 
 # Function to check if tshark is running
 is_running() {
@@ -17,7 +18,18 @@ start_tshark() {
         echo "tshark is already running."
     else
         echo "Starting tshark..."
-            sudo "$TSHARK_PATH" -i any -w /home/siz-tel/trace/$IP.pcapng > /dev/null 2>&1 & # new command
+        sudo "$TSHARK_PATH" -i any -w "$OUTPUT_FILE" > /dev/null 2>&1 &
+
+        # Wait for file creation with timeout
+        for i in {1..10}; do
+            if [ -f "$OUTPUT_FILE" ]; then
+                sudo chmod 666 "$OUTPUT_FILE"
+                echo "Permissions set for $OUTPUT_FILE"
+                break
+            fi
+            sleep 1
+        done
+
         sleep 1
         if is_running; then
             echo "tshark started successfully."
@@ -31,8 +43,7 @@ start_tshark() {
 stop_tshark() {
     if is_running; then
         echo "Stopping tshark..."
-            sudo pkill -x "$PROCESS_NAME"
-
+        sudo pkill -x "$PROCESS_NAME"
         sleep 1
         if is_running; then
             echo "Failed to stop tshark."
@@ -66,5 +77,6 @@ case "$1" in
         ;;
     *)
         echo "Usage: $0 {start|stop|status}"
+        exit 1
         ;;
 esac

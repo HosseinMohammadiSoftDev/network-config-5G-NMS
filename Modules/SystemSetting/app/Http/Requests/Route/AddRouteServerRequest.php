@@ -19,7 +19,7 @@ class AddRouteServerRequest extends FormRequest
 
             'destination_ip' => ['required', 'string', 'ip'],
             'geteway_ip' => ['required', 'string', 'ip'],
-            'interface' => ['string']
+            'interface_route' => ['string']
         ];
     }
 
