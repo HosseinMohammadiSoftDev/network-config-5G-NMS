@@ -56,7 +56,7 @@ class RouteController extends Controller
             DB::beginTransaction();
 
             isset($credentials['interface'])
-                ? $command = 'ip route add ' . $credentials['destination_ip'] . ' via ' . $credentials['geteway_ip'] . ' dev ' . $credentials['interface']
+                ? $command = 'ip route add ' . $credentials['destination_ip'] . ' via ' . $credentials['geteway_ip'] . ' dev ' . $credentials['interface_route']
                 : $command = 'ip route add ' . $credentials['destination_ip'] . ' via ' . $credentials['geteway_ip'];
 
 
@@ -85,7 +85,7 @@ class RouteController extends Controller
             DB::beginTransaction();
 
             isset($credentials['interface'])
-                ? $command = 'ip route del ' . $credentials['destination_ip'] . ' via ' . $credentials['geteway_ip'] . ' dev ' . $credentials['interface']
+                ? $command = 'ip route del ' . $credentials['destination_ip'] . ' via ' . $credentials['geteway_ip'] . ' dev ' . $credentials['interface_route']
                 : $command = 'ip route del ' . $credentials['destination_ip'] . ' via ' . $credentials['geteway_ip'];
 
 
