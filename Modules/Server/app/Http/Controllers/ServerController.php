@@ -16,6 +16,7 @@ use Modules\Server\Http\Requests\Server\EditServerReqest;
 use Modules\Server\Http\Requests\Server\DeleteServerReqest;
 use Modules\Server\Http\Requests\Server\CreateServerRequest;
 use Modules\Server\Http\Requests\Server\StartStopComandReqest;
+use Modules\Server\Models\SystemSetting;
 use Modules\Server\Services\Paginate\PaginationService;
 
 
@@ -143,7 +144,6 @@ class ServerController extends ApiController
 
     public function testConnection (TestConnectionRequest $request)
     {
-
         $creadtional = $request->validated();
         $server = Server::find($creadtional['server_id']);
 
@@ -156,6 +156,10 @@ class ServerController extends ApiController
 
                  $sshHelper = new sshHelper($server, $creadtional['username'], $creadtional['password']);
                  $sshHelper->testConnection();
+
+//                 update status connection nms server to online
+                SystemSetting::first()
+                    ->update(['is_connected' => true]);
 
 
             activity('test-connection')

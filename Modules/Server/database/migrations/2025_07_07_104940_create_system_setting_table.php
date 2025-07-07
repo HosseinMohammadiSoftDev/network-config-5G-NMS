@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
 
             $table->string('nms_server_ip');
+            $table->boolean('is_connected')->default(false)
+                ->comment('save status connection to server nms.');
 
             $table->timestamps();
         });
