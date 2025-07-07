@@ -14,6 +14,9 @@ return new class extends Migration
         Schema::create('module_server', function (Blueprint $table) {
             $table->id();
 
+            $table->boolean('is_updated')->default(false)
+                ->comment('change based on nms server module.');
+
             $table->foreignId('server_id')
                     ->constrained()
                     ->onDelete('cascade')

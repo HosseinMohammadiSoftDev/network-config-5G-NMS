@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::create('system_setting', function (Blueprint $table) {
+            $table->id();
 
-            $table->foreignId('server_id')
-                ->after('auth_name')
-                ->nullable()
-                ->constrained()
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
+            $table->string('nms_server_ip');
+
+            $table->timestamps();
         });
     }
 
@@ -27,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-
-        });
+        Schema::dropIfExists('system_setting');
     }
 };
