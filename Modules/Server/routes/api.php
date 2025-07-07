@@ -23,10 +23,7 @@ Route::fallback(function(){
 
 
                     // server
-Route::get('show-all-servers', [ServerController::class, 'showAllServers']);
-Route::post('create-server', [ServerController::class, 'createServer']);
 Route::put('edit-server', [ServerController::class, 'editServer']);
-Route::delete('server-delete', [ServerController::class, 'deleteServer']);
 Route::post('test-connection', [ServerController::class, 'testConnection']);
 
                     // module
@@ -35,7 +32,7 @@ Route::get('show-all-servies-and-modules/{serverID}', [ModuleController::class, 
 Route::post('create-module', [ModuleController::class, 'createModule']);
 Route::post('update-config-module', [ModuleController::class, 'updateConfigModule']);
 Route::delete('delete-module', [ModuleController::class, 'deleteModule']);
-Route::delete('delete-config-module', [ModuleController::class, 'deleteConfigModule']);
+Route::delete('delete-config-module', [ModuleController::class, 'deleteConfigMo  dule']);
 Route::get('show-all-modules', [ModuleController::class, 'showAllModules']);
 Route::post('edit-module', [ModuleController::class, 'editModule']);
 

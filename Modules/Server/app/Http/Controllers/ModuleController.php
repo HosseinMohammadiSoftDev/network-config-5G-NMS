@@ -4,7 +4,6 @@ namespace Modules\Server\Http\Controllers;
 
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationData;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Modules\Server\Helpers\FtpHelper;
@@ -13,28 +12,20 @@ use Modules\Server\Models\Server;
 use Illuminate\Support\Facades\DB;
 use Modules\Server\Services\ConfigManager;
 use Modules\Server\Services\ConfService;
-use Modules\Server\Services\Paeser\NeonPaeser;
-use Modules\User\Models\Permission;
 use Illuminate\Support\Facades\Auth;
 use Modules\Server\Helpers\SshHelper;
 use Modules\Server\Helpers\JsonUpdater;
-use Modules\User\Services\PaginationService;
 use App\Http\Controllers\Contract\ApiController;
 use Modules\Server\Http\Requests\EditModuleRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Modules\Server\Http\Requests\Modules\ShowAllModules;
-use Modules\Server\Http\Requests\SshServer\SshServerRequest;
 use Modules\Server\Http\Requests\Modules\deleteModuleRequest;
 use Modules\Server\Http\Requests\Modules\CreateModulesRequest;
-use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
 use Modules\Server\Http\Requests\Undo\UndoConfigModulesRequest;
-use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
 use Modules\Server\Http\Requests\Module\DeleteCofigModuleRequest;
-use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
 use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
-use Modules\Server\Http\Requests\Module\restartServiceModuleRequest;
 use Modules\Server\Http\Requests\Module\ExpertModuleFileIsServerRequset;
 use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
+use Modules\Server\Services\Paginate\PaginationService;
 
 class ModuleController extends ApiController
 {
@@ -71,8 +62,8 @@ class ModuleController extends ApiController
         });
 
         $currentConfig = $module->servers
-        ->where('pivot.server_id', $serverId)
-        ->first()?->pivot->current_config_json;
+            ->where('pivot.server_id', $serverId)
+            ->first()?->pivot->current_config_json;
 
 
         return response()->json([
@@ -115,34 +106,11 @@ class ModuleController extends ApiController
 
     public function ShowAllModules (Request $request)
     {
-        $user = Auth::user();
         $perPage = ($request->input('paginate') ?? 10);
-
-        if ($user->hasRole('admin')) {
-            return response()->json([
-                'msg' => 'The list of modules was successfully retrieved',
-                'module' => $this->formatModules(Module::with('servers')->paginate($perPage))
-            ]);
-        }
-
-        $userPermissions = $user->getAllPermissions()->pluck('name')->toArray();
-
-
-
-        $modules = Module::whereHas('servers', function ($query) use ($userPermissions) {
-            $query->whereIn('name', collect($userPermissions)->map(function ($permission) {
-                return str_replace('server/', '', $permission);
-            })->toArray());
-        })->with(['servers' => function ($query) use ($userPermissions) {
-            $query->whereIn('name', collect($userPermissions)->map(function ($permission) {
-                return str_replace('server/', '', $permission);
-            })->toArray());
-        }])->paginate($perPage);
-
 
         return response()->json([
             'msg' => 'The list of modules was successfully retrieved',
-            'module' => $this->formatModules($modules)
+            'module' => $this->formatModules(Module::with('servers')->paginate($perPage))
         ]);
     }
     private function formatModules($modules)
@@ -153,12 +121,6 @@ class ModuleController extends ApiController
           'total' => $modules->total(),
           'last_page' => $modules->lastPage(),
       ];
-
-      $userPermissions = Auth::user()->getAllPermissions()
-            ->filter(fn($permission) => str_starts_with($permission->name, 'server'))
-            ->pluck('name')
-            ->toArray();
-
 
       $formattedModules = $modules->getCollection()->map(function ($module) {
           return [
@@ -179,7 +141,6 @@ class ModuleController extends ApiController
 
       return [
           'msg' => 'The list of modules was successfully retrieved',
-          'user_permissions_server' => $userPermissions,
           'module' => $formattedModules,
           'pagination' => $paginationData,
       ];
@@ -246,7 +207,6 @@ class ModuleController extends ApiController
             foreach ($serverIds as $serverId) {
                 $server = Server::find($serverId);
                     // check permission
-                $this->chackPermissionModule($server);
 
                 if (!$server)
                     $failedServers[] = $serverId;
@@ -286,14 +246,12 @@ class ModuleController extends ApiController
                 ];
 
                 activity('create-module')
-                    ->causedBy(Auth::user())
+                    ->causedBy(null)
                     ->performedOn(Module::latest()->first())
                     ->event('create-module')
                     ->withProperties([
                         'type-log' => 'server',
                         'route' => request()->fullUrl(),
-                        'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                        'user_role' =>Auth::user()->roles()->pluck('name')->first(),
                         'method' => 'createModule',
                         'module' => [
                             'name' => $creadtional['name'],
@@ -331,21 +289,15 @@ class ModuleController extends ApiController
         }
 
 
-        foreach ($serverModule as $server)
-            $this->chackPermissionModule($server);
-
-
         $module->delete();
 
 
         activity('create-module')
-        ->causedBy(Auth::user())
+        ->causedBy(null)
         ->event('create-module')
         ->withProperties([
             'type-log' => 'server',
             'route' => request()->fullUrl(),
-            'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-            'user_role' =>Auth::user()->roles()->pluck('name')->first(),
             'method' => 'createModule',
             'module' => [
                 'name' => $module['name'],
@@ -381,42 +333,6 @@ class ModuleController extends ApiController
 
         return $content;
     }
-    public function createAndDeletePermission ()
-    {
-        $servers = Server::pluck('name')->toArray();
-
-        $existingPermissions = Permission::where('name', 'like', 'server/%')->pluck('name')->toArray();
-
-        $currentServerPermissions = array_map(fn($server) => "server/{$server}", $servers);
-
-        $newPermissions = array_diff($currentServerPermissions, $existingPermissions);
-        foreach ($newPermissions as $newPermission)
-            Permission::create(['name' => $newPermission, 'guard_name' => 'web']);
-
-
-        $removedPermissions = array_diff($existingPermissions, $currentServerPermissions);
-        foreach ($removedPermissions as $removedPermission)
-            Permission::where('name', $removedPermission)->delete();
-
-    }
-    public function chackPermissionModule($server)
-    {
-        $this->createAndDeletePermission();
-
-        $user = Auth::user();
-        if ($user->hasRole('admin'))
-            return true;
-
-
-        $serverPermission = 'server/' . $server['name'];
-        if ($user->hasPermissionTo($serverPermission))
-            return true;
-
-        throw ValidationException::withMessages([
-            'msg' => 'You do not have permission to use this server : ' . $server['name'],
-            'your-permissions' => $user->getAllPermissions()->pluck('name')
-        ]);
-    }
     public function getArrayChanges($array1, $array2) {
         $changes = [];
 
@@ -446,14 +362,12 @@ class ModuleController extends ApiController
         $change = json_encode($this->getArrayChanges($array1, $array2));
 
         activity('update-module-config')
-            ->causedBy(Auth::user())
+            ->causedBy(null)
             ->event('update-config-module')
             ->withProperties([
                 'type-log' => 'server',
                 'route' => request()->fullUrl(),
                 'method' => 'updateConfigModule',
-                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                'user_role' =>Auth::user()->roles()->pluck('name')->first(),
                 'changes' => $change,
                 'server' => $server,
                 'server_id' => $server->id,
@@ -483,8 +397,6 @@ class ModuleController extends ApiController
         DB::beginTransaction();
 
         try {
-
-            $this->chackPermissionModule($server);
 
 //                content config file
             $configContent = $this->catConfigFileContent($module, $server
@@ -577,7 +489,6 @@ class ModuleController extends ApiController
                 $module = $server->modules()->wherePivot('module_id', $request['module_id'])->first();
 
 
-                $this->chackPermissionModule($module, $server);
 
 //                content config file
                 $configContent = $this->catConfigFileContent($module, $server
@@ -671,8 +582,8 @@ class ModuleController extends ApiController
     {
         if ($server['is_down'] == Server::OFF)
             throw ValidationException::withMessages(['msg' => 'server is off']);
-        $module = Module::find($moduleId);
 
+        $module = Module::find($moduleId);
         if (!$module)
             throw ValidationException::withMessages(['msg' => 'module is notfund']);
 
@@ -716,87 +627,6 @@ class ModuleController extends ApiController
             return $this->updateSingleModule($request);
     }
 
-
-        // delete config module
-    private function deleteConfigInDatabase ($moduleId, $pathConfig, $server)
-    {
-        $module = Module::find($moduleId);
-
-        if (!$module)
-            throw new HttpResponseException(response()->json(['msg' => 'module is not fuond'], 422));
-
-
-        $moduleConfig = json_decode($server->pivot['current_config'], true);
-        $moduleCurrentConfig = $server->pivot['current_config'];
-        $server->pivot->previous_config = $moduleCurrentConfig;
-
-        foreach ($pathConfig as $path)
-            $moduleConfig = JsonUpdater::deleteConfigInModule($moduleConfig, $path);
-
-
-        $module->servers()->updateExistingPivot($server['id'], [
-            'current_config' => json_encode($moduleConfig, JSON_PRETTY_PRINT),
-            'previous_config' => $moduleCurrentConfig
-        ]);
-
-        return json_encode($moduleConfig, true);
-    }
-    public function deleteConfigModule (DeleteCofigModuleRequest $request)
-    {
-        $request = $request->validated();
-
-        $module = Module::where('id', $request['module_id'])->whereHas('servers', function ($query) use ($request) {
-            $query->where('server_id', $request['server_id']);
-        })->first();
-
-        if (!$module)
-            throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.'], 422));
-
-
-        $server = $module->servers()->find($request['server_id']);
-        $pathConfig = $request['path_config'];
-
-        if ($server['is_down'] == 1)
-            return response()->json(['msg' => 'server is off'], 403);
-
-        DB::beginTransaction();
-
-        try {
-            $this->chackPermissionModule($module, $server);
-
-            $moduleCurrentConfig = $this->deleteConfigInDatabase($module['id'], $pathConfig, $server);
-
-            $yamlContent = $this->convertJsonToYaml($moduleCurrentConfig);
-
-            $this->sendConfigToServer( $request['username'], $request['password'],
-                     $module['name'], $yamlContent, $server);
-
-            DB::commit();
-
-            return response()->json([
-                'config' => json_decode($moduleCurrentConfig, true),
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            $message = $e->getMessage();
-
-            if (str_contains($message, 'ERROR') || str_contains($message, 'FATAL')) {
-                $message = preg_replace('/\e\[[\d;]*m/', '', $message);
-                $message = preg_replace('/\r|\n|\[?.*?h/', '', $message);
-                preg_match_all('/(ERROR|FATAL): ([^\r\n]+)/', $message, $matches);
-
-                if (!empty($matches[0])) {
-                    $filteredMessages = implode("\n", $matches[0]);
-                    return response()->json(['error' => $filteredMessages], 500);
-                }
-
-                return response()->json(['error' => $message], 500);
-            }
-
-            return response()->json(['error' => $message], 500);
-        }
-    }
 
 
 
@@ -849,8 +679,8 @@ class ModuleController extends ApiController
 
 
 //      conf updator
-//            $this->sendConfigToServer( $request['username'], $request['password'],
-//                $module, $configContent, $server);
+            $this->sendConfigToServer( $request['username'], $request['password'],
+                $module, $configContent, $server);
 
         }
     }
@@ -874,8 +704,8 @@ class ModuleController extends ApiController
             }
 
 //      conf updator
-//            $this->sendConfigToServer( $request['username'], $request['password'],
-//                $module, $configContent, $server);
+            $this->sendConfigToServer( $request['username'], $request['password'],
+                $module, $configContent, $server);
 
         }
     }
@@ -885,11 +715,10 @@ class ModuleController extends ApiController
 
                 $server = Server::find($serverId);
 
-//                $this->sendConfigToServer( $request['username'], $request['password'],
-//                     $module, $configContent, $server);
+                $this->sendConfigToServer( $request['username'], $request['password'],
+                     $module, $configContent, $server);
 
                 $module->servers()->detach($serverId);
-
         }
     }
     private function syncModuleWithServers(Module $module, array $serverIds, $request)
@@ -931,7 +760,6 @@ class ModuleController extends ApiController
             // check permissions
         foreach ($serverIds as $serverId) {
             $server = Server::find($serverId);
-            $this->chackPermissionModule($server);
 
             if ($server['is_down'])
                 throw ValidationException::withMessages(['server' => 'server : ' . $server['name'] . ' is off']);
@@ -992,7 +820,7 @@ class ModuleController extends ApiController
         $server = Server::find($validation['server_id']);
 
 
-        if ($server['is_down'] == 1)
+        if ($server['is_down'] == Server::OFF)
             return response()->json(['msg' => 'server is off'], 403);
 
         try {
@@ -1008,6 +836,24 @@ class ModuleController extends ApiController
 
             @unlink($localTempPath);
 
+
+
+            activity('export-config-module')
+                ->causedBy(null)
+                ->performedOn($module)
+                ->event('export-config-module')
+                ->withProperties([
+                    'type-log' => 'server',
+                    'route' => request()->fullUrl(),
+                    'method' => 'undoConfigModule',
+                    'module_name' => $module['name'],
+                    'module_type' => $module['type'],
+                    'server_id' => $server?->id
+                ])
+                ->log('Received output from module config');
+
+
+
             // defalte headers
             return response($content, 200, [
                 'Content-Type' => 'application/octet-stream',
@@ -1019,14 +865,12 @@ class ModuleController extends ApiController
         } catch (Exception $e) {
 
             activity('not-export-file-error')
-            ->causedBy(Auth::user())
+            ->causedBy(null)
             ->event('expertModuleFileIsServer')
             ->withProperties([
                 'type-log' => 'server',
                 'route' => request()->fullUrl(),
                 'method' => 'expertModuleFileIsServer',
-                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                'user_role' =>Auth::user()->roles()->pluck('name')->first(),                'module' => $module,
                 'server_id' => $server?->id
             ])
             ->log('The configuration values have been changed');
@@ -1049,7 +893,7 @@ class ModuleController extends ApiController
         if (!$module)
             throw ValidationException::withMessages(['module' => 'module is not found']);
 
-        if ($server['is_down'] == 1)
+        if ($server['is_down'] == Server::OFF)
             throw ValidationException::withMessages(['server'=> 'server is off']);
 
 
@@ -1074,15 +918,13 @@ class ModuleController extends ApiController
 
 
             activity('undo-config-module')
-                ->causedBy(Auth::user())
+                ->causedBy(null)
                 ->performedOn($module)
                 ->event('undo-config-module')
                 ->withProperties([
                     'type-log' => 'server',
                     'route' => request()->fullUrl(),
                     'method' => 'undoConfigModule',
-                    'user' => Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                    'user_role' => Auth::user()->roles()->pluck('name')->first(), 'module_id' => $module['id'],
                     'module_name' => $module['name'],
                     'module_type' => $module['type'],
                     'server_id' => $server?->id
@@ -1113,7 +955,7 @@ class ModuleController extends ApiController
                 throw ValidationException::withMessages(['module' => 'module is not found']);
 
 
-        if ($server && $server['is_down'] == 1)
+        if ($server && $server['is_down'] == Server::OFF)
             throw ValidationException::withMessages(['server'=> 'server is off']);
 
 
@@ -1134,15 +976,13 @@ class ModuleController extends ApiController
 
 
             activity('undo-config-module')
-                ->causedBy(Auth::user())
+                ->causedBy(null)
                 ->performedOn($module)
                 ->event('undo-config-module')
                 ->withProperties([
                     'type-log' => 'server',
                     'route' => request()->fullUrl(),
                     'method' => 'undoConfigModule',
-                    'user' => Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                    'user_role' => Auth::user()->roles()->pluck('name')->first(),
                     'module_id' => $module['id'],
                     'module_name' => $module['name'],
                     'module_type' => $module['type'],
