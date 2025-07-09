@@ -21,21 +21,13 @@ class CommandController extends Controller
 
 
     // service module
-    public function runServiceLTE (restartServiceModuleRequest $request)
+    public function runServiceLTE ()
     {
-        $validate = $request->validated();
-
-        $server = server::find($validate['server_id']);
-
-        return CommandManager::runServiceLTE($server, $validate['username'], $validate['password']);
+        return CommandManager::runServiceLTE();
     }
-    public function runServiceGSM (restartServiceModuleRequest $request)
+    public function runServiceGSM ()
     {
-        $validate = $request->validated();
-
-        $server = server::find($validate['server_id']);
-
-        return CommandManager::runServiceLTE($server, $validate['username'], $validate['password']);
+        return CommandManager::runServiceLTE();
     }
 
 }

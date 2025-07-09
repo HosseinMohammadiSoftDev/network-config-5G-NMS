@@ -16,21 +16,11 @@ class CommandManager
     {}
 
 
-    private static function runCommandModuleToServer (string $username, string $password, $command, server $server, $typeCommand, $method)
+    private static function runCommandModuleToServer ($command, $typeCommand, $method)
     {
-        // is down server
-        if ($server['is_down'] == Server::OFF)
-            throw
-            throw new HttpResponseException(response()->json(['msg' => 'this server off'], 422));
-
-
         try {
 
-            $sshHelper = new sshHelper($server, $username, $password);
-
-                $output = $sshHelper->runCommandModule($command, $typeCommand, $method, $server);
-
-            return response()->json(['message' => nl2br($output)]);
+            return response()->json(['message' => exec($command)]);
 
         } catch (HttpResponseException $e) {
             throw $e;
@@ -73,17 +63,17 @@ class CommandManager
             ], 422));
         }
     }
-    public static function runServiceLTE (Server $server, string $username, string $password)
+    public static function runServiceLTE ()
     {
         $command = 'sudo srsenb'; // run service LTE 4G
 
-        return self::runCommandModuleToServer($username, $password, $command, $server,'runServiceLTE', 'runServiceLTE');
+        return self::runCommandModuleToServer($command, 'runServiceLTE', 'runServiceLTE');
     }
-    public static function runServiceGSM (Server $server, string $username, string $password)
+    public static function runServiceGSM ()
     {
         $command = 'osmo-bsc -c cfg/bsc.cfg'; // run service GSM 2G
 
-        return self::runCommandModuleToServer($username, $password, $command, $server,'runServiceGSM', 'runServiceGSM');
+        return self::runCommandModuleToServer($command, 'runServiceGSM', 'runServiceGSM');
     }
 
 }
