@@ -55,7 +55,8 @@ class Server extends Model
             'previous_config_json',
             'current_config_json',
             'initial_config_conf',
-            'previous_config_conf'
+            'previous_config_conf',
+            'is_updated'
         );
     }
 

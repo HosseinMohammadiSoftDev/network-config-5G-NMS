@@ -4,30 +4,35 @@ namespace Modules\Server\Http\Controllers;
 
 use Illuminate\Validation\ValidationException;
 use Exception;
-use Illuminate\Http\Request;
 use Modules\Server\Models\Server;
 use Illuminate\Support\Facades\DB;;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Modules\Server\Helpers\SshHelper;
 use App\Http\Controllers\Contract\ApiController;
 use Modules\Server\Http\Requests\TestConnectionRequest;
 use Modules\Server\Http\Requests\Server\EditServerReqest;
-use Modules\Server\Http\Requests\Server\DeleteServerReqest;
-use Modules\Server\Http\Requests\Server\CreateServerRequest;
 use Modules\Server\Http\Requests\Server\StartStopComandReqest;
 use Modules\Server\Models\SystemSetting;
 use Modules\Server\Services\Paginate\PaginationService;
+use Modules\Server\Services\SyncData\GeterDataService;
 
 
 class ServerController extends ApiController
 {
-    protected $paginationService;
-    public function __construct(PaginationService $paginationService)
-    {
-        $this->paginationService = $paginationService;
-    }
+    public function __construct(
+        private PaginationService $paginationService,
+        private GeterDataService $geterDataService
+    ){}
 
+
+    public function getMyServerData ()
+    {
+        return response()->json([
+            'success' => true,
+            'data' => Server::exists()
+                ? Server::first()
+                : $this->geterDataService->getDataServer()['data']
+        ]);
+    }
     public function editServer (EditServerReqest $request)
     {
         $credentials = $request->validated();
