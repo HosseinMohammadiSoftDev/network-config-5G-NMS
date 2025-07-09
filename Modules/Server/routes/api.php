@@ -5,6 +5,9 @@ use Modules\Server\Http\Controllers\ModuleController;
 use Modules\Server\Http\Controllers\ServerController;
 use Modules\Server\Http\Controllers\ServiceController;
 use Modules\Server\Http\Controllers\CommandController;
+use \Modules\Server\Services\SyncData\SyncService;
+use \Modules\Server\Http\Controllers\SyncServerDataController;
+use \Modules\Server\Http\Controllers\SystemSettingController;
 
 /*
  *--------------------------------------------------------------------------
@@ -23,16 +26,17 @@ Route::fallback(function(){
 
 
                     // server
+Route::get('get-my-server-data', [ServerController::class, 'getMyServerData']);
 Route::put('edit-server', [ServerController::class, 'editServer']);
 Route::post('test-connection', [ServerController::class, 'testConnection']);
 
-                    // module
-Route::get('show-config-module/{serverID}/{ModuleID}', [ModuleController::class, 'showConfigModule']);
-Route::get('show-all-servies-and-modules/{serverID}', [ModuleController::class, 'showAllServiseAndModulesInServer']);
+                    // moduled
+Route::get('show-config-module/{ModuleID}', [ModuleController::class, 'showConfigModule']);
+Route::get('show-all-servies-and-modules', [ModuleController::class, 'showAllServiseAndModulesInServer']);
 Route::post('create-module', [ModuleController::class, 'createModule']);
 Route::post('update-config-module', [ModuleController::class, 'updateConfigModule']);
 Route::delete('delete-module', [ModuleController::class, 'deleteModule']);
-Route::delete('delete-config-module', [ModuleController::class, 'deleteConfigMo  dule']);
+Route::delete('delete-config-module', [ModuleController::class, 'deleteConfigModule']);
 Route::get('show-all-modules', [ModuleController::class, 'showAllModules']);
 Route::post('edit-module', [ModuleController::class, 'editModule']);
 
@@ -48,3 +52,14 @@ Route::post('export-module-file', [ModuleController::class, 'expertModuleFileIsS
 Route::post('server-stop', [ServerController::class, 'serverStop']);
 Route::post('server-start', [ServerController::class, 'ServerStart']);
 Route::post('server-status', [ServerController::class, 'serverStatus']);
+
+
+
+//    systemSetting route
+Route::get('get-system-setting', [SystemSettingController::class, 'getSystemSetting']);
+Route::post('nms-server-data', [SystemSettingController::class, 'nmsServerData']);
+
+
+//      sync data
+//    get and set to sqlite as server RRU
+Route::get('sync-data', [SyncServerDataController::class, 'syncData']);

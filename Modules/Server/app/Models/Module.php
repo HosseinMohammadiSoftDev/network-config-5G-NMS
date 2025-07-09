@@ -20,7 +20,7 @@ class Module extends Model
         'name',
         'type',
         'extension',
-        'server_id',
+        'is_updated',
 
 //        json fild
         'initial_config_json',
@@ -57,7 +57,8 @@ class Module extends Model
             'previous_config_json',
             'current_config_json',
             'initial_config_conf',
-            'previous_config_conf'
+            'previous_config_conf',
+            'is_updated'
         );
     }
 }
