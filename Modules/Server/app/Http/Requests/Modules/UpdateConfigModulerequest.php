@@ -14,21 +14,7 @@ class UpdateConfigModulerequest extends FormRequest
     {
         return [
             'module_id' => ['required', 'exists:modules,id', 'integer'],
-            'server_id' => ['required', 'integer', 'exists:servers,id'],
             'data' => ['required', 'array'],
-
-            'servers' => ['nullable', 'array'],
-            'servers.*' => ['required', 'integer', 'exists:servers,id',  function ($attribute, $value, $fail) {
-                $server = DB::table('servers')->where('id', $value)->first();
-                    if (!$server) {
-                        $fail("The selected server ID ($value) is invalid.");
-                        return;
-                    }
-                }
-            ],
-
-            'username' => ['required', 'string'],
-            'password' => ['required', 'string'],
         ];
     }
 

@@ -20,7 +20,6 @@ class EditModuleRequest extends FormRequest
             'module_id' => ['required', 'integer', 'exists:modules,id'],
             'name' => ['nullable', 'string', 'min:2', 'max:255'],
             'type' => ['nullable', 'string', 'in:LTE,GSM,RRU'],
-            // 'server_id'=> ['required', 'integer','exists:servers,id'],
 
             'config_file' => ['nullable', 'file',  function ($attribute, $value, $fail) {
 
@@ -31,25 +30,12 @@ class EditModuleRequest extends FormRequest
                 },
             ],
 
-            'server_ids' => ['nullable', 'array'],
-            'server_ids.*' => ['required', 'integer', 'exists:servers,id',  function ($attribute, $value, $fail) {
-                $server = DB::table('servers')->where('id', $value)->first();
-                    if (!$server) {
-                        $fail("The selected server ID ($value) is invalid.");
-                        return;
-                    }
-                }
-            ],
-            'username' => ['required', 'string', 'min:1', 'max:255'],
-            'password' => ['required', 'string', 'min:1', 'max:255'],
-
-
             'path_config' => [
                 'string',
                 'min:3',
                 'max:255',
                 'regex:/^\/(?:[a-zA-Z0-9_\-\.]+\/)*[a-zA-Z0-9_\-\.]+\/$/',
-                'not_regex:/\/(?:bin|boot|dev|lib|lib64|media|mnt|opt|proc|root|run|sbin|srv|sys|tmp|var)\//i'
+//                'not_regex:/\/(?:bin|boot|dev|lib|lib64|media|mnt|opt|proc|root|run|sbin|srv|sys|tmp|var)\//i'
             ],
         ];
     }

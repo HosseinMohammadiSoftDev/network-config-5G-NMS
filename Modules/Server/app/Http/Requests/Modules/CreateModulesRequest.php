@@ -17,34 +17,8 @@ class CreateModulesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'min:2', 'max:255', function ($attribute, $value, $fail) {
-                $serverIds = request('server_id');
-                if (!is_array($serverIds))
-                    $serverIds = [$serverIds];
-
-                foreach ($serverIds as $serverId) {
-
-                $modulNameExists = Module::where('name', $value)
-                ->whereHas('servers', function($query) use ($serverId) {
-                    $query->where('servers.id', $serverId);
-                })->exists();
-
-                if ($modulNameExists)
-                    return $fail('module name is not uniqe in server');
-                }
-
-            }],
+            'name' => ['required', 'string', 'min:2', 'max:255', 'unique:modules,name'],
             'type' => ['required', 'string', 'in:LTE,GSM,RRU'],
-
-            'server_id' => ['nullable', 'array'],
-            'server_id.*' => ['required', 'integer', 'exists:servers,id',  function ($attribute, $value, $fail) {
-                $server = DB::table('servers')->where('id', $value)->first();
-                    if (!$server) {
-                        $fail("The selected server ID ($value) is invalid.");
-                        return;
-                    }
-                }
-            ],
 
             'config_file' => ['required', 'file',  function ($attribute, $value, $fail) {
                     if (!preg_match('/\.(config|conf|cfg)$/i', $value->getClientOriginalName())) {
@@ -53,8 +27,6 @@ class CreateModulesRequest extends FormRequest
                     }
                 },
             ],
-            'username' => ['required', 'string'],
-            'password' => ['required', 'string'],
 
             'path_config' => [
                 'required',

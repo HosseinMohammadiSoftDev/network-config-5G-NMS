@@ -13,19 +13,7 @@ class UndoToInitialConfigModulesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'module_id' => ['required', 'integer', 'exists:modules,id'],
-
-            'server_id' => ['required', 'integer', 'exists:servers,id',  function ($attribute, $value, $fail) {
-                $server = DB::table('servers')->where('id', $value)->first();
-                    if (!$server) {
-                        $fail("The selected server ID ($value) is invalid.");
-                        return;
-                    }
-                }
-            ],
-
-            'username' => ['required', 'string'],
-            'password' => ['required', 'string'],
+            'module_id' => ['required', 'integer', 'exists:modules,id']
         ];
     }
 

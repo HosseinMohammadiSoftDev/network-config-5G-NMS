@@ -13,19 +13,7 @@ class UndoConfigModulesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'module_id' => ['required', 'exists:modules,id', 'integer'],
-
-            'server_id' => ['required', 'exists:servers,id', 'integer',  function ($attribute, $value, $fail) {
-                $server = DB::table('servers')->where('id', $value)->first();
-                    if (!$server) {
-                        $fail("The selected server ID ($value) is invalid.");
-                        return;
-                    }
-                }
-            ],
-
-            'username' => ['required', 'string'],
-            'password' => ['required', 'string'],
+            'module_id' => ['required', 'exists:modules,id', 'integer']
         ];
     }
 
