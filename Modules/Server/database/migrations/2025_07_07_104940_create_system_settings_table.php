@@ -11,12 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('system_setting', function (Blueprint $table) {
+        Schema::create('system_settings', function (Blueprint $table) {
             $table->id();
 
-            $table->string('nms_server_ip');
+            $table->string('nms_server_ip')->nullable();
             $table->boolean('is_connected')->default(false)
-                ->comment('save status connection to server nms.');
+                ->comment('save status connection to server nms.')
+                ->nullable();
+
+            $table->timestamp('latest_sync_data')->nullable();
 
             $table->timestamps();
         });
@@ -27,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('system_setting');
+        Schema::dropIfExists('system_settings');
     }
 };
