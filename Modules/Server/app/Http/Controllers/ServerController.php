@@ -190,20 +190,7 @@ class ServerController extends ApiController
         return $this->respondSuccess('The server was successfully deleted', $server);
     } catch (Exception $e) {
         DB::rollBack();
-
-            activity('exption-delete-all-module-server')
-            ->causedBy(Auth::user())
-            ->performedOn($server)
-            ->event('delete')
-            ->withProperties([
-                'type-log' => 'server',
-                'route' => request()->fullUrl(),
-                'method' => 'deleteServer',
-                'server' => $server,
-                'server' => $server?->id,
-                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                'user_role' =>Auth::user()->roles()->pluck('name')->first(),            ])
-            ->log('An issue occurred while deleting all server modules');
+            return response()->json(['success' => false, 'msg' => 'An issue occurred while deleting all server modules'],422);
         }
     }
 
@@ -289,7 +276,6 @@ class ServerController extends ApiController
 
     public function testConnection (TestConnectionRequest $request)
     {
-
         $creadtional = $request->validated();
         $server = Server::find($creadtional['server_id']);
 
@@ -327,7 +313,7 @@ class ServerController extends ApiController
             return response()->json(['msg'=> 'connect successful.'], 200);
 
         } catch (Exception $e) {
-            return response()->json(['msg' => 'The connection to the server failed:' . $e->getMessage()], 500);
+            throw $e;
         }
     }
 }
