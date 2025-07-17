@@ -147,39 +147,16 @@ class ServerController extends ApiController
 
 
 
-    public function testConnection (TestConnectionRequest $request)
+    public function testConnection ()
     {
-        $creadtional = $request->validated();
-        $server = Server::find($creadtional['server_id']);
-
-                // is stop server
-        if ($server['is_down'] == Server::OFF)
-            throw ValidationException::withMessages(['server' => 'this off server']);
-
-
             try {
-
-                 $sshHelper = new sshHelper($server, $creadtional['username'], $creadtional['password']);
-                 $sshHelper->testConnection();
-
-//                 update status connection nms server to online
-                SystemSetting::first()
-                    ->update(['is_connected' => true]);
+                $connection = @fsockopen(env('NMS_UNIQUE_IP'), 22, $errno, $errstr, 3);
+                    if (! $connection)
+                        return response()->json(['success' => false, 'msg' => 'Connection Failed: '. $errstr], 422);
 
 
-            activity('test-connection')
-            ->causedBy(null)
-            ->event('test-connection')
-            ->withProperties([
-                'type-log' => 'server',
-                'route' => request()->fullUrl(),
-                'method' => 'showConfigModule',
-                'server' => $server,
-                'server_id' => $server?->id
-            ])
-            ->log('The connection to the server was successful');
-
-            return response()->json(['success' => true, 'msg'=> 'connect successful.'], 200);
+                fclose($connection);
+                    return response()->json(['success' => true, 'msg' => 'connection successfuly']);
 
         } catch (Exception $e) {
                 throw ValidationException::withMessages(['server_conenction' => 'The connection to the server failed:' . $e->getMessage()]);

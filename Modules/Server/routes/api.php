@@ -28,7 +28,7 @@ Route::fallback(function(){
                     // server
 Route::get('get-my-server-data', [ServerController::class, 'getMyServerData']);
 Route::put('edit-server', [ServerController::class, 'editServer']);
-Route::post('test-connection', [ServerController::class, 'testConnection']);
+Route::get('test-connection', [ServerController::class, 'testConnection']);
 
                     // moduled
 Route::get('show-config-module/{ModuleID}', [ModuleController::class, 'showConfigModule']);
@@ -60,6 +60,12 @@ Route::get('get-system-setting', [SystemSettingController::class, 'getSystemSett
 Route::post('nms-server-data', [SystemSettingController::class, 'nmsServerData']);
 
 
-//      sync data
-//    get and set to sqlite as server RRU
+//      sync data (send data to RRU)
+Route::get('get-data-modules', [SyncServerDataController::class, 'getDataModules']);
+Route::get('get-data-modules-name', [SyncServerDataController::class, 'getDataModulesNameBBU']);
+Route::get('get-data-module-changed-bbu', [SyncServerDataController::class, 'getDataModuleChangedBBU']);
+Route::get('exclude-module-changes-bbu', [SyncServerDataController::class, 'excludeModuleChangesBBU']);
+
+
+//    get and set to sqlite as server RRU (get data as RRU)
 Route::get('sync-data', [SyncServerDataController::class, 'syncData']);
