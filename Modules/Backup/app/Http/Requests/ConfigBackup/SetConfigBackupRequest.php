@@ -12,8 +12,9 @@ class SetConfigBackupRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'password' => ['required', 'string'],
             'destination_path' => ['required', 'string'],
-            'run_backup_daily' => ['required', 'integer', 'min:1', 'max:30'],
+            'run_backup_daily' => ['required', 'numeric', 'min:1', 'max:30'],
         ];
     }
 

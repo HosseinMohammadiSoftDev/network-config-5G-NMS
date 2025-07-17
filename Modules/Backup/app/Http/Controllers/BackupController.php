@@ -38,11 +38,13 @@ class BackupController extends Controller
                 : $backupConfig->update($credentials);
 
 //                    set cron job
-                CronTabService::handel($credentials['run_backup_daily']);
+            CronTabService::handel($credentials['run_backup_daily'], $credentials['password']);
 
             DB::commit();
-                return response()->json(['success' => true, 'msg' => 'set config backup successFully', 'data' => $backupConfig], 200);
+            return response()->json(['success' => true, 'msg' => 'set config backup successFully', 'data' => $backupConfig], 200);
 
+        } catch (\RuntimeException $e) {
+            throw $e;
         } catch (\Exception $e) {
             DB::rollback();
                 return response()->json(['success' => false, 'msg' => $e->getMessage()], 500);
