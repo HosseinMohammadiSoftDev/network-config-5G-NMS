@@ -378,40 +378,46 @@ class ModuleController extends ApiController
         $validated = $request->validated();
         $module = Module::find($validated['module_id']);
 
-        $serverModule =  $module->servers()->get();
-        if (!$serverModule) {
+        try {
+
+            $serverModule = $module->servers()->get();
+            if (!$serverModule) {
+                $module->delete();
+                return response()->json(['msg' => 'Module Deleted', 'module' => $module]);
+            }
+
+
+            foreach ($serverModule as $server)
+                $this->chackPermissionModule($server);
+
+
             $module->delete();
+
+
+            activity('create-module')
+                ->causedBy(Auth::user())
+                ->event('create-module')
+                ->withProperties([
+                    'type-log' => 'server',
+                    'route' => request()->fullUrl(),
+                    'user' => Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                    'user_role' => Auth::user()->roles()->pluck('name')->first(),
+                    'method' => 'createModule',
+                    'module' => [
+                        'name' => $module['name'],
+                        'type' => $module['type'],
+                        'server_id' => $serverModule,
+                    ],
+                ])
+                ->log('A new module has been created');
+
+                DB::commit();
             return response()->json(['msg' => 'Module Deleted', 'module' => $module]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+                return response()->json(['success' => false, 'msg' => $e->getMessage()], 422);
         }
-
-
-        foreach ($serverModule as $server)
-            $this->chackPermissionModule($server);
-
-
-        $module->delete();
-
-
-        activity('create-module')
-        ->causedBy(Auth::user())
-        ->event('create-module')
-        ->withProperties([
-            'type-log' => 'server',
-            'route' => request()->fullUrl(),
-            'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-            'user_role' =>Auth::user()->roles()->pluck('name')->first(),
-            'method' => 'createModule',
-            'module' => [
-                'name' => $module['name'],
-                'type' => $module['type'],
-                'server_id' => $serverModule,
-            ],
-            'server' => $server
-        ])
-        ->log('A new module has been created');
-
-
-        return response()->json(['msg' => 'Module Deleted', 'module' => $module]);
     }
 
 
