@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\ValidationException;
+use Modules\User\Models\User;
 
 class EditMemberRequest extends FormRequest
 {
@@ -88,15 +89,18 @@ class EditMemberRequest extends FormRequest
         if ($validator->errors()->any())
             return;
 
+            $user = User::find($this->input('user_id'));
             $server = Server::find($this->input('server_id'));
-        $validator->after(function ($validator) use ($server) {
+        $validator->after(function ($validator) use ($server, $user) {
 
             $permissionNames = $this->input('permission_name') ?? null;
 
+
+        if (!$user->hasRole('admin')) {
             $this->input('server_id')
                 ? $this->validationServerPermission($server, $permissionNames)
                 : $this->validationUserPermission($permissionNames);
-
+        }
 
             $this->merge(['permissionNames' => $permissionNames]);
 
