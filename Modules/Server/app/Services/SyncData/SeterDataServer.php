@@ -13,11 +13,41 @@ class SeterDataServer
     {}
 
 
+//    exclude module
+    public function excludeModuleChangesBBU () : void
+    {
+        Module::where('is_updated', true)->update(['is_updated' => false]);
+    }
+
+
+//      defrent additional bbu module deleted
+    private function deletedBBUModules(array $additionalBBuModuleName) : void
+    {
+        Module::whereIn('name', $additionalBBuModuleName)->delete();
+    }
+    public function defModule ($RRUModule) : void
+    {
+        $filteredModules = collect($RRUModule)
+            ->pluck('modules')
+            ->flatten(1)
+            ->map(function ($module) {
+                return $module['name'];
+            })
+            ->all();
+
+        $BBUModules = Module::pluck('name')->toArray();
+
+        $deletedModuleAsBBU = array_diff($BBUModules, $filteredModules);
+
+        $this->deletedBBUModules($deletedModuleAsBBU);
+    }
+
+
 //    save data to sqlite bbu
     private function saveServerData ($server) : void
     {
         Server::updateOrCreate(
-            ['id' => $server['id']],
+            ['ip' => $server['ip']],
             ['name' =>  $server['name'],
             'ip'   =>  $server['ip'],
             'is_down' =>  $server['is_down']]
@@ -28,6 +58,8 @@ class SeterDataServer
         foreach ($modules[0]['modules'] as $module) {
 
              Module::updateOrCreate([
+                 'name' => $module['name']
+             ],[
                 'name' => $module['name'],
                 'type' => $module['type'],
                 'extension' => $module['extension'],
@@ -46,6 +78,8 @@ class SeterDataServer
         foreach ($modules as $module) {
 
             Module::updateOrCreate([
+                'name' => $module['name'],
+            ],[
                 'name' => $module['name'],
                 'type' => $module['type'],
                 'extension' => $module['extension'],

@@ -115,6 +115,7 @@ class ModuleController extends ApiController
                 'module_id' => $module->id,
                 'module_name' => $module->name,
                 'module_type' => $module->type,
+                'module_path_config' => $module->path_config,
             ];
         });
 
@@ -386,7 +387,8 @@ class ModuleController extends ApiController
         $module->update([
             'current_config_json' => json_encode($moduleConfig, JSON_PRETTY_PRINT),
             'previous_config_json' => $moduleCurrentConfig,
-            'previous_config_conf' => $confContent
+            'previous_config_conf' => $confContent,
+            'is_updated' => true
         ]);
 
 
@@ -450,6 +452,7 @@ class ModuleController extends ApiController
                 'name' => $validated['name'] ?? $module->name,
                 'type' => $types,
                 'path_config' => $validated['path_config'] ?? $module->path_config,
+                'is_updated' => true
             ]);
 
 
@@ -547,6 +550,7 @@ class ModuleController extends ApiController
 
 //               save to datebase format json
             $module['current_config_json'] = $module['previous_config_json'];
+            $module['is_updated'] = true;
                 $module->save();
 
 
@@ -591,6 +595,7 @@ class ModuleController extends ApiController
 
             // save to datebase format json
             $module['current_config_json'] = $module['initial_config_json'];
+            $module['is_updated'] = true;
                 $module->save();
 
 
