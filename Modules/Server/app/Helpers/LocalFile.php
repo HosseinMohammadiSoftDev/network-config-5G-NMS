@@ -57,7 +57,21 @@ class LocalFile
 
         self::logActivity('put-file', 'putFile', $module);
 
+
+        if (!File::exists(self::pathFile($module)))
+            throw ValidationException::withMessages(['filePath' => 'file not found to in path file']);
+
         return File::put(self::pathFile($module), $fileContent);
+    }
+    public static function moveFile (Module $module, Module $oldModule)
+    {
+        $oldMoudlePath = $oldModule['path_config'] . $oldModule['name'] . '.' . $oldModule['extension'];
+        $newModulePath = $oldModule['path_config'] . $module['name'] . '.' . $module['extension'];
+
+        self::logActivity('move-config-file', 'moveFile', $module);
+
+        if (File::exists($oldMoudlePath))
+            File::move($oldMoudlePath, $newModulePath);
     }
     public static function deleteFile (Module $module)
     {
