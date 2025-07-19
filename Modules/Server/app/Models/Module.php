@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-// use Modules\Server\Database\Factories\ModuleFactory;
 
 class Module extends Model
 {
@@ -34,20 +33,6 @@ class Module extends Model
         'path_config',
         'path_run_config',
     ];
-
-//     public function getActivitylogOptions(): LogOptions
-//     {
-//         return LogOptions::defaults()
-//         ->logOnlyDirty()
-//         ->useLogName('module')
-//         ->logOnly(['id', 'name', 'type', 'server_id', 'created_at', 'updated_at']);
-//     }
-
-        // oen to mony
-    // public function server()
-    // {
-    //     return $this->belongsTo(Server::class);
-    // }
 
     public function servers()
     {

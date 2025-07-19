@@ -27,6 +27,7 @@ use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
 use Modules\Server\Http\Requests\Module\ExpertModuleFileIsServerRequset;
 use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
 use Modules\Server\Services\Paginate\PaginationService;
+use Modules\Server\Services\SyncData\AutoSyncData;
 use Modules\Server\Transformers\ShowAllModulesResource;
 use PhpParser\Node\Expr\AssignOp\Mod;
 use Spatie\Permission\Commands\Show;
@@ -162,7 +163,6 @@ class ModuleController extends ApiController
                 'type' => $creadtional['type'],
                 'extension' => $request->file('config_file')->getClientOriginalExtension(),
                 'path_config' => $creadtional['path_config'],
-                'is_updated' => true,
 
 //                config module
                 'current_config_json' => $jsonContent,
@@ -174,6 +174,7 @@ class ModuleController extends ApiController
 
             LocalFile::putFile($module, $request->file('config_file')->getContent());
 
+            AutoSyncData::handelChangedModuleThisBBU($module, 'create');
 
             activity('create-module')
                 ->causedBy(null)
@@ -217,10 +218,15 @@ class ModuleController extends ApiController
             $validated = $request->validated();
             $module = Module::find($validated['module_id']);
 
+
+//              sync data config module (send to RRU)
+            AutoSyncData::handelChangedModuleThisBBU($module, 'delete');
+
+//              file delete to system
+            LocalFile::deleteFile($module);
+
             $module->delete();
 
-            //        file delete to system
-            LocalFile::deleteFile($module);
 
             activity('delete-module')
                 ->causedBy(null)
@@ -328,6 +334,9 @@ class ModuleController extends ApiController
 
 //                send conf file content to server
             LocalFile::putFile($module, $newConfigContent);
+
+//                sync data config module (send to RRU)
+            AutoSyncData::handelChangedModuleThisBBU($module, 'update-config');
 
 
             $this->logModuleUpdate($module, $data);
@@ -438,9 +447,12 @@ class ModuleController extends ApiController
                 if (!$module)
                     throw ValidationException::withMessages(['module' => 'The module with the provided ID was not found on the server you specified.']);
 
+
+
+            $oldModuleData = clone $module;
             $configFile = $request->file('config_file');
 
-                // update file
+            // update file
             if ($configFile) {
                 $jsonConfig = $this->uploadModuleFile($configFile);
                 $this->updateConfigForDB($module, $jsonConfig, $request);
@@ -451,9 +463,15 @@ class ModuleController extends ApiController
             $module->update([
                 'name' => $validated['name'] ?? $module->name,
                 'type' => $types,
-                'path_config' => $validated['path_config'] ?? $module->path_config,
-                'is_updated' => true
+                'path_config' => $validated['path_config'] ?? $module->path_config
             ]);
+
+
+//                move file config to new Path
+            LocalFile::moveFile($module, $oldModuleData);
+
+//                sync data config module (send to RRU)
+            AutoSyncData::handelChangedModuleThisBBU($module,'update', $oldModuleData);
 
 
             DB::commit();
@@ -544,14 +562,18 @@ class ModuleController extends ApiController
 
 
         try {
+//               save to datebase format json
+            $module['current_config_json'] = $module['previous_config_json'];
+                $module->save();
+
+
+
+//              sync data config module (send to RRU)
+            AutoSyncData::handelChangedModuleThisBBU($module, 'update-config');
+
 //               save file config to system
             LocalFile::putFile($module, $module['previous_config_conf']);
 
-
-//               save to datebase format json
-            $module['current_config_json'] = $module['previous_config_json'];
-            $module['is_updated'] = true;
-                $module->save();
 
 
             activity('undo-config-module')
@@ -589,14 +611,20 @@ class ModuleController extends ApiController
                 throw ValidationException::withMessages(['module' => 'module is not found']);
 
         try {
+
+            // save to datebase format json
+            $module['previous_config_json'] = $module['current_config_json'];
+            $module['current_config_json'] = $module['initial_config_json'];
+                $module->save();
+
+
+
+//              sync data config module (send to RRU)
+            AutoSyncData::handelChangedModuleThisBBU($module, 'update-config');
+
 //               save file config to system
             LocalFile::putFile($module, $module['initial_config_conf']);
 
-
-            // save to datebase format json
-            $module['current_config_json'] = $module['initial_config_json'];
-            $module['is_updated'] = true;
-                $module->save();
 
 
             activity('undo-config-module')
