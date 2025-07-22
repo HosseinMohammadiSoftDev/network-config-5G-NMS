@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
+            'sync-module' => \Modules\Server\Http\Middleware\SyncModuleMiddelware::class
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -24,35 +24,35 @@ Route::fallback(function(){
     return response()->json(['msg' => 'The address has been entered incorrectly.']);
 });
 
+Route::middleware(['sync-module'])->group(function () {
 
-                    // server
-Route::get('get-my-server-data', [ServerController::class, 'getMyServerData']);
-Route::put('edit-server', [ServerController::class, 'editServer']);
-Route::get('test-connection', [ServerController::class, 'testConnection']);
+                        // server
+    Route::get('get-my-server-data', [ServerController::class, 'getMyServerData']);
+    Route::get('test-connection', [ServerController::class, 'testConnection']);
 
-                    // moduled
-Route::get('show-config-module/{ModuleID}', [ModuleController::class, 'showConfigModule']);
-Route::get('show-all-servies-and-modules', [ModuleController::class, 'showAllServiseAndModulesInServer']);
-Route::post('create-module', [ModuleController::class, 'createModule']);
-Route::post('update-config-module', [ModuleController::class, 'updateConfigModule']);
-Route::delete('delete-module', [ModuleController::class, 'deleteModule']);
-Route::delete('delete-config-module', [ModuleController::class, 'deleteConfigModule']);
-Route::get('show-all-modules', [ModuleController::class, 'showAllModules']);
-Route::post('edit-module', [ModuleController::class, 'editModule']);
+                        // moduled
+    Route::get('show-config-module/{ModuleID}', [ModuleController::class, 'showConfigModule']);
+    Route::get('show-all-servies-and-modules', [ModuleController::class, 'showAllServiseAndModulesInServer']);
+    Route::post('create-module', [ModuleController::class, 'createModule']);
+    Route::post('update-config-module', [ModuleController::class, 'updateConfigModule']);
+    Route::delete('delete-module', [ModuleController::class, 'deleteModule']);
+    Route::delete('delete-config-module', [ModuleController::class, 'deleteConfigModule']);
+    Route::get('show-all-modules', [ModuleController::class, 'showAllModules']);
+    Route::post('edit-module', [ModuleController::class, 'editModule']);
 
-Route::post('run-service-lte', [CommandController::class, 'runServiceLTE']);
-Route::post('run-service-gsm', [CommandController::class, 'runServiceGSM']);
+    Route::post('run-service-lte', [CommandController::class, 'runServiceLTE']);
+    Route::post('run-service-gsm', [CommandController::class, 'runServiceGSM']);
 
-Route::post('undo-module-config', [ModuleController::class, 'undoConfigModule']);
-Route::post('undo-to-initial-config-modules', [ModuleController::class, 'undoToInitialConfigModule']);
+    Route::post('undo-module-config', [ModuleController::class, 'undoConfigModule']);
+    Route::post('undo-to-initial-config-modules', [ModuleController::class, 'undoToInitialConfigModule']);
 
-Route::post('export-module-file', [ModuleController::class, 'expertModuleFileIsServer']);
+    Route::post('export-module-file', [ModuleController::class, 'expertModuleFileIsServer']);
 
-        // power on | off server
-Route::post('server-stop', [ServerController::class, 'serverStop']);
-Route::post('server-start', [ServerController::class, 'ServerStart']);
-Route::post('server-status', [ServerController::class, 'serverStatus']);
-
+            // power on | off server
+    Route::post('server-stop', [ServerController::class, 'serverStop']);
+    Route::post('server-start', [ServerController::class, 'ServerStart']);
+    Route::post('server-status', [ServerController::class, 'serverStatus']);
+});
 
 
 //    systemSetting route
@@ -60,12 +60,14 @@ Route::get('get-system-setting', [SystemSettingController::class, 'getSystemSett
 Route::post('nms-server-data', [SystemSettingController::class, 'nmsServerData']);
 
 
-//      sync data (send data to RRU)
-Route::get('get-data-modules', [SyncServerDataController::class, 'getDataModules']);
-Route::get('get-data-modules-name', [SyncServerDataController::class, 'getDataModulesNameBBU']);
-Route::get('get-data-module-changed-bbu', [SyncServerDataController::class, 'getDataModuleChangedBBU']);
-Route::get('exclude-module-changes-bbu', [SyncServerDataController::class, 'excludeModuleChangesBBU']);
-
-
-//    get and set to sqlite as server RRU (get data as RRU)
+//      sync data
+//    get and set to sqlite as server RRU
 Route::get('sync-data', [SyncServerDataController::class, 'syncData']);
+
+
+
+// get data as RRU
+Route::prefix('auto-sync/')->group(function () {
+    Route::post('receive-changed-module-rru', [SyncServerDataController::class, 'receiveChangedModuleRRU']);
+    Route::get('send-module-change-to-rru', [SyncServerDataController::class, 'sendModuleChangeToRRU']);
+});
