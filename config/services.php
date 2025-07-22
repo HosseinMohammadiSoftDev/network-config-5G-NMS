@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'nms' => [
+        'app_domain' =>  env('NMS_APP_DOMAIN'),
+        'ip' =>  env('NMS_IP'),
+    ]
 ];

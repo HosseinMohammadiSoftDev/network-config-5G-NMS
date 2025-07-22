@@ -19,7 +19,7 @@ return new class extends Migration
                 ->comment('save status connection to server nms.')
                 ->nullable();
 
-            $table->timestamp('latest_sync_data')->nullable();
+            $table->timestamp('last_connection_nms')->nullable();
 
             $table->timestamps();
         });

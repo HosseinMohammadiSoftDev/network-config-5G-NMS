@@ -2,23 +2,42 @@
 
 namespace Modules\Server\Services\SyncData;
 
+use Carbon\Carbon;
 use http\Exception\RuntimeException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
 use Modules\Server\Models\Module;
+use Modules\Server\Models\SystemSetting;
 
 class AutoSyncData
 {
-    public function __construct(){}
+    private static $appDomainNMS;
+    private static $ipNMS;
+
+    private static function init ()
+    {
+        $systemSetting = SystemSetting::first()
+            ? SystemSetting::first()
+            : SystemSetting::create([
+                'nms_server_ip' => '192.168.100.18',
+                'is_connected' => true,
+                'last_connection_nms' => Carbon::now()->subMinutes(15)
+            ]);
+
+        self::$appDomainNMS = 'http://' . $systemSetting['nms_server_ip'] . ':8000/api' ?? config('nms.app_domain');
+        self::$ipNMS = $systemSetting['nms_server_ip'] ?? config('nms.ip');
+    }
 
 //      auto sync data
 //          send change module to rru
     private static function HTTPService (mixed $module, string $action, ?Module $oldModuleData = null)
     {
+        self::init();
+
         $response = Http::withHeaders([
             'Accept' => 'application/json'
-        ])->post(env('NMS_APP_DOMAIN') . 'auto-sync/receive-changed-module-bbu', [
+        ])->post(self::$appDomainNMS . 'auto-sync/receive-changed-module-bbu', [
             'module' => $module ?? null,
             'action' => $action,
             'old_module_data' => $oldModuleData ?? null

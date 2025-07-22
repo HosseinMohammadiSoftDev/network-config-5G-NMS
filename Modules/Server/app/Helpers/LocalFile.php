@@ -57,10 +57,6 @@ class LocalFile
 
         self::logActivity('put-file', 'putFile', $module);
 
-
-        if (!File::exists(self::pathFile($module)))
-            throw ValidationException::withMessages(['filePath' => 'file not found to in path file']);
-
         return File::put(self::pathFile($module), $fileContent);
     }
     public static function moveFile (Module $module, Module $oldModule)

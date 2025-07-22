@@ -22,7 +22,7 @@ class SyncModuleMiddelware
     {
         $systemSetting = SystemSetting::first()
             ? SystemSetting::first()
-            : SystemSetting::create(['is_connected' => true, 'last_connection_nms' => Carbon::now()->subMinutes(15)]); //defalte
+            : SystemSetting::create(['is_connected' => true, 'last_connection_nms' => Carbon::now()->subMinutes(15)->toIso8601String()]); //defalte
 
 
 //        is not connected
@@ -30,7 +30,7 @@ class SyncModuleMiddelware
             return $next($request);
 
 
-        if (Carbon::createFromTimestamp($systemSetting['last_connection_nms'])->lt(Carbon::now()->subMinutes(15))) {
+        if (Carbon::parse($systemSetting['last_connection_nms'])->lt(Carbon::now()->subMinutes(15))) {
             $this->seterDataServer->excludeModuleChangesBBU();
             AutoSyncData::handelChangedModuleThisBBU(Module::all(), 'retunr-connection-server');
         }
