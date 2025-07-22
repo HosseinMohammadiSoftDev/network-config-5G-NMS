@@ -51,12 +51,14 @@ class SshHelper
     public function runCommand($command)
     {
         try {
+            $this->ssh->setTimeout(1);
+
             $this->ssh->write("sudo -S su\n");
             $this->ssh->write("{$this->password}\n");
-            $this->ssh->read('[prompt]');
+            $this->ssh->read();
 
             $this->ssh->write("$command\n");
-            $output = $this->ssh->read('[prompt]');
+            $output = $this->ssh->read();
 
             $this->logActivity('run-command', 'runCommand');
 
