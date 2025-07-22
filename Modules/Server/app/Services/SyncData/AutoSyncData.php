@@ -1,0 +1,108 @@
+<?php
+
+namespace Modules\Server\Services\SyncData;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Validation\ValidationException;
+use Modules\Server\Models\Module;
+use Modules\Server\Models\Server;
+use PHPUnit\Event\RuntimeException;
+
+class AutoSyncData
+{
+    public function __construct()
+    {}
+
+
+//      auto sync data
+//          recive change module as bbu
+    public static function handelChangeModuleBBU(array $module, string $action, ?array $oldModuleData = null)
+    {
+        $seterDataService = new SeterDataService();
+        $server = $seterDataService->getDataServer();
+
+        switch ($action) {
+            case 'create' :
+                return $seterDataService->createModule($server, $module);
+                    break;
+
+            case 'update' :
+               $seterDataService->updateModule($server, $module, $oldModuleData);
+                    break;
+
+            case 'update-config' :
+                $seterDataService->updateConfigModule($server, $module);
+                    break;
+
+            case 'delete' :
+                $seterDataService->deleteModule($module);
+                    break;
+
+            case 'retunr-connection-server' :
+                return $seterDataService->returnConnectionServer($server, $module);
+                    break;
+
+            default :
+                throw new RuntimeException('undifinde action to save change module bbu');
+        }
+    }
+
+
+
+
+
+//          send change module as bbu
+    private static function HTTPService (Server $server, $module, string $action, Module $oldModuleData = null)
+    {
+        $response = Http::withHeaders([
+            'Accept' => 'application/json'
+        ])->post('http://' . $server['ip'] . ':8000/api/' . 'auto-sync/receive-changed-module-rru', [
+            'module' => $module,
+            'action' => $action,
+            'old_module_data' => $oldModuleData ?? null
+        ]);
+
+//dd($response->json());
+        return $response->json();
+    }
+    private static function isConnectedRRU (Server $server) : bool
+    {
+        $connection = @fsockopen($server['ip'], 22, $errno, $errstr, 3);
+        if (! $connection)
+            return false;
+
+
+        fclose($connection);
+        return true;
+    }
+    public static function sendModuleChangeToBBU (Server $server, $module, string $action, Module $oldModuleData = null) : void
+    {
+        if (! self::isConnectedRRU($server)) {
+            $module->update(['is_updated' => true]);
+            return;  // break as mothod
+        }
+
+
+        switch ($action) {
+            case 'create' :
+                self::HTTPService($server, $module, 'create');
+                    break;
+
+            case 'update' :
+                self::HTTPService($server, $module, 'update', $oldModuleData);
+                    break;
+
+            case 'update-config' :
+                self::HTTPService($server, $module, 'update-config', $oldModuleData);
+                    break;
+
+            case 'delete' :
+                self::HTTPService($server, $module, 'delete');
+                    break;
+
+            default :
+                throw new \RuntimeException('undifinde action auto sync');
+        }
+    }
+}
