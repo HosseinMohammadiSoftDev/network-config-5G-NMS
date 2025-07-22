@@ -171,7 +171,6 @@ class ModuleController extends ApiController
                 'previous_config_conf' => $request->file('config_file')->getContent(),
             ]);
 
-
             LocalFile::putFile($module, $request->file('config_file')->getContent());
 
             AutoSyncData::handelChangedModuleThisBBU($module, 'create');

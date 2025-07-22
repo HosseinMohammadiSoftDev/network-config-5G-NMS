@@ -150,13 +150,14 @@ class ServerController extends ApiController
     public function testConnection ()
     {
             try {
-                $connection = @fsockopen(env('NMS_UNIQUE_IP'), 22, $errno, $errstr, 3);
-                    if (! $connection)
-                        return response()->json(['success' => false, 'msg' => 'Connection Failed: '. $errstr], 422);
 
+                $ip = env('NMS_UNIQUE_IP');
+                exec("ping -c 1 -W 1 $ip", $output, $result);
 
-                fclose($connection);
+                if ($result === 0)
                     return response()->json(['success' => true, 'msg' => 'connection successfuly']);
+
+                return response()->json(['success' => false, 'msg' => 'Connection Failed: '. $result], 422);
 
         } catch (Exception $e) {
                 throw ValidationException::withMessages(['server_conenction' => 'The connection to the server failed:' . $e->getMessage()]);

@@ -16,7 +16,7 @@ class SeterDataServer
 //    exclude module
     public function excludeModuleChangesBBU () : void
     {
-        Module::where('is_updated', true)->update(['is_updated' => false]);
+        Module::where('is_updated', false)->update(['is_updated' => true]);
     }
 
 
@@ -100,5 +100,69 @@ class SeterDataServer
 
 //        only save module changed
         $this->saveModuleChanged($ModuleChanged);
+    }
+
+
+
+
+
+
+
+
+
+//      save auto sync data
+    public function createModule (array $module)
+    {
+        Module::updateOrCreate([
+            'name' => $module[0]['name']
+        ],[
+            'name' => $module[0]['name'],
+            'type' => $module[0]['type'],
+            'extension' => $module[0]['extension'],
+            'path_config' => $module[0]['path_config'],
+
+//                config content
+            'current_config_json' => $module[0]['servers'][0]['pivot']['current_config_json'],
+            'initial_config_json' => $module[0]['servers'][0]['pivot']['initial_config_json'],
+            'initial_config_conf' => $module[0]['servers'][0]['pivot']['initial_config_conf'],
+            'previous_config_conf' => $module[0]['servers'][0]['pivot']['previous_config_conf'],
+        ]);
+    }
+    public function updateModule (array $module, array $oldModuleData)
+    {
+        Module::where('name', $oldModuleData['name'])
+            ->update([
+//                update module data
+                'name' => $module[0]['name'],
+                'type' => $module[0]['type'],
+                'extension' => $module[0]['extension'],
+                'path_config' => $module[0]['path_config'],
+
+//                  update config module
+                'initial_config_json' => $module[0]['servers'][0]['pivot']['initial_config_json'],
+                'previous_config_json' => $module[0]['servers'][0]['pivot']['previous_config_json'] ?? null,
+                'current_config_json' => $module[0]['servers'][0]['pivot']['current_config_json'],
+                'initial_config_conf' => $module[0]['servers'][0]['pivot']['initial_config_conf'],
+                'previous_config_conf' => $module[0]['servers'][0]['pivot']['previous_config_conf'],
+            ]);
+
+    }
+    public function updateConfigModule (array $module)
+    {
+        Module::where('name', $module[0]['name'])
+            ->update([
+
+//                update config module
+                'initial_config_json' => $module[0]['servers'][0]['pivot']['initial_config_json'],
+                'previous_config_json' => $module[0]['servers'][0]['pivot']['previous_config_json'] ?? null,
+                'current_config_json' => $module[0]['servers'][0]['pivot']['current_config_json'],
+                'initial_config_conf' => $module[0]['servers'][0]['pivot']['initial_config_conf'],
+                'previous_config_conf' => $module[0]['servers'][0]['pivot']['previous_config_conf']
+            ]);
+    }
+    public function deleteModule (array $module)
+    {
+        Module::where('name', $module[0]['name'])
+            ->delete();
     }
 }

@@ -14,10 +14,10 @@ class SystemSetting extends Model
     protected $fillable = [
         'nms_server_ip',
         'is_connected',
-        'latest_sync_data',
+        'last_connection_nms'
     ];
 
     protected $casts = [
-        'latest_sync_data' => 'timestamp',
+        'last_connection_nms' => 'timestamp',
     ];
 }
