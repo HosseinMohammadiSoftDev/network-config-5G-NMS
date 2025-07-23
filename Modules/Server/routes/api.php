@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Server\Http\Controllers\ModuleController;
 use Modules\Server\Http\Controllers\ServerController;
 use Modules\Server\Http\Controllers\ServiceController;
+use Modules\Server\Http\Controllers\CommandController;
 
 /*
  *--------------------------------------------------------------------------
@@ -40,11 +41,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::middleware(['permission:module/read|role:admin|expert'])->get('show-all-modules', [ModuleController::class, 'showAllModules']);
     Route::middleware(['permission:module/delete|role:admin|expert'])->post('edit-module', [ModuleController::class, 'editModule']);
 
-    Route::middleware(['permission:module/update|role:admin|expert'])->post('restart-service-config', [ModuleController::class, 'restartServiceModule']);
-    Route::middleware(['permission:module/update|role:admin|expert'])->post('start-service-config', [ModuleController::class, 'startServiceModule']);
-    Route::middleware(['permission:module/update|role:admin|expert'])->post('stop-service-config', [ModuleController::class, 'stopServiceModule']);
-    Route::middleware(['permission:module/update|role:admin|expert'])->post('status-service-config', [ModuleController::class, 'statusServiceModule']);
-    Route::middleware(['role:admin|expert'])->post('ping-ssh', [ModuleController::class, 'PingServer']);
+//      command service
+    Route::middleware(['permission:module/update|role:admin|expert'])->post('restart-service-config', [CommandController::class, 'restartServiceModule']);
+    Route::middleware(['permission:module/update|role:admin|expert'])->post('start-service-config', [CommandController::class, 'startServiceModule']);
+    Route::middleware(['permission:module/update|role:admin|expert'])->post('stop-service-config', [CommandController::class, 'stopServiceModule']);
+    Route::middleware(['permission:module/update|role:admin|expert'])->post('status-service-config', [CommandController::class, 'statusServiceModule']);
+    Route::middleware(['role:admin|expert'])->post('ping-ssh', [CommandController::class, 'PingServer']);
 
     Route::middleware(['permission:module/update|role:admin|expert'])->post('undo-module-config', [ModuleController::class, 'undoConfigModule']);
     Route::middleware(['permission:module/update|role:admin|expert'])->post('undo-to-initial-config-modules', [ModuleController::class, 'undoToInitialConfigModule']);
