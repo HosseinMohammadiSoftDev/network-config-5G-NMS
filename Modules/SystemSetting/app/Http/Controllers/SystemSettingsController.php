@@ -6,6 +6,7 @@ use App\Http\Controllers\Contract\ApiController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Modules\Server\Models\Server;
 use Modules\SystemSetting\Http\Requests\Capcha\SetReCaptchaDataRequest;
 use Modules\SystemSetting\Http\Requests\Capcha\SetStatusReCapchaRequest;
@@ -20,9 +21,7 @@ use Modules\SystemSetting\Models\SystemSettings;
 class SystemSettingsController extends ApiController
 {
     public function __construct()
-    {
-
-    }
+    {}
 
     public function getMotherboard ()
     {
@@ -51,30 +50,12 @@ class SystemSettingsController extends ApiController
             ]
         ], 200);
     }
-    public function showAllAddress()
-    {
-        return response()->json(SystemSettings::select(['elk_address', 'zabbix_address'])->get()->toArray());
-    }
     public function getStatus2FA ()
     {
         return response()->json(SystemSettings::select(['is_login_2FA'])->get()->toArray());
     }
 
 
-
-    public function addOrUpdateAddress(AddAddressRequest $request)
-    {
-        $creadtioanle = $request->validated();
-
-        $address = SystemSettings::first();
-
-            !$address
-                ? $address = SystemSettings::create($creadtioanle)
-                : $address->update($creadtioanle);
-
-
-        return response()->json(['msg' => 'save address successfuly', 'address' => $address], 200);
-    }
     public function set2FA (Set2FAReqest $request)
     {
         $creadtioanle = $request->validated();
@@ -101,7 +82,7 @@ class SystemSettingsController extends ApiController
 
 
 
-        // SMS setinge
+        // SMS settinge
     public function setLoginBySMS (SetLoginBySMSRequest $request)
     {
         $creadtioanle = $request->validated();

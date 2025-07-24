@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('system_settings', function (Blueprint $table) {
             $table->id();
 
-            $table->string('zabbix_address')->nullable();
-            $table->string('elk_address')->nullable();
+            $table->json('monitoring_attribute')->nullable();
 
             $table->boolean('is_login_2FA')->default(false);
 

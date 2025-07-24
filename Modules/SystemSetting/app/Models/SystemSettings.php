@@ -11,12 +11,15 @@ class SystemSettings extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'monitoring_attribute' => 'json'
+    ];
+
     /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        'elk_address',
-        'zabbix_address',
+        'monitoring_attribute',
         'is_login_2FA',
         'is_login_sms',
         'config_connection_sms',

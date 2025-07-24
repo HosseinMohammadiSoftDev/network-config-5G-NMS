@@ -5,6 +5,8 @@ use Modules\Server\Http\Controllers\CommandController;
 use Modules\SystemSetting\Http\Controllers\SystemSettingsController;
 use Modules\SystemSetting\Http\Controllers\TraceController;
 use Modules\SystemSetting\Http\Controllers\RouteController;
+use Modules\SystemSetting\Http\Controllers\MonitoringController;
+
 /*
  *--------------------------------------------------------------------------
  * API Routes
@@ -20,8 +22,9 @@ Route::get('get-status-reCapcha', [SystemSettingsController::class, 'getStatusRe
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
-    Route::middleware(['permission:monitoring|role:admin|expert'])->get('show-address', [SystemSettingsController::class, 'showAllAddress']);
-    Route::middleware(['permission:monitoring|role:admin|expert'])->post('add-address', [SystemSettingsController::class,'addOrUpdateAddress']);
+    Route::middleware(['permission:monitoring|role:admin|expert'])->get('show-monitoring-address', [MonitoringController::class, 'getAllMonitoringAddress']);
+    Route::middleware(['permission:monitoring|role:admin|expert'])->post('add-monitoring-address', [MonitoringController::class,'addMonitoringAddress']);
+    Route::middleware(['permission:monitoring|role:admin|expert'])->delete('delete-monitoring-address', [MonitoringController::class,'deleteMonitoringAddress']);
 
     Route::middleware(['role:admin'])->post('set-2FA', [SystemSettingsController::class, 'set2FA']);
     Route::withoutMiddleware(['auth:sanctum'])->get('get-2FA-status', [SystemSettingsController::class, 'getStatus2FA']);
