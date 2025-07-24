@@ -3,14 +3,10 @@
 namespace Modules\Server\Helpers;
 
 use Exception;
-use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\ValidationException;
 use phpseclib3\Net\SSH2;
 use InvalidArgumentException;
-use PHPUnit\Event\Code\Throwable;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
-use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class SshHelper
 {
@@ -22,7 +18,7 @@ class SshHelper
 
         if (!$this->ssh->login($username, $password)) {
             $this->logActivity('failed-connection-server', 'constructor');
-            throw new HttpResponseException(response()->json(['msg' => 'Your server login credentials are incorrect.'], 422));
+                throw ValidationException::withMessages(['server-login' => 'Your server login credentials are incorrect.']);
         }
     }
 
@@ -37,7 +33,8 @@ class SshHelper
                 'route' => request()->fullUrl(),
                 'method' => $method,
                 'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                'user_role' =>Auth::user()->roles()->pluck('name')->first(),                'host' => $this->server['ip'],
+                'user_role' =>Auth::user()->roles()->pluck('name')->first(),
+                'host' => $this->server['ip'],
                 'username' => $this->username,
                 'server' => $this->server
             ], $extra))

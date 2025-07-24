@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\Server\Http\Controllers\CommandController;
 use Modules\SystemSetting\Http\Controllers\SystemSettingsController;
 use Modules\SystemSetting\Http\Controllers\TraceController;
 use Modules\SystemSetting\Http\Controllers\RouteController;
@@ -48,6 +49,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('set-all-config-system', [SystemSettingsController::class, 'setAllConfigSystem']);
 
 
+//    show vm interface
+    Route::post('show-interface-vm', [CommandController::class, 'showInterfaceVm']);
 
 
 //        trace server

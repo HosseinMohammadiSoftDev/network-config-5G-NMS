@@ -3,19 +3,38 @@
 namespace Modules\Server\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Modules\Server\Helpers\SshHelper;
 use Modules\Server\Http\Requests\Module\restartServiceModuleRequest;
 use Modules\Server\Http\Requests\SshServer\SshServerRequest;
 use Modules\Server\Models\Module;
 use Modules\Server\Models\Server;
+use Modules\Server\services\FilterOutputCommandService;
+use Modules\SystemSetting\Http\Requests\ShowInterfaceVmRequest;
 
 class CommandController extends Controller
 {
     public function __construct()
     {}
+
+    public function showInterfaceVm (ShowInterfaceVmRequest $request)
+    {
+        $validate = $request->validated();
+
+        try {
+            $server = server::find($validate['server_id']);
+            $port = $request->input('port', 22);
+
+
+            $command = 'ip link show'; // command as systemctl
+
+            return $this->runCommandModuleToServer($validate, $command, $server,'showInterfaceVm', 'showInterfaceVm');
+
+        } catch (\Exception $e) {
+            throw ValidationException::withMessages(['warning' => $e->getMessage()]);
+        }
+    }
 
 
     // service module
@@ -24,9 +43,9 @@ class CommandController extends Controller
         $username = $validate['username'];
         $password = $validate['password'];
 
-        // is down server
+//           is down server
         if ($server['is_down'] == Server::OFF)
-            throw new HttpResponseException(response()->json(['msg' => 'this server off'], 422));
+            throw ValidationException::withMessages(['server', 'this server off']);
 
 
         try {
@@ -37,7 +56,7 @@ class CommandController extends Controller
 
             return response()->json(['message' => $output]);
 
-        } catch (HttpResponseException $e) {
+        } catch (ValidationException $e) {
             throw $e;
         } catch(\InvalidArgumentException $e) {
             DB::rollBack();
@@ -56,25 +75,11 @@ class CommandController extends Controller
                 $separatedMessages["Error-" . ($index + 1)] = $msg;
             }
 
-            throw new HttpResponseException(response()->json([
-                'msg' => 'server error!',
-                'error' => [
-                    'type' => 'restart-service-error',
-                    'message' => $separatedMessages
-                ]
-            ], 422));
+            throw ValidationException::withMessages(['message' => $separatedMessages]);
+
         } catch (\Exception $e) {
             DB::rollBack();
-
-            $message = $e->getMessage();
-
-            throw new HttpResponseException(response()->json([
-                'msg' => 'server error!',
-                'error' => [
-                    'type' => 'server-error',
-                    'message' => $message
-                ]
-            ], 422));
+                throw ValidationException::withMessages(['message' => $e->getMessage()]);
         }
     }
     public function restartServiceModule (restartServiceModuleRequest $request)
@@ -85,7 +90,8 @@ class CommandController extends Controller
         $module = Module::find($validate['module_id']);
 
         // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' restart';  // command as bbdh
-        $command = 'systemctl restart ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
+//        $command = 'systemctl restart ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
+        $command = 'systemctl restart ' . 'apache2'; // command as systemctl
 
         return $this->runCommandModuleToServer($validate, $command, $server,'restartModel', 'restartServiceModule');
     }
@@ -97,7 +103,8 @@ class CommandController extends Controller
         $module = Module::find($validate['module_id']);
 
         // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' start';  // command as bbdh
-        $command = 'systemctl start ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
+//        $command = 'systemctl start ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
+        $command = 'systemctl start ' . 'apache2'; // command as systemctl
 
         return $this->runCommandModuleToServer($validate, $command, $server, 'startModule', 'startServiceModule');
     }
@@ -109,7 +116,8 @@ class CommandController extends Controller
         $module = Module::find($validate['module_id']);
 
         // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' stop'; // command as bbdh
-        $command = 'systemctl stop ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
+//        $command = 'systemctl stop ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
+        $command = 'systemctl stop ' . 'apache2'; // command as systemctl
 
         return $this->runCommandModuleToServer($validate, $command, $server,'stopModule', 'stopServiceModule');
     }
@@ -122,7 +130,8 @@ class CommandController extends Controller
 
 
         // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' status'; // command as bbdh
-        $command = 'systemctl status ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
+//        $command = 'systemctl status ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
+        $command = 'systemctl status ' . 'apache2'; // command as systemctl
 
         return $this->runCommandModuleToServer($validate, $command, $server, 'statusModule', 'statusServiceModule');
     }
