@@ -20,16 +20,14 @@ class CommandController extends Controller
 
     public function showInterfaceVm (ShowInterfaceVmRequest $request)
     {
-        $validate = $request->validated();
+        $credentials = $request->validated();
 
         try {
-            $server = server::find($validate['server_id']);
-            $port = $request->input('port', 22);
-
+            $server = server::find($credentials['server_id']);
 
             $command = 'ip link show'; // command as systemctl
 
-            return $this->runCommandModuleToServer($validate, $command, $server,'showInterfaceVm', 'showInterfaceVm');
+            return $this->runCommandModuleToServer($credentials, $command, $server,'showInterfaceVm', 'showInterfaceVm');
 
         } catch (\Exception $e) {
             throw ValidationException::withMessages(['warning' => $e->getMessage()]);
@@ -38,10 +36,10 @@ class CommandController extends Controller
 
 
     // service module
-    private function runCommandModuleToServer ($validate, $command, server $server, $typeCommand, $method)
+    private function runCommandModuleToServer ($credentials, $command, server $server, $typeCommand, $method)
     {
-        $username = $validate['username'];
-        $password = $validate['password'];
+        $username = $credentials['username'];
+        $password = $credentials['password'];
 
 //           is down server
         if ($server['is_down'] == Server::OFF)
@@ -50,7 +48,7 @@ class CommandController extends Controller
 
         try {
 
-            $sshHelper = new sshHelper($server, $username, $password);
+            $sshHelper = new sshHelper($server, $username, $password, );
 
             $output = $sshHelper->runCommandModule($command, $typeCommand, $method, $server);
 
@@ -84,68 +82,68 @@ class CommandController extends Controller
     }
     public function restartServiceModule (restartServiceModuleRequest $request)
     {
-        $validate = $request->validated();
+        $credentials = $request->validated();
 
-        $server = server::find($validate['server_id']);
-        $module = Module::find($validate['module_id']);
+        $server = server::find($credentials['server_id']);
+        $module = Module::find($credentials['module_id']);
 
         // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' restart';  // command as bbdh
 //        $command = 'systemctl restart ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
         $command = 'systemctl restart ' . 'apache2'; // command as systemctl
 
-        return $this->runCommandModuleToServer($validate, $command, $server,'restartModel', 'restartServiceModule');
+        return $this->runCommandModuleToServer($credentials, $command, $server,'restartModel', 'restartServiceModule');
     }
     public function startServiceModule (restartServiceModuleRequest $request)
     {
-        $validate = $request->validated();
+        $credentials = $request->validated();
 
-        $server = server::find($validate['server_id']);
-        $module = Module::find($validate['module_id']);
+        $server = server::find($credentials['server_id']);
+        $module = Module::find($credentials['module_id']);
 
         // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' start';  // command as bbdh
 //        $command = 'systemctl start ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
         $command = 'systemctl start ' . 'apache2'; // command as systemctl
 
-        return $this->runCommandModuleToServer($validate, $command, $server, 'startModule', 'startServiceModule');
+        return $this->runCommandModuleToServer($credentials, $command, $server, 'startModule', 'startServiceModule');
     }
     public function stopServiceModule (restartServiceModuleRequest $request)
     {
-        $validate = $request->validated();
+        $credentials = $request->validated();
 
-        $server = server::find($validate['server_id']);
-        $module = Module::find($validate['module_id']);
+        $server = server::find($credentials['server_id']);
+        $module = Module::find($credentials['module_id']);
 
         // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' stop'; // command as bbdh
 //        $command = 'systemctl stop ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
         $command = 'systemctl stop ' . 'apache2'; // command as systemctl
 
-        return $this->runCommandModuleToServer($validate, $command, $server,'stopModule', 'stopServiceModule');
+        return $this->runCommandModuleToServer($credentials, $command, $server,'stopModule', 'stopServiceModule');
     }
     public function statusServiceModule (restartServiceModuleRequest $request)
     {
-        $validate = $request->validated();
+        $credentials = $request->validated();
 
-        $server = server::find($validate['server_id']);
-        $module = Module::find($validate['module_id']);
+        $server = server::find($credentials['server_id']);
+        $module = Module::find($credentials['module_id']);
 
 
         // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' status'; // command as bbdh
 //        $command = 'systemctl status ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
         $command = 'systemctl status ' . 'apache2'; // command as systemctl
 
-        return $this->runCommandModuleToServer($validate, $command, $server, 'statusModule', 'statusServiceModule');
+        return $this->runCommandModuleToServer($credentials, $command, $server, 'statusModule', 'statusServiceModule');
     }
     public function pingServer (SshServerRequest $request)
     {
-        $validate = $request->validated();
+        $credentials = $request->validated();
 
-        $server = server::find($validate['server_id']);
+        $server = server::find($credentials['server_id']);
 
-            $validate['interface'] ?? null
-            ? $command = 'ping ' . '-I ' . $validate['interface'] . ' ' . $validate['ipـdestination']
-            : $command = 'ping ' . $validate['ipـdestination'];
+            $credentials['interface'] ?? null
+            ? $command = 'ping ' . '-I ' . $credentials['interface'] . ' ' . $credentials['ipـdestination']
+            : $command = 'ping ' . $credentials['ipـdestination'];
 
 
-        return $this->runCommandModuleToServer($validate, $command, $server,'pingServer', 'pingServer');
+        return $this->runCommandModuleToServer($credentials, $command, $server,'pingServer', 'pingServer');
     }
 }

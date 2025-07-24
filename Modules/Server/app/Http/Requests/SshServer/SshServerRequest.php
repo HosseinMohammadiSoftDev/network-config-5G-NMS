@@ -17,7 +17,8 @@ class SshServerRequest extends FormRequest
             'interface' => ['string'],
 
             'username' => ['required', 'string', 'min:1', 'max:128'],
-            'password' => ['required', 'string', 'min:1', 'max:128']
+            'password' => ['required', 'string', 'min:1', 'max:128'],
+            'port' => ['nullable', 'integer', 'min:1'],
         ];
     }
 

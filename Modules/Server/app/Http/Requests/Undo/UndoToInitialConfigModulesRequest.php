@@ -4,6 +4,7 @@ namespace Modules\Server\Http\Requests\Undo;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Http\FormRequest;
+use Modules\Server\Models\Server;
 
 class UndoToInitialConfigModulesRequest extends FormRequest
 {
@@ -31,8 +32,35 @@ class UndoToInitialConfigModulesRequest extends FormRequest
 
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
+            'port' => ['nullable', 'integer'],
         ];
     }
+
+
+
+    public function withValidator ($validator)
+    {
+        if ($validator->errors()->any)
+            return;
+
+
+        $server = Server::find($this->input('server_id'));
+        $module = $server->modules()->where('modules.id', $this->input('module_id'))->first();
+
+        $validator->after(function ($validator) use ($server, $module) {
+
+            if ($server['is_down'] == Server::OFF)
+                $validator->errors()->add('server', 'selected server is off');
+
+
+            $this->merge([
+                'server' => $server,
+                'module' => $module,
+            ]);
+        });
+    }
+
+
 
     /**
      * Determine if the user is authorized to make this request.

@@ -293,7 +293,7 @@ class ServerController extends ApiController
 
             try {
 
-                 $sshHelper = new sshHelper($server, $creadtional['username'], $creadtional['password']);
+                 $sshHelper = new sshHelper($server, $creadtional['username'], $creadtional['password'], $creadtional['port'] ?? 22);
                  $sshHelper->testConnection();
 
             activity('test-connection')

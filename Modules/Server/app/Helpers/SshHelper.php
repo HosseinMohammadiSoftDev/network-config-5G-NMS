@@ -12,9 +12,9 @@ class SshHelper
 {
     protected $ssh;
 
-    public function __construct(private $server, private $username, private $password)
+    public function __construct(private $server, private $username, private $password, private $port = 22, private $timeout = 1)
     {
-        $this->ssh = new SSH2($server['ip']);
+        $this->ssh = new SSH2($server['ip'], $this->port, $this->timeout);
 
         if (!$this->ssh->login($username, $password)) {
             $this->logActivity('failed-connection-server', 'constructor');

@@ -60,7 +60,8 @@ class CreateModulesRequest extends FormRequest
                 },
             ],
             'username' => ['required', 'string'],
-            'password' => ['required', 'string']
+            'password' => ['required', 'string'],
+            'port' => ['nullable', 'integer'],
 
         ];
     }

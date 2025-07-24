@@ -28,6 +28,7 @@ class TestConnectionRequest extends FormRequest
             ],
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
+            'port' => ['nullable', 'integer', 'min:1'],
         ];
     }
 
