@@ -22,21 +22,22 @@ Route::get('get-status-reCapcha', [SystemSettingsController::class, 'getStatusRe
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
+//      Monitoring
     Route::middleware(['permission:monitoring|role:admin|expert'])->get('show-monitoring-address', [MonitoringController::class, 'getAllMonitoringAddress']);
     Route::middleware(['permission:monitoring|role:admin|expert'])->post('add-monitoring-address', [MonitoringController::class,'addMonitoringAddress']);
     Route::middleware(['permission:monitoring|role:admin|expert'])->delete('delete-monitoring-address', [MonitoringController::class,'deleteMonitoringAddress']);
 
+//      2FA
     Route::middleware(['role:admin'])->post('set-2FA', [SystemSettingsController::class, 'set2FA']);
     Route::withoutMiddleware(['auth:sanctum'])->get('get-2FA-status', [SystemSettingsController::class, 'getStatus2FA']);
 
+//      Login SMS
     Route::middleware(['role:admin'])->post('set-login-sms-status', [SystemSettingsController::class, 'setLoginBySMS']);
     Route::withoutMiddleware(['auth:sanctum'])->get('get-login-sms-status', [SystemSettingsController::class, 'getLoginBySMS']);
-
     Route::middleware(['role:admin'])->post('set-config-connection-sms', [SystemSettingsController::class, 'setConfigConnectionSMS']);
     Route::middleware(['role:admin'])->get('get-config-connection-sms', [SystemSettingsController::class, 'getConfinConnectionSMS']);
-
+//      reCapcha
     Route::post('set-status-reCapcha', [SystemSettingsController::class, 'setStatusReCapcha']);
-
     Route::post('set-recapcha-data', [SystemSettingsController::class, 'setRecatpchaData']);
     Route::get('get-recapcha-data', [SystemSettingsController::class, 'getRecaptchaData']);
 
