@@ -1,11 +1,11 @@
 <?php
 
-namespace Modules\SystemSetting\Http\Requests\FA2;
+namespace Modules\SystemSetting\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\SystemSetting\Models\SystemSettings;
 
-class Set2FAReqest extends FormRequest
+class TestConfigConnectionSMSRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -13,10 +13,9 @@ class Set2FAReqest extends FormRequest
     public function rules(): array
     {
         return [
-            'is_login_2FA' => ['required', 'boolean'],
+            'phone_number' => ['required', 'string', 'regex:/^09\d{9}$/'],
         ];
     }
-
 
 
     public function withValidator ($validator)
@@ -25,14 +24,11 @@ class Set2FAReqest extends FormRequest
             return;
 
 
-
-        $systemSetting = SystemSettings::first();
+            $systemSetting = SystemSettings::first();
         $validator->after(function ($validator) use ($systemSetting) {
 
-            if ($this->input('is_login_2FA') === true) {
-                if (!$systemSetting['config_connection_sms'])
-                    return $validator->errors()->add('config_connection_sms', 'You have not entered your SMS panel information.');
-            }
+            if (! $systemSetting['config_connection_sms'])
+                return $validator->errors()->add('config_connection_sms', 'You have not entered your SMS panel information.');
 
             $this->merge([
                 'systemSetting' => $systemSetting

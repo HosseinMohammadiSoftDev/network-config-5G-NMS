@@ -3,6 +3,7 @@
 namespace Modules\SystemSetting\Http\Controllers;
 
 use App\Http\Controllers\Contract\ApiController;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -16,11 +17,13 @@ use Modules\SystemSetting\Http\Requests\SystemSetting\AddAddressRequest;
 use Modules\SystemSetting\Http\Requests\SystemSetting\SetConfigConnectionSMSRequest;
 use Modules\SystemSetting\Http\Requests\SystemSetting\SetLoginBySMSRequest;
 use Modules\SystemSetting\Http\Requests\SystemSetting\SetOrgainalVMIpRequest;
+use Modules\SystemSetting\Http\Requests\TestConfigConnectionSMSRequest;
 use Modules\SystemSetting\Models\SystemSettings;
+use Modules\User\Services\PhoneVerificationService;
 
 class SystemSettingsController extends ApiController
 {
-    public function __construct()
+    public function __construct(private PhoneVerificationService $phoneService)
     {}
 
     public function getMotherboard ()
@@ -101,7 +104,7 @@ class SystemSettingsController extends ApiController
             DB::commit();
                 return response()->json(['success' => true, 'msg' => 'Settings have been successfully applied.'], 200);
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
                 return response()->json(['success' => false, 'msg' => 'An issue occurred in the application process.'], 422);
         }
@@ -137,6 +140,23 @@ class SystemSettingsController extends ApiController
         } catch (Exception $e) {
             DB::rollBack();
                 return response()->json(['success' => false, 'msg' => 'An issue occurred in the application process.'], 422);
+        }
+    }
+    public function testConfigConnectionSMS (TestConfigConnectionSMSRequest $request)
+    {
+        $credentials = $request->validated();
+
+        $code = rand(100000, 999999); // random code
+        $message = "test connection panel sms successfuly.";
+
+        try {
+
+            $this->phoneService->sendTestConnectionPanelSMS($credentials['phone_number'], $message, $code);
+
+            return response()->json(['success' => true, 'msg' => 'send message successfuly'], 200);
+
+        } catch (\Exception $e) {
+            throw $e;
         }
     }
     public function getConfinConnectionSMS ()

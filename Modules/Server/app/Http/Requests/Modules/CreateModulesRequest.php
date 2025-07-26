@@ -17,7 +17,7 @@ class CreateModulesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'min:3', 'max:255', function ($attribute, $value, $fail) {
+            'name' => ['required', 'string', 'min:3', 'max:24', function ($attribute, $value, $fail) {
                 $serverIds = request('server_id');
                 if (!is_array($serverIds))
                     $serverIds = [$serverIds];

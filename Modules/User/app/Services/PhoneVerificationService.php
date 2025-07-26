@@ -147,6 +147,33 @@ class PhoneVerificationService extends ApiController
 
 
 
+    /**
+     * send test connection message
+     */
+    public function sendTestConnectionPanelSMS (string $phone, string $message, int $code) : void
+    {
+        // SMS panle SunwaysmsService SOAP SERVICE
+        $connectionData = SystemSettings::first()->config_connection_sms ?? null
+            ? Crypt::decrypt(SystemSettings::first()->config_connection_sms)
+            : throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
+
+        if ($connectionData) {
+
+            // HTTP SERVICE
+            $smsService = new SMSService();
+            $smsService->sendMessageAsync(
+                $connectionData['username'] ?? null,
+                $connectionData['password'] ?? null,
+                [$phone],
+                $message,
+                $connectionData['special_number'] ?? null,
+                false,
+                [$code]
+            );
+
+        } else
+            throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
+    }
 
 
 
