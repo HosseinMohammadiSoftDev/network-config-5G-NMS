@@ -1,9 +1,8 @@
 <?php
 
-namespace Modules\Server\Service;
+namespace Modules\Server\Utility;
 
 use Illuminate\Support\Facades\Auth;
-use Modules\Server\Models\Module;
 use Modules\Server\Models\Server;
 
 class LogModuleService
@@ -31,7 +30,7 @@ class LogModuleService
 
         return $changes;
     }
-    public static function logModuleUpdate (Module $module, Server $server, array $array2)
+    public static function logModuleUpdate ($module, Server $server, array $array2)
     {
         $array1 = json_decode($module->pivot->current_config, true);
         $change = json_encode(self::getArrayChanges($array1, $array2));

@@ -2,30 +2,31 @@
 
 namespace Modules\Server\Http\Controllers;
 
-use Modules\Server\Service\LogModuleService;
+use App\Http\Controllers\Contract\ApiController;
 use Exception;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
-use Modules\Server\Service\Parser\YamlParserService;
+use Modules\Server\Helpers\SshHelper;
+use Modules\Server\Http\Requests\EditModuleRequest;
+use Modules\Server\Http\Requests\Module\ExpertModuleFileIsServerRequset;
+use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
+use Modules\Server\Http\Requests\Modules\CreateModulesRequest;
+use Modules\Server\Http\Requests\Modules\deleteModuleRequest;
+use Modules\Server\Http\Requests\Modules\ShowAllModules;
+use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
+use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
+use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
+use Modules\Server\Http\Requests\Undo\UndoConfigModulesRequest;
+use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
 use Modules\Server\Models\Module;
 use Modules\Server\Models\Server;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Modules\Server\Helpers\SshHelper;
-use App\Http\Controllers\Contract\ApiController;
-use Modules\Server\Http\Requests\EditModuleRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\ValidationException;
-use Modules\Server\Http\Requests\Modules\ShowAllModules;
-use Modules\Server\Http\Requests\Modules\deleteModuleRequest;
-use Modules\Server\Http\Requests\Modules\CreateModulesRequest;
-use Modules\Server\Http\Requests\Modules\ShowAllModulesRequest;
-use Modules\Server\Http\Requests\Undo\UndoConfigModulesRequest;
-use Modules\Server\Http\Requests\Modules\ShowAllModulesRequestt;
-use Modules\Server\Http\Requests\Module\ShowConfilgModuleRequest;
-use Modules\Server\Http\Requests\Modules\UpdateConfigModulerequest;
-use Modules\Server\Http\Requests\Module\ExpertModuleFileIsServerRequset;
-use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
+use Modules\Server\Service\Parser\YamlParserService;
+use Modules\Server\Utility\CommandOutputAnalyzerService;
+use Modules\Server\Utility\LogModuleService;
 
 class ModuleController extends ApiController
 {
@@ -354,10 +355,10 @@ class ModuleController extends ApiController
 
         // update module
         $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $server['path_config'] . $moduleName . '.yaml';
-        $sshHelper->runCommand($commandUpdateFileModule );
+        return $sshHelper->runCommand($commandUpdateFileModule );
 
         // restart module
-        $commandRestart = $server['path_run_config'] . 'bbdh-' . $moduleName . 'd' . ' restart';
+//        $commandRestart = $server['path_run_config'] . 'bbdh-' . $moduleName . 'd' . ' restart';
         // $output = $sshHelper->restartModule($commandRestart );
 
     }
@@ -406,8 +407,10 @@ class ModuleController extends ApiController
 
                 $yamlContent = YamlParserService::convertJsonToYaml($currentConfig);
 
-                $this->sendConfigToServer($request['username'], $request['password'],
+                $outputCommand = $this->sendConfigToServer($request['username'], $request['password'],
                             $module['name'], $yamlContent, $moduleServer);
+
+                $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
 
                 LogModuleService::logModuleUpdate($moduleServer, $server, $data);
             }
@@ -424,6 +427,7 @@ class ModuleController extends ApiController
 
             return response()->json([
                 'config' => json_decode($currentConfig, true),
+                'commandWarning' => $commandWarning,
                 'serverDetaile' => $serversData,
                 'serverIdsInModuleName' => $serverIdsInModuleName
             ]);
@@ -494,8 +498,11 @@ class ModuleController extends ApiController
 
                 $yamlContent = YamlParserService::convertJsonToYaml($updatedModule);
 
-                $this->sendConfigToServer( $request['username'], $request['password'],
+                $outputCommand = $this->sendConfigToServer( $request['username'], $request['password'],
                      $module['name'], $yamlContent, $server);
+
+
+                $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
 
                 LogModuleService::logModuleUpdate($module, $server,  $request->input('data'));
             }
@@ -513,6 +520,7 @@ class ModuleController extends ApiController
 
             return response()->json([
                 'config' => json_decode($updatedModule, true),
+                'commandWarinig' => $commandWarning,
                 'serverDetaile' => $serversData,
                 'serverIdsInModuleName' => $serverIdsInModuleName
             ]);
@@ -621,9 +629,15 @@ class ModuleController extends ApiController
                 $pivotData->current_config = $encodedConfig;
 
                 $yamlContent = YamlParserService::convertJsonToYaml($pivotData->current_config);
-                $this->sendConfigToServer($request['username'], $request['password'], $module->name, $yamlContent, $server, $port);
+                $outputCommand = $this->sendConfigToServer($request['username'], $request['password'], $module->name, $yamlContent, $server, $port);
 
                 $pivotData->save();
+
+                $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
+
+                if (! empty($outputCommand))
+                    throw ValidationException::withMessages(['commandWarning' => $commandWarning]);
+
             }
         }
     }
@@ -807,7 +821,7 @@ class ModuleController extends ApiController
     try {
             // ssh to server format yaml
             $yamlContent = YamlParserService::convertJsonToYaml($pivotData['previous_config']);
-            $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
+            $outputCommand = $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
                 $request['module']['name'], $yamlContent, $request['server'], $creadtional['port'] ?? 22);
 
 
@@ -815,6 +829,8 @@ class ModuleController extends ApiController
             $pivotData['current_config'] = $pivotData['previous_config'];
             $pivotData->save();
 
+
+            $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
 
 
             activity('undo-config-module')
@@ -838,6 +854,7 @@ class ModuleController extends ApiController
             return response()->json([
                 'success' => 'ture',
                 'msg' => 'The module configuration has been reverted to the previous step',
+                'commandWarning' => $commandWarning,
                 'config' => json_decode($pivotData['current_config'], true)
             ], 200);
 
@@ -859,13 +876,16 @@ class ModuleController extends ApiController
                 // ssh to server format yaml
         $yamlContent = YamlParserService::convertJsonToYaml($moduleInitialConfig);
 
-        $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
+        $outputCommand = $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
             $request['module']['name'], $yamlContent, $request['server']);
 
 
         // save to datebase format json
         $pivotData['current_config'] = $pivotData['initial_config'];
         $pivotData->save();
+
+
+        $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
 
 
         activity('undo-config-module')
@@ -889,6 +909,7 @@ class ModuleController extends ApiController
             return response()->json([
                 'success' => 'ture',
                 'msg' => 'The module configuration has been reverted to its initial state',
+                'commandWarning' => $commandWarning,
                 'config' => json_decode($pivotData['initial_config'], true)
             ], 200);
 
