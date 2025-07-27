@@ -25,29 +25,9 @@ use Modules\User\Transformers\Auth\LoginResource;
 class AuthController extends ApiController
 {
     public function __construct(private PhoneVerificationService $phoneService)
-    {
-
-    }
+    {}
 
 
-
-    private function validateLoginDevice (User $user)
-    {
-        $server = Server::find($user?->server_id);
-
-            if ($server) {
-                if (request()->ip() !== $server['ip'])
-                    throw ValidationException::withMessages(['validation' => ['Your IP is different from the server on which your account is registered.']]);
-
-                    if ($server['is_down'])
-                    throw ValidationException::withMessages(['validation' => ['server is off']]);
-
-            } else {
-
-                if (request()->ip() !== '127.0.0.1')
-                    throw ValidationException::withMessages(['validation' => ['Your IP is different from the orginal server ip on which your account is registered.']]);
-            }
-    }
     public function login (Loginrequest $request)
     {
         $credentials = $request->validated();
@@ -57,12 +37,7 @@ class AuthController extends ApiController
         if (!$user || !Hash::check($credentials['password'], $user->password))
             return response()->json(['msg' => 'You have entered an incorrect username or password'], 422);
 
-        if (!$user->hasRole(Role::ADMIN))
-            $this->validateLoginDevice($user);
-
-
-
-//        $user->tokens()->delete();
+        $user->tokens()->delete();
         $token = $user->createToken('apiToken')->plainTextToken;
 
 
@@ -74,8 +49,6 @@ class AuthController extends ApiController
                     'method' => 'login',
                     'user' => $user,
                 ])
-
-
                 ->log('The user logged in with the username and password.');
             $is2FAEnabled = SystemSettings::first()?->is_login_2FA;
 
@@ -100,7 +73,9 @@ class AuthController extends ApiController
                 $template = "PhoneLogin";
                 $param1 = rand(100000, 999999); // random code
 
-                return $this->phoneService->sendVerificationCode($template, $param1, $user['phone'], $user);
+                $this->phoneService->sendVerificationCode($template, $param1, $user['phone'], $user);
+
+                return response()->json(['success' => true, 'msg' => 'The SMS has been sent successfully.'], 200);
             }
     }
     public function logout(Request $request)
@@ -182,11 +157,14 @@ class AuthController extends ApiController
 
         $this->phoneService->isLoginSent($credentials['phone']);
 
-
         $template = "PhoneLogin";
-        $param1 = rand(100000, 999999); // random code
+        $code = rand(100000, 999999); // random code
 
-        return $this->phoneService->sendVerificationCode($template, $param1, $credentials['phone']);
+        $message = "code login to 5G Application: $code";
+
+        $this->phoneService->sendVerificationCode($template, $code, $credentials['phone'], $message);
+
+        return response()->json(['success' => true, 'msg' => 'The SMS has been sent successfully.'], 200);
     }
     public function loginPhone(LoginPhoneRequest $request)
     {
