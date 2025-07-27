@@ -146,14 +146,23 @@ class SystemSettingsController extends ApiController
     {
         $credentials = $request->validated();
 
+        $template = 'testConnection';
         $code = rand(100000, 999999); // random code
         $message = "test connection panel sms successfuly.";
 
         try {
 
-            $this->phoneService->sendTestConnectionPanelSMS($credentials['phone_number'], $message, $code);
+            $this->phoneService->sendVerificationCode($template, $code, $credentials['phone_number'], $message);
 
-            return response()->json(['success' => true, 'msg' => 'send message successfuly'], 200);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+    public function getUserInfoSMSPanel ()
+    {
+        try {
+
+            return response()->json(['success' => true, 'data' => $this->phoneService->getUserAccountInfo()], 200);
 
         } catch (\Exception $e) {
             throw $e;

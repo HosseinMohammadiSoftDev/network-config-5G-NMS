@@ -37,6 +37,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::middleware(['role:admin'])->post('set-config-connection-sms', [SystemSettingsController::class, 'setConfigConnectionSMS']);
     Route::middleware(['role:admin'])->get('get-config-connection-sms', [SystemSettingsController::class, 'getConfinConnectionSMS']);
     Route::post('test-config-connection-sms', [SystemSettingsController::class, 'testConfigConnectionSMS']);
+    Route::get('get-user-info-sms-panel', [SystemSettingsController::class, 'getUserInfoSMSPanel']);
 
 //      reCapcha
     Route::post('set-status-reCapcha', [SystemSettingsController::class, 'setStatusReCapcha']);

@@ -5,11 +5,13 @@ namespace Modules\User\Services;
 
 
 use App\Http\Controllers\Contract\ApiController;
+use http\Exception\RuntimeException;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Validation\ValidationException;
 use Modules\SystemSetting\Models\SystemSettings;
+use Modules\SystemSetting\Service\SmsStatusService;
 use Modules\User\Models\PhoneLogin;
 use Modules\User\Models\PhoneResetPassword;
 use Modules\User\Models\PhoneVerificationToken;
@@ -18,7 +20,9 @@ use Modules\User\Models\User;
 
 class PhoneVerificationService extends ApiController
 {
-
+    /**
+     * verify user phone
+     */
     public function checkPhoneDetail(object $user, string $status)
     {
         if (!$user->phone)
@@ -37,7 +41,7 @@ class PhoneVerificationService extends ApiController
                 return $this->handleVerify($user['phone']);
         }
     }
-    private function handleSendVerify(string $phone)
+    private function handleSendVerify(string $phone) : void
     {
         $sentPhone = PhoneVerificationToken::firstWhere('phone', $phone);
 
@@ -71,13 +75,16 @@ class PhoneVerificationService extends ApiController
     /**
      * Send verification code to a user
      */
-    public function sendVerificationCode($template, $code, $phone, $user = null)
-    {
+    public function sendVerificationCode(
+        string $template,
+        string $code,
+        string $phone,
+        string $message,
+        User $user = null
+    ): mixed {
        try {
 
             $this->storeVerificationCode($template, $code, $phone);
-
-            $message = "code login to 5G Application: $code";
 
 
                     // SMS panle SunwaysmsService SOAP SERVICE
@@ -112,7 +119,7 @@ class PhoneVerificationService extends ApiController
             throw $e;
        }
     }
-    private function storeVerificationCode($template, $code, $phone)
+    private function storeVerificationCode(string $template, string $code, string$phone)
     {
         try {
             switch ($template) {
@@ -137,8 +144,11 @@ class PhoneVerificationService extends ApiController
                         "expired_at" => now()->addMinutes(2),
                     ]);
                     break;
-                default:
-                    throw new \InvalidArgumentException("Invalid template provided.");
+                case 'testConnection':
+                    true;
+                    break;
+                default :
+                    throw new RuntimeException('invalide template sms panel.');
             }
         } catch (\Exception $e) {
             throw $e;
@@ -148,31 +158,35 @@ class PhoneVerificationService extends ApiController
 
 
     /**
-     * send test connection message
+     * get user info panel sms sanway
      */
-    public function sendTestConnectionPanelSMS (string $phone, string $message, int $code) : void
+    public function getUserAccountInfo ()
     {
-        // SMS panle SunwaysmsService SOAP SERVICE
-        $connectionData = SystemSettings::first()->config_connection_sms ?? null
-            ? Crypt::decrypt(SystemSettings::first()->config_connection_sms)
-            : throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
+        try {
 
-        if ($connectionData) {
+            // SMS panle SunwaysmsService SOAP SERVICE
+            $connectionData = SystemSettings::first()->config_connection_sms ?? null
+                ? Crypt::decrypt(SystemSettings::first()->config_connection_sms)
+                : throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
 
-            // HTTP SERVICE
-            $smsService = new SMSService();
-            $smsService->sendMessageAsync(
-                $connectionData['username'] ?? null,
-                $connectionData['password'] ?? null,
-                [$phone],
-                $message,
-                $connectionData['special_number'] ?? null,
-                false,
-                [$code]
-            );
+            if ($connectionData) {
 
-        } else
-            throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
+                // HTTP SERVICE
+                $smsService = new SMSService();
+                $output = $smsService->getUserInfo(
+                    $connectionData['username'] ?? null,
+                    $connectionData['password'] ?? null,
+                );
+
+            } else
+                throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
+
+
+            return $output;
+
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
 
@@ -194,7 +208,6 @@ class PhoneVerificationService extends ApiController
             throw new HttpResponseException(response(['msg' => 'شماره تلفن مورد نظر تأیید نشده است!'], 422));
 
     }
-
     public function checkCodeValidation($phone)
     {
         $sent_phone = PhoneResetPassword::firstWhere('phone', $phone);
@@ -222,7 +235,6 @@ class PhoneVerificationService extends ApiController
                     $sent_phone->delete();
         }
     }
-
     public function changePassword(string $phone, string $code, string $password)
     {
         $correct_code = PhoneResetPassword::firstWhere('phone', $phone);
