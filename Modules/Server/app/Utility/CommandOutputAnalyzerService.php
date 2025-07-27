@@ -17,6 +17,7 @@ class CommandOutputAnalyzerService
             '/(cannot\s+.*?:\s+.*)/i'                      => 'An unknown error occurred',
             '/(failed\s+to\s+.*)/i'                        => 'Command execution failed',
             '/(file\s+exists)/i'                           => 'File already exists',
+            '/unit\s+.*?\.service\s+could\s+not\s+be\s+found/i' => 'Service not found',
         ];
 
         foreach ($patterns as $pattern => $message) {

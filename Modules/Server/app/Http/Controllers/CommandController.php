@@ -11,6 +11,7 @@ use Modules\Server\Http\Requests\SshServer\SshServerRequest;
 use Modules\Server\Models\Module;
 use Modules\Server\Models\Server;
 use Modules\Server\services\FilterOutputCommandService;
+use Modules\Server\Utility\CommandOutputAnalyzerService;
 use Modules\SystemSetting\Http\Requests\ShowInterfaceVmRequest;
 
 class CommandController extends Controller
@@ -50,9 +51,12 @@ class CommandController extends Controller
 
             $sshHelper = new sshHelper($server, $username, $password, );
 
-            $output = $sshHelper->runCommandModule($command, $typeCommand, $method, $server);
+            $outputCommand = $sshHelper->runCommandModule($command, $typeCommand, $method, $server);
 
-            return response()->json(['message' => $output]);
+            if (! empty(CommandOutputAnalyzerService::extractErrors($outputCommand)))
+                throw ValidationException::withMessages(['commandWarning' => CommandOutputAnalyzerService::extractErrors($outputCommand)]);
+
+            return response()->json(['message' => $outputCommand]);
 
         } catch (ValidationException $e) {
             throw $e;
@@ -87,9 +91,7 @@ class CommandController extends Controller
         $server = server::find($credentials['server_id']);
         $module = Module::find($credentials['module_id']);
 
-        // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' restart';  // command as bbdh
-//        $command = 'systemctl restart ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
-        $command = 'systemctl restart ' . 'apache2'; // command as systemctl
+        $command = 'systemctl restart ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
 
         return $this->runCommandModuleToServer($credentials, $command, $server,'restartModel', 'restartServiceModule');
     }
@@ -100,9 +102,7 @@ class CommandController extends Controller
         $server = server::find($credentials['server_id']);
         $module = Module::find($credentials['module_id']);
 
-        // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' start';  // command as bbdh
-//        $command = 'systemctl start ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
-        $command = 'systemctl start ' . 'apache2'; // command as systemctl
+        $command = 'systemctl start ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
 
         return $this->runCommandModuleToServer($credentials, $command, $server, 'startModule', 'startServiceModule');
     }
@@ -113,9 +113,7 @@ class CommandController extends Controller
         $server = server::find($credentials['server_id']);
         $module = Module::find($credentials['module_id']);
 
-        // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' stop'; // command as bbdh
-//        $command = 'systemctl stop ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
-        $command = 'systemctl stop ' . 'apache2'; // command as systemctl
+        $command = 'systemctl stop ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
 
         return $this->runCommandModuleToServer($credentials, $command, $server,'stopModule', 'stopServiceModule');
     }
@@ -126,10 +124,7 @@ class CommandController extends Controller
         $server = server::find($credentials['server_id']);
         $module = Module::find($credentials['module_id']);
 
-
-        // $command = $server['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' status'; // command as bbdh
-//        $command = 'systemctl status ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
-        $command = 'systemctl status ' . 'apache2'; // command as systemctl
+        $command = 'systemctl status ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
 
         return $this->runCommandModuleToServer($credentials, $command, $server, 'statusModule', 'statusServiceModule');
     }
