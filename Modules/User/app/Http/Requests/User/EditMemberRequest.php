@@ -10,6 +10,8 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\ValidationException;
 use Modules\User\Models\User;
+use Modules\User\Services\PhoneVerificationService;
+use function Termwind\render;
 
 class EditMemberRequest extends FormRequest
 {
@@ -100,6 +102,22 @@ class EditMemberRequest extends FormRequest
             $this->input('server_id')
                 ? $this->validationServerPermission($server, $permissionNames)
                 : $this->validationUserPermission($permissionNames);
+        }
+
+//        send messnage to admin phone
+        if ($user->hasRole('admin')) {
+            if ($this->input('phone')) {
+                $phoneVarificationService = new PhoneVerificationService();
+
+                $message = '5G Application : Phone number verification';
+
+                $phoneVarificationService->sendVerificationCode(
+                    'testConnection',
+                    rand(100000, 999999),
+                    $this->input('phone'),
+                    $message
+                );
+            }
         }
 
             $this->merge(['permissionNames' => $permissionNames]);
