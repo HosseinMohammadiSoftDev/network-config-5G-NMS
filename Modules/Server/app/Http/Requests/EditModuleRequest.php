@@ -18,8 +18,8 @@ class EditModuleRequest extends FormRequest
     {
         return [
             'module_id' => ['required', 'integer', 'exists:modules,id'],
-            'name' => ['nullable', 'string', 'min:2', 'max:24'],
-            'type' => ['nullable', 'string'],
+            'name' => ['nullable', 'string', 'min:2', 'max:24', 'regex:/^[^<>{}\/|\~`!@#$%&*()_\-+="\':;؟،]*$/u'],
+            'type' => ['nullable', 'string', 'regex:/^[^<>{}\/|\~`!@#$%&*()_\-+="\':;؟،]*$/u'],
             // 'server_id'=> ['required', 'integer','exists:servers,id'],
 
             'config_file' => ['nullable', 'file',  function ($attribute, $value, $fail) {
@@ -50,6 +50,18 @@ class EditModuleRequest extends FormRequest
             'port' => ['nullable', 'integer']
         ];
     }
+
+
+
+    public function messages()
+    {
+        return [
+            'name.regex' => 'The name field contains invalid characters. characters like < > { } / | \ ~ ` ! @ # $ % & * ( ) _ - + = " \' : ; are not allowed.',
+            'type.regex' => 'The name field contains invalid characters. characters like < > { } / | \ ~ ` ! @ # $ % & * ( ) _ - + = " \' : ; are not allowed.',
+        ];
+    }
+
+
 
     /**
      * Determine if the user is authorized to make this request.

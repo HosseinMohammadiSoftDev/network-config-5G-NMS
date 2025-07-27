@@ -19,7 +19,8 @@ class EditServerReqest extends FormRequest
                 'string',
                 'min:2',
                 'max:127',
-                Rule::unique('servers', 'name')->ignore($this->server_id, 'id')
+                Rule::unique('servers', 'name')->ignore($this->server_id, 'id'),
+                'regex:/^[^<>{}\/|\~`!@#$%&*()_\-+="\':;؟،]*$/u'
             ],
 
 
@@ -33,6 +34,15 @@ class EditServerReqest extends FormRequest
             'path_run_config' => ['nullable', 'string',  'min:1', 'max:1024'],
         ];
     }
+
+
+    public function messagees()
+    {
+        return [
+            'name.regex' => 'The name field contains invalid characters. characters like < > { } / | \ ~ ` ! @ # $ % & * ( ) _ - + = " \' : ; are not allowed.'
+        ];
+    }
+
 
     /**
      * Determine if the user is authorized to make this request.

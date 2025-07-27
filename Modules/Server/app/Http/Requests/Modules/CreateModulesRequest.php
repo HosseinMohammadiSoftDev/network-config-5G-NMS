@@ -17,7 +17,7 @@ class CreateModulesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'min:3', 'max:24', function ($attribute, $value, $fail) {
+            'name' => ['required', 'string', 'min:3', 'max:24', 'regex:/^[^<>{}\/|\~`!@#$%&*()_\-+="\':;؟،]*$/u', function ($attribute, $value, $fail) {
                 $serverIds = request('server_id');
                 if (!is_array($serverIds))
                     $serverIds = [$serverIds];
@@ -34,7 +34,7 @@ class CreateModulesRequest extends FormRequest
                 }
 
             }],
-            'type' => ['required', 'string', 'min:2', 'max:255'],
+            'type' => ['required', 'string', 'min:2', 'max:255', 'regex:/^[^<>{}\/|\~`!@#$%&*()_\-+="\':;؟،]*$/u'],
 
             'server_id' => ['nullable', 'array'],
             'server_id.*' => ['required', 'integer', 'exists:servers,id',  function ($attribute, $value, $fail) {
@@ -65,6 +65,18 @@ class CreateModulesRequest extends FormRequest
 
         ];
     }
+
+
+
+
+    public function messages()
+    {
+        return [
+           'name.regex' => 'The name field contains invalid characters. characters like < > { } / | \ ~ ` ! @ # $ % & * ( ) _ - + = " \' : ; are not allowed.',
+           'type.regex' => 'The name field contains invalid characters. characters like < > { } / | \ ~ ` ! @ # $ % & * ( ) _ - + = " \' : ; are not allowed.',
+        ];
+    }
+
 
     /**
      * Determine if the user is authorized to make this request.
