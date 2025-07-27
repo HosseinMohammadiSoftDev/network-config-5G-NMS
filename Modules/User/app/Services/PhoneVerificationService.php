@@ -81,7 +81,7 @@ class PhoneVerificationService extends ApiController
         string $phone,
         string $message,
         User $user = null
-    ): mixed {
+    ): void {
        try {
 
             $this->storeVerificationCode($template, $code, $phone);
@@ -108,12 +108,6 @@ class PhoneVerificationService extends ApiController
 
                  } else
                      throw ValidationException::withMessages(['validation' => ['no connection config data to panel SMS']]);
-
-
-            throw new HttpResponseException(response()->json([
-                'msg' => "The SMS has been sent successfully.",
-                'user_id' => $user['id'] ?? null
-            ], 200));
 
        } catch (\Exception $e) {
             throw $e;

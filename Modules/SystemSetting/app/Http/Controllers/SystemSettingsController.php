@@ -148,11 +148,13 @@ class SystemSettingsController extends ApiController
 
         $template = 'testConnection';
         $code = rand(100000, 999999); // random code
-        $message = "test connection panel sms successfuly.";
+        $message = "5G Application : Test onnection panel sms successfuly.";
 
         try {
 
             $this->phoneService->sendVerificationCode($template, $code, $credentials['phone_number'], $message);
+
+            return response()->json(['success' => true, 'msg' => 'The SMS has been sent successfully.'], 200);
 
         } catch (\Exception $e) {
             throw $e;

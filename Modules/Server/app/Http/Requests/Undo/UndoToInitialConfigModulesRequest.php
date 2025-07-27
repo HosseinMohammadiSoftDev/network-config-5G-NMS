@@ -40,7 +40,7 @@ class UndoToInitialConfigModulesRequest extends FormRequest
 
     public function withValidator ($validator)
     {
-        if ($validator->errors()->any)
+        if ($validator->errors()->any())
             return;
 
 

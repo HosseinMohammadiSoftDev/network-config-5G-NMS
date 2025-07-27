@@ -212,11 +212,12 @@ class UserController extends ApiController
         try {
             DB::beginTransaction();
 
-
-            if ($role == 'visitor')
-                $this->assignRoleAndPermissionsToVisitor($user, $role, $request['permissionNames']);
-            else
-                $this->assignRoleAndPermissionsToExpert($user, $role, $request['permissionNames']);
+            if (! $user->hasRole('admin')) {
+                if ($role == 'visitor')
+                    $this->assignRoleAndPermissionsToVisitor($user, $role, $request['permissionNames']); // visotor permission assign
+                else
+                    $this->assignRoleAndPermissionsToExpert($user, $role, $request['permissionNames']); // expert permission assign
+            }
 
 
             $user->update([
@@ -254,7 +255,7 @@ class UserController extends ApiController
             ->log('The user\'s username and password were successfully updated');
 
         DB::commit();
-        return $this->respondSuccess('The user Edit successfully', [
+             return $this->respondSuccess('The user Edit successfully', [
             'user' => [
                 'id' => $user->id,
                 'first_name' => $user->first_name,
@@ -269,8 +270,8 @@ class UserController extends ApiController
         ]);
 
         } catch (\Exception $e) {
-                DB::rollBack();
-            throw $e;
+            DB::rollBack();
+                throw $e;
         }
     }
     public function deleteAccountMember ($userId)
