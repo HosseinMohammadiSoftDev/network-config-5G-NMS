@@ -4,6 +4,8 @@ namespace Modules\SystemSetting\Http\Requests\FA2;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\SystemSetting\Models\SystemSettings;
+use Modules\User\Models\User;
+use Modules\User\Services\PhoneVerificationService;
 
 class Set2FAReqest extends FormRequest
 {
@@ -33,6 +35,25 @@ class Set2FAReqest extends FormRequest
                 if (!$systemSetting['config_connection_sms'])
                     return $validator->errors()->add('config_connection_sms', 'You have not entered your SMS panel information.');
             }
+
+
+//        send messnage to admin phone
+            $userAdmin = User::Role('admin')->first();
+
+            $phoneVarificationService = new PhoneVerificationService();
+
+            $status2FA = $this->input('is_login_2FA') ? 'on.' : 'off.';
+
+            $message = '5G Application : Change status 2FA to ' . $status2FA;
+
+            $phoneVarificationService->sendVerificationCode(
+                'testConnection',
+                rand(100000, 999999),
+                $userAdmin['phone'],
+                $message
+            );
+
+
 
             $this->merge([
                 'systemSetting' => $systemSetting
