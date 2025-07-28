@@ -134,8 +134,8 @@ class CommandController extends Controller
 
         $server = server::find($credentials['server_id']);
 
-            $credentials['interface'] ?? null
-            ? $command = 'ping ' . '-I ' . $credentials['interface'] . ' ' . $credentials['ipـdestination']
+            $credentials['Interface'] ?? null
+            ? $command = 'ping ' . '-I ' . $credentials['Interface'] . ' ' . $credentials['ipـdestination']
             : $command = 'ping ' . $credentials['ipـdestination'];
 
 
