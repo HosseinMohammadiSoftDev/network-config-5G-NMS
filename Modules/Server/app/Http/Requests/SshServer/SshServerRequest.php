@@ -14,7 +14,7 @@ class SshServerRequest extends FormRequest
         return [
             'server_id' => ['required', 'integer', 'exists:servers,id'],
             'ipـdestination' => ['required', 'regex:/^(((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))$|^(([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:))$/'],
-            'interface' => ['string'],
+            'Interface' => ['string'],
 
             'username' => ['required', 'string', 'min:1', 'max:128'],
             'password' => ['required', 'string', 'min:1', 'max:128'],
