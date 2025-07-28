@@ -30,8 +30,8 @@ class EditServerReqest extends FormRequest
                 'regex:/^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/'
             ],
 
-            'path_config' => ['nullable', 'string',  'min:1', 'max:1024'],
-            'path_run_config' => ['nullable', 'string',  'min:1', 'max:1024'],
+            'path_config' => ['nullable', 'string',  'min:1', 'max:1024',  'regex:/^\/(?:[a-zA-Z0-9_\-\.]+\/)*[a-zA-Z0-9_\-\.]+\/$/'],
+            'path_run_config' => ['nullable', 'string',  'min:1', 'max:1024',  'regex:/^\/(?:[a-zA-Z0-9_\-\.]+\/)*[a-zA-Z0-9_\-\.]+\/$/'],
         ];
     }
 
@@ -39,7 +39,23 @@ class EditServerReqest extends FormRequest
     public function messagees()
     {
         return [
-            'name.regex' => 'The name field contains invalid characters. characters like < > { } / | \ ~ ` ! @ # $ % & * ( ) _ - + = " \' : ; are not allowed.'
+            'name.regex' => 'The name field contains invalid characters. characters like < > { } / | \ ~ ` ! @ # $ % & * ( ) _ - + = " \' : ; are not allowed.',
+
+
+               // Custom messages for general rules
+            'path_config.required' => 'The config path is required.',
+            'path_config.string' => 'The config path must be a string.',
+            'path_config.min' => 'The config path must be at least 3 characters.',
+            'path_config.max' => 'The config path may not be longer than 255 characters.',
+            'path_config.regex' => 'The config path must be a valid absolute path ending with a slash (e.g., "/home/user/").',
+            'path_config.not_regex' => 'The config path cannot be a restricted system directory (e.g., "/bin/", "/etc/").',
+
+            'path_run_config.required' => 'The run config path is required.',
+            'path_run_config.string' => 'The run config path must be a string.',
+            'path_run_config.min' => 'The run config path must be at least 3 characters.',
+            'path_run_config.max' => 'The run config path may not be longer than 255 characters.',
+            'path_run_config.regex' => 'The run config path must be a valid absolute path ending with a slash (e.g., "/home/user/").',
+            'path_run_config.not_regex' => 'The run config path cannot be a restricted system directory (e.g., "/bin/", "/etc/").',
         ];
     }
 
