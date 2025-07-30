@@ -92,5 +92,24 @@ class SshHelper
 
         return $output;
     }
+    public function pingRunCommand ($command)
+    {
+        try {
+            $this->ssh->setTimeout(5);
+
+            $this->ssh->write("sudo -S su\n");
+            $this->ssh->write("{$this->password}\n");
+            $this->ssh->read();
+
+            $output = $this->ssh->exec($command);
+
+            $this->logActivity('run-command', 'runCommand');
+
+            return $output;
+        } catch (Exception $e) {
+            $this->logActivity('failed-command', 'runCommand', ['Error' => $e, ]);
+            throw $e;
+        }
+    }
 
 }

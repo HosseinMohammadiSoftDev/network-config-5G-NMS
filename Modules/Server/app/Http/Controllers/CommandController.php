@@ -37,8 +37,15 @@ class CommandController extends Controller
 
 
     // service module
-    private function runCommandModuleToServer ($credentials, $command, server $server, $typeCommand, $method)
-    {
+    private function runCommandModuleToServer (
+        $credentials,
+        $command,
+        server $server,
+        $typeCommand,
+        $method,
+        int $port = 22,
+        int $timeout = 5
+    ) {
         $username = $credentials['username'];
         $password = $credentials['password'];
 
@@ -49,7 +56,7 @@ class CommandController extends Controller
 
         try {
 
-            $sshHelper = new sshHelper($server, $username, $password, );
+            $sshHelper = new sshHelper($server, $username, $password, $port, $timeout);
 
             $outputCommand = $sshHelper->runCommandModule($command, $typeCommand, $method, $server);
 
@@ -93,7 +100,8 @@ class CommandController extends Controller
 
         $command = 'systemctl restart ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
 
-        return $this->runCommandModuleToServer($credentials, $command, $server,'restartModel', 'restartServiceModule');
+        return $this->runCommandModuleToServer($credentials, $command, $server,'restartModel'
+            , 'restartServiceModule', );
     }
     public function startServiceModule (restartServiceModuleRequest $request)
     {
@@ -135,10 +143,11 @@ class CommandController extends Controller
         $server = server::find($credentials['server_id']);
 
             $credentials['Interface'] ?? null
-            ? $command = 'ping ' . '-I ' . $credentials['Interface'] . ' ' . $credentials['ipـdestination']
-            : $command = 'ping ' . $credentials['ipـdestination'];
+            ? $command = 'ping ' . '-I ' . $credentials['Interface'] . ' ' . $credentials['ipـdestination'] . ' -c 5'
+            : $command = 'ping ' . $credentials['ipـdestination'] . ' -c 5';
 
 
-        return $this->runCommandModuleToServer($credentials, $command, $server,'pingServer', 'pingServer');
+        $sshHelper = new SSHHelper($server, $credentials['username'], $credentials['password']);
+        return response()->json(['message' => $sshHelper->pingRunCommand($command)]);
     }
 }
