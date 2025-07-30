@@ -6,6 +6,7 @@ use Modules\SystemSetting\Http\Controllers\SystemSettingsController;
 use Modules\SystemSetting\Http\Controllers\TraceController;
 use Modules\SystemSetting\Http\Controllers\RouteController;
 use Modules\SystemSetting\Http\Controllers\MonitoringController;
+use Modules\SystemSetting\Http\Controllers\RecapchaController;
 
 /*
  *--------------------------------------------------------------------------
@@ -18,7 +19,7 @@ use Modules\SystemSetting\Http\Controllers\MonitoringController;
  *
 */
 
-Route::get('get-status-reCapcha', [SystemSettingsController::class, 'getStatusReCapcha']);
+Route::get('get-status-reCapcha', [RecapchaController::class, 'getStatusReCapcha']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
@@ -40,9 +41,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('get-user-info-sms-panel', [SystemSettingsController::class, 'getUserInfoSMSPanel']);
 
 //      reCapcha
-    Route::post('set-status-reCapcha', [SystemSettingsController::class, 'setStatusReCapcha']);
-    Route::post('set-recapcha-data', [SystemSettingsController::class, 'setRecatpchaData']);
-    Route::get('get-recapcha-data', [SystemSettingsController::class, 'getRecaptchaData']);
+    Route::post('set-status-reCapcha', [RecapchaController::class, 'setStatusReCapcha']);
+    Route::post('set-recapcha-data', [RecapchaController::class, 'setRecatpchaData']);
+    Route::get('get-recapcha-data', [RecapchaController::class, 'getRecaptchaData']);
 
     // motherboard
     Route::get('get-motherboard', [SystemSettingsController::class, 'getMotherboard']);
