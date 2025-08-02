@@ -51,6 +51,8 @@ class RouteController extends Controller
         $server = $request['server'];
         $username = $credentials['username'];
         $password = $credentials['password'];
+        $port = $credentials['port'] ?? 22;
+
 
         try {
             DB::beginTransaction();
@@ -60,13 +62,13 @@ class RouteController extends Controller
                 : $command = 'ip route add ' . $credentials['destination_ip'] . ' via ' . $credentials['geteway_ip'];
 
 
-                $ssh = new SshHelper($server, $username, $password);
+                $ssh = new SshHelper($server, $username, $password, $port);
                     $output = $ssh->runCommand($command);
 
 
 
             DB::commit();
-            return response()->json(['success' => true, 'msg' => 'add route server successFuly', 'output' => $output], 200);
+            return response()->json(['success' => true, 'msg' => 'add route server successFul', 'output' => $output], 200);
 
         } catch (\Exception $e) {
             DB::rollback();
@@ -80,6 +82,7 @@ class RouteController extends Controller
         $server = $request['server'];
         $username = $credentials['username'];
         $password = $credentials['password'];
+        $port = $credentials['port'] ?? 22;
 
         try {
             DB::beginTransaction();
@@ -89,12 +92,12 @@ class RouteController extends Controller
                 : $command = 'ip route del ' . $credentials['destination_ip'] . ' via ' . $credentials['geteway_ip'];
 
 
-            $ssh = new SshHelper($server, $username, $password);
+            $ssh = new SshHelper($server, $username, $password, $port);
                 $output = $ssh->runCommand($command);
 
 
             DB::commit();
-            return response()->json(['success' => true, 'msg' => 'show route server successFuly', 'output' => $output], 200);
+            return response()->json(['success' => true, 'msg' => 'show route server successFul', 'output' => $output], 200);
 
         } catch (\Exception $e) {
             DB::rollback();

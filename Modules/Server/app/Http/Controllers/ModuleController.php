@@ -378,7 +378,7 @@ class ModuleController extends ApiController
             'your-permissions' => $user->getAllPermissions()->pluck('name')
         ]);
     }
-    private function updateSingleModule ($request)
+    private function updateSingleModule ($request, int $port)
     {
         $server = Server::find($request['server_id']);
 
@@ -408,7 +408,7 @@ class ModuleController extends ApiController
                 $yamlContent = YamlParserService::convertJsonToYaml($currentConfig);
 
                 $outputCommand = $this->sendConfigToServer($request['username'], $request['password'],
-                            $module['name'], $yamlContent, $moduleServer);
+                            $module['name'], $yamlContent, $moduleServer, $port);
 
                 $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
 
@@ -499,7 +499,7 @@ class ModuleController extends ApiController
                 $yamlContent = YamlParserService::convertJsonToYaml($updatedModule);
 
                 $outputCommand = $this->sendConfigToServer( $request['username'], $request['password'],
-                     $module['name'], $yamlContent, $server);
+                     $module['name'], $yamlContent, $server, $port);
 
 
                 $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
@@ -543,25 +543,11 @@ class ModuleController extends ApiController
                     $separatedMessages["Error-" . ($index + 1)] = $msg;
                 }
 
-            throw new HttpResponseException(response()->json([
-                'msg' => 'server error!',
-                'error' => [
-                    'type' => 'restart-service-error',
-                    'message' => $separatedMessages
-                ]
-            ], 422));
+            throw ValidationException::withMessages(['server-warning' => $e->getMessage()]);
         } catch (\Exception $e) {
             DB::rollBack();
 
-            $message = $e->getMessage();
-
-            throw new HttpResponseException(response()->json([
-                'msg' => 'server error!',
-                'error' => [
-                    'type' => 'server-error',
-                    'message' => $message
-                ]
-            ], 422));
+            throw ValidationException::withMessages(['server-warning' => $e->getMessage()]);
         }
     }
     private function updateModuleConfigInDatabase($moduleId, $data, $server)
@@ -603,10 +589,14 @@ class ModuleController extends ApiController
 
         $serverIds = $request->input('servers', []);
 
-        if (!empty($serverIds))
-            return $this->updateMultipleModules($serverIds, $request, $credentials['port'] ?? 22);
-        else
-            return $this->updateSingleModule($request, $credentials['port'] ?? 22);
+        try {
+            if (!empty($serverIds))
+                return $this->updateMultipleModules($serverIds, $request, $credentials['port'] ?? 22);
+            else
+                return $this->updateSingleModule($request, $credentials['port'] ?? 22);
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
 
