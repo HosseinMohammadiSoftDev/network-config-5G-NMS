@@ -234,9 +234,11 @@ class ModuleController extends ApiController
                     ]);
 
 
-                $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
+                $outputCommand = $this->sendConfigToServer( $creadtional['username'], $creadtional['password'],
                     $creadtional['name'], $yamlContent, $server, $creadtional['port'] ?? 22);
 
+
+                $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
 
             $module->servers()->syncWithoutDetaching([$serverId]);
 
@@ -278,9 +280,11 @@ class ModuleController extends ApiController
 
             DB::commit();
 
-            return $this->respondCreated('The module was successfully created on the servers',  [
+            return response()->json([
+                'success' => $commandWarning ? false : true,
+                'msg' => 'The module was successfully created on the servers',
                 'created_modules' => $createdModules
-            ]);
+            ], $commandWarning ? 422 : 200);
 
         } catch (Exception $e) {
             DB::rollBack();
@@ -342,13 +346,13 @@ class ModuleController extends ApiController
     {
         // is down server
         if ($server['is_down'] == Server::OFF)
-            throw new HttpResponseException(response()->json(['msg' => 'this server: ' . $server['name'] .' is off'], 422));
+            throw ValidationException::withMessages(['server.down' => 'this server: ' . $server['name'] .' is off']);
 
         if (!$server['path_config'])
-            throw new HttpResponseException(response()->json(['msg' => 'You did not specify a configuration address config'], 422));
+            throw ValidationException::withMessages(['server.path_config' => 'You did not specify a configuration address config']);
 
         if (!$server['path_run_config'])
-            throw new HttpResponseException(response()->json(['msg' => 'You did not specify a configuration address run config'], 422));
+            throw ValidationException::withMessages(['server.path_run_config' => 'You did not specify a configuration address run config']);
 
 
         $sshHelper = new sshHelper($server, $username, $password, $port);
@@ -430,9 +434,9 @@ class ModuleController extends ApiController
                 'commandWarning' => $commandWarning,
                 'serverDetaile' => $serversData,
                 'serverIdsInModuleName' => $serverIdsInModuleName
-            ]);
+            ], $commandWarning ? 422 : 200);
 
-        } catch (HttpResponseException $e) {
+        } catch (ValidationException $e) {
             throw $e;
         } catch (InvalidArgumentException $e) {
                 DB::rollBack();
@@ -523,7 +527,7 @@ class ModuleController extends ApiController
                 'commandWarinig' => $commandWarning,
                 'serverDetaile' => $serversData,
                 'serverIdsInModuleName' => $serverIdsInModuleName
-            ]);
+            ], $commandWarning ? 422 : 200);
 
         } catch (HttpResponseException $e) {
             throw $e;
@@ -567,13 +571,8 @@ class ModuleController extends ApiController
 
         $serverModel = $module->servers()->find($server['id']);
 
-        // $moduleConfig = json_decode($serverModel->pivot['current_config'], true);
         $moduleCurrentConfig = $serverModel->pivot['current_config'];
         $serverModel->pivot['previous_config'] = $moduleCurrentConfig;
-
-        // foreach ($data as $key => $value)
-        //     $moduleConfig = JsonUpdater::updateJsonValue($moduleConfig, $key, $value);
-
 
         $module->servers()->updateExistingPivot($server->id, [
             'current_config' => json_encode($data, JSON_PRETTY_PRINT),
@@ -647,7 +646,11 @@ class ModuleController extends ApiController
             $module->servers()->attach($serverId,$defaultConfig);
 
             $yamlContent = YamlParserService::convertJsonToYaml($defaultConfig['initial_config']);
-            $this->sendConfigToServer($request['username'], $request['password'], 'default_module', $yamlContent, $server, $port);
+            $outputCommand = $this->sendConfigToServer($request['username'], $request['password'], 'default_module', $yamlContent, $server, $port);
+
+            if (! empty(CommandOutputAnalyzerService::extractErrors($outputCommand)))
+                throw ValidationException::withMessages(CommandOutputAnalyzerService::extractErrors($outputCommand));
+
         }
     }
     private function addModules(Module $module, array $serverIds, Request $request, int $port)
@@ -779,13 +782,16 @@ class ModuleController extends ApiController
             $sshHelper = new sshHelper($server, $credentials['username'], $credentials['password'], $credentials['port'] ?? 22);
             $output = $sshHelper->getFileContent($command);
 
+            if (! empty(CommandOutputAnalyzerService::extractErrors($output)))
+                throw ValidationException::withMessages(CommandOutputAnalyzerService::extractErrors($output));
+
                 // defalte headers
             return response($output, 200, [
                 'Content-Type' => 'application/octet-stream',
                 'Content-Disposition' => "attachment; filename={$module->name}.yaml",
                 'X-Name-Header' => "{$module->name}.yaml",
                 'Content-Length' => strlen($output),
-            ], 200);
+            ]);
 
         } catch (Exception $e) {
             return $e->getMessage();
@@ -842,11 +848,11 @@ class ModuleController extends ApiController
 
 
             return response()->json([
-                'success' => 'ture',
+                'success' => $commandWarning ? false : true,
                 'msg' => 'The module configuration has been reverted to the previous step',
                 'commandWarning' => $commandWarning,
                 'config' => json_decode($pivotData['current_config'], true)
-            ], 200);
+            ], $commandWarning ? 422 : 200);
 
     } catch (\Exception $e) {
         return response()->json(['Error' => $e->getMessage()], 422);
@@ -897,11 +903,11 @@ class ModuleController extends ApiController
 
         DB::commit();
             return response()->json([
-                'success' => 'ture',
+                'success' => $commandWarning ? false : true,
                 'msg' => 'The module configuration has been reverted to its initial state',
                 'commandWarning' => $commandWarning,
                 'config' => json_decode($pivotData['initial_config'], true)
-            ], 200);
+            ], $commandWarning ? 422 : 200);
 
     } catch (\Exception $e) {
         DB::rollback();
