@@ -61,7 +61,7 @@ class CommandController extends Controller
             $outputCommand = $sshHelper->runCommandModule($command, $typeCommand, $method, $server);
 
             if (! empty(CommandOutputAnalyzerService::extractErrors($outputCommand)))
-                throw ValidationException::withMessages(['commandWarning' => CommandOutputAnalyzerService::extractErrors($outputCommand)]);
+                throw ValidationException::withMessages(CommandOutputAnalyzerService::extractErrors($outputCommand));
 
             return response()->json(['message' => $outputCommand]);
 
