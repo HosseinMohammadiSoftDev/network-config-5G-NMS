@@ -15,6 +15,8 @@ class TraceServerRequest extends FormRequest
         return [
             'server_ids' => ['required', 'array'],
             'server_ids.*' => ['required', 'integer', 'exists:servers,id'],
+            'module_ids' => ['required', 'array'],
+            'module_ids.*' => ['required', 'integer', 'exists:modules,id'],
             'username' => ['required', 'string', 'min:1', 'max:255'],
             'password' => ['required', 'string', 'min:1', 'max:255'],
         ];

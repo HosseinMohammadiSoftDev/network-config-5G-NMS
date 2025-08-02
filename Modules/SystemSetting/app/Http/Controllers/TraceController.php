@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Modules\Server\Helpers\SshHelper;
+use Modules\Server\Models\Module;
+use Modules\Server\Models\Server;
 use Modules\SystemSetting\Http\Requests\Trace\TraceServerRequest;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
@@ -14,9 +16,7 @@ use Symfony\Component\Process\Process;
 class TraceController extends Controller
 {
     public function __construct()
-    {
-
-    }
+    {}
 
 
 
@@ -57,15 +57,17 @@ class TraceController extends Controller
             'output' => $output,
         ];
     }
-    private function commandHelperStartServer ($username, $password, $server)
+    private function commandHelperStartServer (string $username, string $password, Server $server, array $moduleName)
     {
         $ip = $server['ip'];
 
-        $tsharkControllPath  = base_path('Modules/SystemSetting/app/Http/Services/Bash/tshark-control.sh');
-        $setShPath = base_path('Modules/SystemSetting/app/Http/Services/Bash/set.sh');
-        $remotePath      = '/home/siz-tel/trace/';
+        $impledModuleName = implode(' ', $moduleName);
 
-        $makeDirCommand = "sshpass -p '{$password}' ssh -o StrictHostKeyChecking=no {$username}@{$ip} 'mkdir -p /home/siz-tel/trace'";
+        $tsharkControllPath  = base_path('Modules/SystemSetting/app/Http/Services/Bash/tshark-control.sh');
+        $setShPath           = base_path('Modules/SystemSetting/app/Http/Services/Bash/set.sh');
+        $remotePath          = '/home/mohammadi/Desktop/trace/';
+
+        $makeDirCommand = "sshpass -p '{$password}' ssh -o StrictHostKeyChecking=no {$username}@{$ip} 'mkdir -p {$remotePath}'";
 
         $commandScpTsharkControl = "sshpass -p '{$password}' scp -o StrictHostKeyChecking=no {$tsharkControllPath} {$username}@{$ip}:{$remotePath} ";
 
@@ -73,11 +75,13 @@ class TraceController extends Controller
 
         $permissionCommand =
             "sshpass -p '{$password}' ssh -T -o StrictHostKeyChecking=no {$username}@{$ip} "
-            . "'echo \"{$password}\" | sudo -S -p \"\" chmod 777 -R /home/siz-tel/trace'";
+            . "'echo \"{$password}\" | sudo -S -p \"\" chmod 777 -R {$remotePath}'";
 
+//        run tshark service
         $commandRunScript =
             "sshpass -p '{$password}' ssh -T -o StrictHostKeyChecking=no {$username}@{$ip} "
-            . "'echo \"{$password}\" | sudo -S nohup bash {$remotePath}tshark-control.sh start > /home/siz-tel/trace/tshark.log 2>&1 &'";
+            . "'echo \"{$password}\" | sudo -S nohup bash {$remotePath}tshark-control.sh start {$impledModuleName} > {$remotePath}tshark.log 2>&1 &'";
+
 
         return [
             'makeDirCommand'            => $makeDirCommand,
@@ -93,6 +97,7 @@ class TraceController extends Controller
         $username        = $credentials['username'];
         $password        = $credentials['password'];
         $servers         = $request['servers'];
+        $moduleName      = Module::whereIn('id', $credentials['module_ids'])->pluck('name')->toArray();
 
 
         try {
@@ -102,12 +107,12 @@ class TraceController extends Controller
             $processes = [];
 
             foreach ($servers as $server) {
-                $commands = $this->commandHelperStartServer($username, $password, $server);
+                $commands = $this->commandHelperStartServer($username, $password, $server, $moduleName);
 
                 foreach (['makeDirCommand', 'commandScpTsharkControl', 'commandScpSetSh',
                              'permissionCommand', 'commandRunScript'] as $key) {
                     $proc = Process::fromShellCommandline($commands[$key]);
-                    $started = $this->processStarter($proc, $server);
+                    $started = $this->processRuner($proc, $server);
                     $processes[$server['ip']][] = [
                         'name'    => $key,
                         'process' => $started['process'],
@@ -138,50 +143,57 @@ class TraceController extends Controller
 
 
 //        stop trace
-    private function commandHelperStopServer ($username, $password, $server)
+    private function commandHelperStopServer (string $username, string $password, Server $server, array $moduleName)
     {
-        $localPath = '/home/siz/trace/';
-            $setShCommand = $localPath . 'bash ./set.sh ';
+        $localPath    = '/home/mohammadi/Desktop/trace/';
+        $setShCommand = 'bash ' . $localPath . 'set.sh';
+        $remotePath   = '/tmp/' . $server['ip'] . '.pcapng';
+        $logFilePath  = '/var/log/bbdh/';
 
-        $remotePath = '/tmp/' . $server['ip'] . '.pcapng';
-        $mmeLogFile = '/var/log/bbdh/mme1.log';
+        $logFiles = array_map(function ($name) use ($logFilePath) {
+            return "{$logFilePath}{$name}*";
+        }, $moduleName);
+        $remoteLogPaths = implode(' ', $logFiles);
+
+        $moduleName = array_map(function ($name) use ($logFilePath) {
+            return "{$name}.log";
+        }, $moduleName);
+        $moduleNmaeImplode = implode(' ', $moduleName);
 
 
-        $commandStopTshark = "sshpass -p '{$password}' ssh -o StrictHostKeyChecking=no {$username}@{$server['ip']}"
-            . " 'echo \"{$password}\" | sudo -S bash /home/siz-tel/trace/tshark-control.sh stop'";
+//        $commandStopTshark = "sshpass -p '{$password}' ssh -tt {$username}@{$server['ip']}"
+//            . " 'echo \"{$password}\" | sudo -S bash {$localPath}tshark-control.sh stop'";
 
+        $commandStopTshark = "sshpass -p '1' ssh -tt mohammadi@192.168.100.18 \"echo '1' | sudo -S bash /home/mohammadi/Desktop/trace/tshark-control.sh stop\"";
 
-        $commandScpPcapFile = "sshpass -p '{$password}' scp -o StrictHostKeyChecking=no " .
-            "{$username}@{$server['ip']}:{$remotePath} {$localPath}";
-
+        $commandScpPcapFile = "sshpass -p '{$password}' scp -o StrictHostKeyChecking=no {$username}@{$server['ip']}:'{$remotePath}' {$localPath}";
 
         $commandMergePcap = 'cd ' . $localPath . '&& mergecap -w final.pcapng ' . $server['ip'] . '.pcapng';
 
-        $scpMmeLogCommand = "sshpass -p '{$password}' scp -o StrictHostKeyChecking=no " .
-            "{$username}@{$server['ip']}:{$mmeLogFile} {$localPath}";
+        $scpLogCommand = "sshpass -p '{$password}' scp -o StrictHostKeyChecking=no " .
+            "{$username}@{$server['ip']}:{$remoteLogPaths} {$localPath}";
 
-        $mergeMmeLogCommand = 'cd ' . $localPath . 'cat mme1.log mme2.log mme3.log > /home/siz-tel/trace/mme.log';
+        $mergeMmeLogCommand = "cd {$logFilePath} && cat {$moduleNmaeImplode} > {$localPath}mme.log";
 
-        $setShRun = '/home/siz-tel/trace/set.sh ';
+        $setShRun = "sshpass -p '{$password}' ssh -tt {$username}@{$server['ip']} cat | sudo -S {$localPath}set.sh";
 
 
         return [
             'commandStopTshark' => $commandStopTshark,
             'commandScpPcapFile' => $commandScpPcapFile,
-            'scpMmeLogCommand'=> $scpMmeLogCommand,
+            'scpMmeLogCommand'=> $scpLogCommand,
             'mergeMmeLogCommand' => $mergeMmeLogCommand,
             'commandMergePcap' => $commandMergePcap,
-            'setShCommand' => $setShCommand,
             'setShRun' => $setShRun,
         ];
     }
     public function traceServerStop (TraceServerRequest $request)
     {
         $credentials = $request->validated();
-
-        $username = $credentials['username'];
-        $password = $credentials['password'];
-        $servers  = $request['servers'];
+        $username    = $credentials['username'];
+        $password    = $credentials['password'];
+        $servers     = $request['servers'];
+        $moduleName  = Module::whereIn('id', $credentials['module_ids'])->pluck('name')->toArray();
 
         try {
             DB::beginTransaction();
@@ -191,10 +203,10 @@ class TraceController extends Controller
 
             try {
                 foreach ($servers as $server) {
-                    $commands = $this->commandHelperStopServer($username, $password, $server);
+                    $commands = $this->commandHelperStopServer($username, $password, $server, $moduleName);
 
                     foreach (['commandStopTshark', 'commandScpPcapFile', 'commandMergePcap', 'scpMmeLogCommand',
-                                 'mergeMmeLogCommand', 'setShRun'] as $key) {
+                                 'mergeMmeLogCommand'] as $key) {
 
                         $proc = Process::fromShellCommandline($commands[$key]);
                         $started = $this->processStarter($proc, $server);
