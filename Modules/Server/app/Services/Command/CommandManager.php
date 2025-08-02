@@ -2,12 +2,12 @@
 
 namespace Modules\Server\Services\Command;
 
-use Illuminate\Http\Exceptions\HttpResponseException;
+use  Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Modules\Server\Helpers\SshHelper;
-use Modules\Server\Http\Requests\Module\restartServiceModuleRequest;
-use Modules\Server\Models\Module;
 use Modules\Server\Models\Server;
+use Modules\Server\Utility\CommandOutputAnalyzerService;
 
 class CommandManager
 {
@@ -18,23 +18,26 @@ class CommandManager
 
     private static function runCommandModuleToServer (string $username, string $password, $command, server $server, $typeCommand, $method)
     {
-        // is down server
         if ($server['is_down'] == Server::OFF)
-            throw
-            throw new HttpResponseException(response()->json(['msg' => 'this server off'], 422));
-
+            throw ValidationException::withMessages(['message' => 'server down']);
 
         try {
 
             $sshHelper = new sshHelper($server, $username, $password);
 
-                $output = $sshHelper->runCommandModule($command, $typeCommand, $method, $server);
+            $outputCommand = $sshHelper->runCommandModule($command, $typeCommand, $method, $server);
 
-            return response()->json(['message' => nl2br($output)]);
+            $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
+
+            if (! empty(CommandOutputAnalyzerService::extractErrors($outputCommand)))
+                throw ValidationException::withMessages(CommandOutputAnalyzerService::extractErrors($outputCommand));
+
+
+            return response()->json(['message' => nl2br($outputCommand)]);
 
         } catch (HttpResponseException $e) {
             throw $e;
-        } catch (InvalidArgumentException $e) {
+        } catch (\InvalidArgumentException $e) {
             DB::rollBack();
 
             $message = nl2br($e->getMessage());

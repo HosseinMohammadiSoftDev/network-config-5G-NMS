@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Modules\Server\Services\ConfigManager;
 use Modules\Server\Services\ConfService;
 use Modules\Server\Services\Paeser\NeonPaeser;
+use Modules\Server\Utility\CommandOutputAnalyzerService;
 use Modules\User\Models\Permission;
 use Illuminate\Support\Facades\Auth;
 use Modules\Server\Helpers\SshHelper;
@@ -204,7 +205,7 @@ class ModuleController extends ApiController
 
     }
     private function createConfigFileToServer (string $confContent, string $username, string $password
-            , Server $server, Module $module) : void
+            , Server $server, Module $module) : string
     {
         $fullPath = $module['path_config'] . $module['name'] . '.' . $module['extension'];
 
@@ -213,7 +214,7 @@ class ModuleController extends ApiController
             escapeshellarg($fullPath);
 
         $ssh = new SshHelper($server, $username, $password);
-            $ssh->runCommand($command);
+        return $ssh->runCommand($command);
 
 //        $ftp = new FtpHelper($server, $username, $password);
 //            $ftp->uploadFile($module['path_config'], $fullPath);
@@ -265,9 +266,10 @@ class ModuleController extends ApiController
                     ]);
 
 
-            $this->createConfigFileToServer($request->file('config_file')->getContent(), $creadtional['username'],
+            $outputCommand = $this->createConfigFileToServer($request->file('config_file')->getContent(), $creadtional['username'],
                     $creadtional['password'], $server, $module);
 
+            $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
 
             $module->servers()->syncWithoutDetaching([$serverId]);
 
@@ -310,9 +312,12 @@ class ModuleController extends ApiController
 
             DB::commit();
 
-            return $this->respondCreated('The module was successfully created on the servers',  [
-                'created_modules' => $createdModules
-            ]);
+            return response()->json([
+                'success' => $commandWarning ? false : true,
+                'msg' => 'The module was successfully created on the servers',
+                'created_modules' => $createdModules,
+                'commandWarning' => $commandWarning,
+            ], $commandWarning ? 422 : 200);
 
         } catch (Exception $e) {
             DB::rollBack();
@@ -502,8 +507,10 @@ class ModuleController extends ApiController
 
 
 //                send conf file content to server
-            $this->sendConfigToServer($request['username'], $request['password'],
+            $outputCommand = $this->sendConfigToServer($request['username'], $request['password'],
                         $module, $newConfigContent, $server);
+
+            $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
 
             $this->logModuleUpdate($module->servers->find($server['id']), $server, $data);
 
@@ -521,8 +528,9 @@ class ModuleController extends ApiController
             return response()->json([
                 'config' => json_decode($currentConfig, true),
                 'serverDetaile' => $serversData,
-                'serverIdsInModuleName' => $serverIdsInModuleName
-            ]);
+                'serverIdsInModuleName' => $serverIdsInModuleName,
+                'commandWarning' => $commandWarning
+            ], $commandWarning ? 422 : 200);
 
         } catch (ValidationException $e) {
             throw $e;
@@ -594,8 +602,10 @@ class ModuleController extends ApiController
 
 
 //                send yaml file content to server
-                $this->sendConfigToServer($request['username'], $request['password'],
+                $outputCommand = $this->sendConfigToServer($request['username'], $request['password'],
                     $module, $newConfigContent, $server);
+
+                $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
 
                 $this->logModuleUpdate($module->servers->find($server['id']), $server, $data);
             }
@@ -614,8 +624,9 @@ class ModuleController extends ApiController
             return response()->json([
                 'config' => json_decode($updatedModule, true),
                 'serverDetaile' => $serversData,
-                'serverIdsInModuleName' => $serverIdsInModuleName
-            ]);
+                'serverIdsInModuleName' => $serverIdsInModuleName,
+                'commandWarning' => $commandWarning
+            ], $commandWarning ? 422 : 200);
 
         } catch (ValidationException $e) {
             throw $e;
@@ -654,13 +665,13 @@ class ModuleController extends ApiController
             throw ValidationException::withMessages(['path_config' => 'You did not specify a configuration address config']);
 
 
-         $sshHelper = new sshHelper($server, $username, $password);
+        $sshHelper = new sshHelper($server, $username, $password);
 
             // update module command
-         $commandUpdateFileModule = 'echo ' . escapeshellarg($confContent)
-                . ' > ' . $module['path_config'] . $module['name'] . '.' . $module['extension'];
+        $commandUpdateFileModule = 'echo ' . escapeshellarg($confContent)
+            . ' > ' . $module['path_config'] . $module['name'] . '.' . $module['extension'];
 
-         $sshHelper->runCommand($commandUpdateFileModule);
+        return $sshHelper->runCommand($commandUpdateFileModule);
 
             // restart module
 //        $commandRestart = $module['path_run_config'] . 'bbdh-' . $module['name'] . 'd' . ' restart';
@@ -715,89 +726,6 @@ class ModuleController extends ApiController
         else
             return $this->updateSingleModule($request);
     }
-
-
-        // delete config module
-    private function deleteConfigInDatabase ($moduleId, $pathConfig, $server)
-    {
-        $module = Module::find($moduleId);
-
-        if (!$module)
-            throw new HttpResponseException(response()->json(['msg' => 'module is not fuond'], 422));
-
-
-        $moduleConfig = json_decode($server->pivot['current_config'], true);
-        $moduleCurrentConfig = $server->pivot['current_config'];
-        $server->pivot->previous_config = $moduleCurrentConfig;
-
-        foreach ($pathConfig as $path)
-            $moduleConfig = JsonUpdater::deleteConfigInModule($moduleConfig, $path);
-
-
-        $module->servers()->updateExistingPivot($server['id'], [
-            'current_config' => json_encode($moduleConfig, JSON_PRETTY_PRINT),
-            'previous_config' => $moduleCurrentConfig
-        ]);
-
-        return json_encode($moduleConfig, true);
-    }
-    public function deleteConfigModule (DeleteCofigModuleRequest $request)
-    {
-        $request = $request->validated();
-
-        $module = Module::where('id', $request['module_id'])->whereHas('servers', function ($query) use ($request) {
-            $query->where('server_id', $request['server_id']);
-        })->first();
-
-        if (!$module)
-            throw new HttpResponseException(response()->json(['msg' => 'The module with the provided ID was not found on the server you specified.'], 422));
-
-
-        $server = $module->servers()->find($request['server_id']);
-        $pathConfig = $request['path_config'];
-
-        if ($server['is_down'] == 1)
-            return response()->json(['msg' => 'server is off'], 403);
-
-        DB::beginTransaction();
-
-        try {
-            $this->chackPermissionModule($module, $server);
-
-            $moduleCurrentConfig = $this->deleteConfigInDatabase($module['id'], $pathConfig, $server);
-
-            $yamlContent = $this->convertJsonToYaml($moduleCurrentConfig);
-
-            $this->sendConfigToServer( $request['username'], $request['password'],
-                     $module['name'], $yamlContent, $server);
-
-            DB::commit();
-
-            return response()->json([
-                'config' => json_decode($moduleCurrentConfig, true),
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            $message = $e->getMessage();
-
-            if (str_contains($message, 'ERROR') || str_contains($message, 'FATAL')) {
-                $message = preg_replace('/\e\[[\d;]*m/', '', $message);
-                $message = preg_replace('/\r|\n|\[?.*?h/', '', $message);
-                preg_match_all('/(ERROR|FATAL): ([^\r\n]+)/', $message, $matches);
-
-                if (!empty($matches[0])) {
-                    $filteredMessages = implode("\n", $matches[0]);
-                    return response()->json(['error' => $filteredMessages], 500);
-                }
-
-                return response()->json(['error' => $message], 500);
-            }
-
-            return response()->json(['error' => $message], 500);
-        }
-    }
-
 
 
         // edit config module
@@ -992,8 +920,8 @@ class ModuleController extends ApiController
         $server = Server::find($validation['server_id']);
 
 
-        if ($server['is_down'] == 1)
-            return response()->json(['msg' => 'server is off'], 403);
+        if ($server['is_down'] == Server::OFF)
+            throw ValidationException::withMessages(['server', 'server Down']);
 
         try {
                 // download file
@@ -1006,6 +934,11 @@ class ModuleController extends ApiController
 
             $content = file_get_contents($localTempPath);
 
+//            command excption
+            if (! empty(CommandOutputAnalyzerService::extractErrors($content)))
+                throw ValidationException::withMessages(CommandOutputAnalyzerService::extractErrors($content));
+
+
             @unlink($localTempPath);
 
             // defalte headers
@@ -1014,7 +947,7 @@ class ModuleController extends ApiController
                 'Content-Disposition' => "attachment; filename={$module->name}.{$module->extension}",
                 'X-Name-Header' => "{$module->name}.{$module->extension}",
                 'Content-Length' => strlen($content),
-            ], 200);
+            ]);
 
         } catch (Exception $e) {
 
@@ -1049,7 +982,7 @@ class ModuleController extends ApiController
         if (!$module)
             throw ValidationException::withMessages(['module' => 'module is not found']);
 
-        if ($server['is_down'] == 1)
+        if ($server['is_down'] == Server::OFF)
             throw ValidationException::withMessages(['server'=> 'server is off']);
 
 
@@ -1064,14 +997,16 @@ class ModuleController extends ApiController
 //               ssh to server format yaml
             $confContent = $pivotData['previous_config_conf'];
 
-                $this->sendConfigToServer($creadtional['username'], $creadtional['password'],
-                     $module, $confContent, $server);
+            $outpotCommand = $this->sendConfigToServer($creadtional['username'], $creadtional['password'],
+                 $module, $confContent, $server);
 
 
             // save to datebase format json
             $pivotData['current_config_json'] = $pivotData['previous_config_json'];
                 $pivotData->save();
 
+
+            $commandWarning = CommandOutputAnalyzerService::extractErrors($outpotCommand);
 
             activity('undo-config-module')
                 ->causedBy(Auth::user())
@@ -1091,10 +1026,11 @@ class ModuleController extends ApiController
 
 
             return response()->json([
-                'success' => 'ture',
+                'success' => $commandWarning ? false : true,
                 'msg' => 'The module configuration has been reverted to the previous step',
-                'config' => json_decode($pivotData['current_config'], true)
-            ], 200);
+                'config' => json_decode($pivotData['current_config'], true),
+                'commandWarning' => $commandWarning
+            ], $commandWarning ? 422 : 200);
 
         } catch (ValidationException $e) {
             throw $e;
@@ -1124,13 +1060,15 @@ class ModuleController extends ApiController
             // ssh to server format yaml
         $confContent = $pivotData['initial_config_conf'];
 
-        $this->sendConfigToServer($creadtional['username'], $creadtional['password'],
+        $outputCommand = $this->sendConfigToServer($creadtional['username'], $creadtional['password'],
             $module, $confContent, $server);
 
 
             // save to datebase format json
             $pivotData['current_config_json'] = $pivotData['initial_config_json'];
                 $pivotData->save();
+
+        $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
 
 
             activity('undo-config-module')
@@ -1152,10 +1090,11 @@ class ModuleController extends ApiController
 
 
             return response()->json([
-                'success' => 'ture',
+                'success' => $commandWarning ? false : true,
                 'msg' => 'The module configuration has been reverted to its initial state',
-                'config' => json_decode($pivotData['initial_config_json'], true)
-            ], 200);
+                'config' => json_decode($pivotData['initial_config_json'], true),
+                'commandWarning' => $commandWarning
+            ], $commandWarning ? 422 : 200);
 
         } catch (ValidationException $e) {
             throw $e;
