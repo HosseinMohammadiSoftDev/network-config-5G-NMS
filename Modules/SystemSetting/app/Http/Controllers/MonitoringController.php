@@ -4,6 +4,7 @@ namespace Modules\SystemSetting\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Modules\SystemSetting\Http\Requests\DeleteMonitoringAddressReqest;
@@ -23,7 +24,7 @@ class MonitoringController extends Controller
     }
     public function addMonitoringAddress (AddAddressRequest $request)
     {
-        $request->validated();
+        $credentials = $request->validated();
 
         try {
             $systemSetting = SystemSettings::first();
@@ -49,7 +50,25 @@ class MonitoringController extends Controller
                 ]);
             }
 
-            return response()->json(['success' => true, 'message' => 'Add Address successfully.'], 200);
+
+            activity('add-monitpring-address')
+                ->causedBy(Auth::user())
+                ->event('create')
+                ->withProperties([
+                    'type-log' => 'system-setting',
+                    'route' => request()->fullUrl(),
+                    'method' => 'addMonitoringAddress',
+                    'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                    'user_role' =>Auth::user()->roles()->pluck('name')->first(),
+                    'monitoring-data' => [
+                        'name' => $credentials['name'],
+                        'url' => $credentials['url'],
+                    ]
+                ])
+                ->log('add monitoring address successful');
+
+
+            return response()->json(['success' => true, 'message' => 'Add Address successful.'], 200);
 
         }catch (\Exception $e) {
             throw ValidationException::withMessages(['warning' => $e->getMessage()]);
@@ -73,6 +92,23 @@ class MonitoringController extends Controller
             $systemSetting->update([
                 'monitoring_attribute' => ['monitoring' => array_values($filteredServices)]
             ]);
+
+
+            activity('add-monitpring-address')
+                ->causedBy(Auth::user())
+                ->event('deleted')
+                ->withProperties([
+                    'type-log' => 'system-setting',
+                    'route' => request()->fullUrl(),
+                    'method' => 'deleteMonitoringAddress',
+                    'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                    'user_role' =>Auth::user()->roles()->pluck('name')->first(),
+                    'monitoring-data' => [
+                        'name' => $credentials['name'],
+                    ]
+                ])
+                ->log('deleted monitoring address successful');
+
 
             DB::commit();
                 return response()->json(['success' => true, 'message' => 'Deleted SuccessFuly', 'data' => $filteredServices], 200);

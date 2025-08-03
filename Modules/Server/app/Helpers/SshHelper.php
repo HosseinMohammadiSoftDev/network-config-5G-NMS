@@ -4,6 +4,7 @@ namespace Modules\Server\Helpers;
 
 use Exception;
 use Illuminate\Validation\ValidationException;
+use Modules\Server\Models\Server;
 use phpseclib3\Net\SSH2;
 use InvalidArgumentException;
 use Illuminate\Support\Facades\Auth;
@@ -34,8 +35,11 @@ class SshHelper
                 'method' => $method,
                 'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
                 'user_role' =>Auth::user()->roles()->pluck('name')->first(),
-                'host' => $this->server['ip'],
-                'username' => $this->username,
+                'ssh_connection_details' => [
+                    'host' => $this->server['ip'],
+                    'username' => $this->username,
+                    'port' => $this->port,
+                ],
                 'server' => $this->server
             ], $extra))
             ->log($event);
@@ -53,11 +57,11 @@ class SshHelper
             $this->ssh->write("$command\n");
             $output = $this->ssh->read();
 
-            $this->logActivity('run-command', 'runCommand');
+//            $this->logActivity('run-command', 'runCommand');
 
             return $output;
         } catch (Exception $e) {
-            $this->logActivity('failed-command', 'runCommand', ['Error' => $e, ]);
+            $this->logActivity('failed-command', 'runCommand', ['Error' => $e]);
             throw $e;
         }
     }
@@ -76,18 +80,18 @@ class SshHelper
 
 
 
-    public function runCommandModule($command, $typeCommand, $method, $server)
+    public function runCommandModule(string $command, string $typeCommand, string $method)
     {
         $output = $this->runCommand($command);
 
         if (str_contains($output, 'FATAL') || str_contains($output, 'ERROR')) {
             $this->logActivity('module-error', $method,
-                ['command' => $command, 'output' => $output, 'server_id' => $server?->id]);
+                ['command' => $command, 'output' => $output]);
             throw new InvalidArgumentException($output);
         }
         else
             $this->logActivity($typeCommand, $method,
-                ['command' => $command, 'output' => $output, 'server_id' => $server?->id]);
+                ['command' => $command, 'output' => $output]);
 
 
         return $output;
@@ -103,11 +107,11 @@ class SshHelper
 
             $output = $this->ssh->exec($command);
 
-            $this->logActivity('run-command', 'runCommand');
+            $this->logActivity('ping', 'ping');
 
             return $output;
         } catch (Exception $e) {
-            $this->logActivity('failed-command', 'runCommand', ['Error' => $e, ]);
+            $this->logActivity('failed-command', 'runCommand', ['Error' => $e]);
             throw $e;
         }
     }

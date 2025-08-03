@@ -75,7 +75,8 @@ class SystemSettingsController extends ApiController
 
 
             DB::commit();
-                return response()->json(['success' => true, 'msg' => 'Settings have been successfully applied.'], 200);
+                return response()->json(['success' => true, 'msg' => 'Settings have been successfully applied.',
+                    'data' => $systemSetting->is_login_2FA], 200);
 
         } catch (Exception $e) {
             DB::rollBack();
@@ -100,9 +101,21 @@ class SystemSettingsController extends ApiController
                     : $systemSetting->update(['is_login_sms'
                         => $creadtioanle['is_login_sms'] ?? $systemSetting['is_login_sms']]);
 
+            activity('login-by-sms')
+                ->causedBy(Auth::user())
+                ->event('update')
+                ->withProperties([
+                    'type-log' => 'server',
+                    'route' => request()->fullUrl(),
+                    'method' => 'setLoginBySMS',
+                    'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                    'user_role' =>Auth::user()->roles()->pluck('name')->first(),
+                ])
+                ->log('change User login policy with contact phone number');
 
             DB::commit();
-                return response()->json(['success' => true, 'msg' => 'Settings have been successfully applied.'], 200);
+                return response()->json(['success' => true, 'msg' => 'Settings have been successfull applied.',
+                    'data' => $systemSetting->is_login_sms], 200);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -124,11 +137,29 @@ class SystemSettingsController extends ApiController
 
             $systemSetting = SystemSettings::first();
 
+            $oldConnectionDataPanelSms = clone Crypt::decrypt($systemSetting['config_connection_sms']) ?? 'no content';
+
                 !$systemSetting
                     ? $systemSetting = SystemSettings::create($creadtioanle)
                     : $systemSetting->update(['config_connection_sms'
                         => Crypt::encrypt($creadtioanle['connection-data']) ?? $systemSetting['config_connection_sms']]);
 
+
+            activity('login-by-sms')
+                ->causedBy(Auth::user())
+                ->event('update')
+                ->withProperties([
+                    'type-log' => 'server',
+                    'route' => request()->fullUrl(),
+                    'method' => 'setLoginBySMS',
+                    'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                    'user_role' =>Auth::user()->roles()->pluck('name')->first(),
+                    'config-connection-panel-sms' => [
+                        'old-config' => $oldConnectionDataPanelSms,
+                        'new-config' => $systemSetting->config_connection_sms
+                    ]
+                ])
+                ->log('change User login policy with contact phone number');
 
             DB::commit();
                 return response()->json([
@@ -148,7 +179,7 @@ class SystemSettingsController extends ApiController
 
         $template = 'testConnection';
         $code = rand(100000, 999999); // random code
-        $message = "5G Application : Test onnection panel sms successfuly.";
+        $message = "5G Application : Test connection panel sms successful.";
 
         try {
 
@@ -195,7 +226,8 @@ class SystemSettingsController extends ApiController
 
 
             DB::commit();
-                return response()->json(['success' => true, 'msg' => 'Settings have been successfully applied.'], 200);
+                return response()->json(['success' => true, 'msg' => 'Settings have been successfully applied.',
+                    'data' => $systemSetting->orginal_vm_ip], 200);
 
         } catch (Exception $e) {
             DB::rollBack();

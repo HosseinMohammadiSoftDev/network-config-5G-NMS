@@ -33,7 +33,7 @@ class RouteController extends Controller
 
             $command = 'ip route show';
                 $ssh = new SshHelper($server, $username, $password);
-                   $output = $ssh->runCommand($command);
+                   $output = $ssh->runCommandModule($command, 'show-route', 'showRouteServer');
 
 
             DB::commit();
@@ -63,7 +63,7 @@ class RouteController extends Controller
 
 
                 $ssh = new SshHelper($server, $username, $password, $port);
-                    $output = $ssh->runCommand($command);
+                    $output = $ssh->runCommandModule($command, 'add-route', 'addRouteServer');
 
 
 
@@ -93,7 +93,7 @@ class RouteController extends Controller
 
 
             $ssh = new SshHelper($server, $username, $password, $port);
-                $output = $ssh->runCommand($command);
+                $output = $ssh->runCommandModule($command, 'delete-route', 'deleteRouteServer');
 
 
             DB::commit();

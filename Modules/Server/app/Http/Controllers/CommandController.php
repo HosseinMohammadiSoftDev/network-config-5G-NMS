@@ -28,7 +28,7 @@ class CommandController extends Controller
 
             $command = 'ip link show'; // command as systemctl
 
-            return $this->runCommandModuleToServer($credentials, $command, $server,'showInterfaceVm', 'showInterfaceVm');
+            return $this->runCommandModuleToServer($credentials, $command, $server,'show-interface-vm', 'showInterfaceVm');
 
         } catch (\Exception $e) {
             throw ValidationException::withMessages(['warning' => $e->getMessage()]);

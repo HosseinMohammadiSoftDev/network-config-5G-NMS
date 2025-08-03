@@ -4,6 +4,7 @@ namespace Modules\SystemSetting\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Modules\SystemSetting\Http\Requests\Capcha\SetReCaptchaDataRequest;
@@ -26,13 +27,34 @@ class RecapchaController extends Controller
 
             $systemSetting = SystemSettings::first();
 
+            $oldStatusRecapcha = clone $systemSetting->active_online_capcha;
+
             !$systemSetting
                 ? $systemSetting = $systemSetting->create($creadtioanle)
                 : $systemSetting->update(['active_online_capcha'
             => $creadtioanle['active_online_capcha'] ?? $systemSetting['active_online_capcha']]);
 
+
+            activity('')
+                ->causedBy(Auth::user())
+                ->event('update')
+                ->withProperties([
+                    'type-log' => 'server',
+                    'route' => request()->fullUrl(),
+                    'method' => 'setLoginBySMS',
+                    'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                    'user_role' =>Auth::user()->roles()->pluck('name')->first(),
+                    'recapcha' => [
+                        'old-status' => $oldStatusRecapcha,
+                        'new-status' => $systemSetting->active_online_capcha,
+                    ]
+                ])
+                ->log('change of status recapcha the system');
+
+
             DB::commit();
-            return response()->json(['success' => true, 'msg' => 'Settings have been successfully applied.'], 200);
+            return response()->json(['success' => true, 'msg' => 'Settings have been successfully applied.',
+                'data' => $systemSetting->active_online_capcha], 200);
 
         } catch (\Exception $e) {
             DB::rollBack();
