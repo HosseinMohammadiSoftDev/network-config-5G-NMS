@@ -30,9 +30,9 @@ class YamlParserService
             return $parsedArray;
 
         } catch (ParseException $e) {
-            throw ValidationException::withMessages(['error' => 'YAML Parse Error', 'message' => $e->getMessage()]);
+            throw ValidationException::withMessages(['YAML Parse Error', 'message' => $e->getMessage()]);
         } catch (\Exception $e) {
-            throw ValidationException::withMessages(['error' => 'General Error', 'message' => $e->getMessage()]);
+            throw ValidationException::withMessages(['General Error', 'message' => $e->getMessage()]);
         }
     }
     public static function convertJsonToYaml($jsonContent)
