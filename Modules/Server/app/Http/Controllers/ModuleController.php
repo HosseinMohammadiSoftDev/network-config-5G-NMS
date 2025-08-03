@@ -290,7 +290,7 @@ class ModuleController extends ApiController
             return response()->json([
                 'success' => $commandWarning ? false : true,
                 'msg' => 'The module was successfully created on the servers',
-                'created_modules' => $createdModules
+                'data' => ['created_modules' => $createdModules]
             ], $commandWarning ? 422 : 200);
 
         } catch (Exception $e) {
