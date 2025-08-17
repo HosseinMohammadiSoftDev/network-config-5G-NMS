@@ -4,7 +4,7 @@ namespace Modules\SystemSetting\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class SetMapAddressRequest extends FormRequest
+class DeleteMapRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -12,10 +12,7 @@ class SetMapAddressRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'      => ['required', 'string', 'min:3', 'max:255'],
-            'color'     => ['nullable', 'string'],
-            'longitude' => ['required', 'string'],
-            'latitude'  => ['required', 'string'],
+            'name' => ['required', 'string', 'exists:maps,name']
         ];
     }
 

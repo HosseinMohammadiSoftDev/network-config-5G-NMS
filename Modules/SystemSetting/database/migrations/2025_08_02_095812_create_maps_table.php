@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->string('name')->unique();
+            $table->string('color')->nullable();
             $table->string('longitude');
             $table->string('latitude');
 

@@ -19,5 +19,5 @@ Route::middleware(['auth:sanctum'])->group(function () {
 //          map2
     Route::get('get-map-address', [MapController::class, 'getMapAddress']);
     Route::post('set-map-address', [MapController::class, 'setMapAddress']);
-
+    Route::delete('delete-map', [MapController::class, 'deleteMap']);
 });

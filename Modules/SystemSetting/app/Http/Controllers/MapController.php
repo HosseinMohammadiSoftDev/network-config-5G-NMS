@@ -4,6 +4,8 @@ namespace Modules\SystemSetting\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Modules\SystemSetting\Http\Requests\DeleteMapRequest;
 use Modules\SystemSetting\Http\Requests\SetMapAddressRequest;
 use Modules\SystemSetting\Models\Map;
 
@@ -33,6 +35,24 @@ class MapController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+
+        }
+    }
+    public function deleteMap (DeleteMapRequest $request)
+    {
+        $credetials = $request->validated();
+
+        try {
+            DB::beginTransaction();
+
+                Map::where('name', $credetials['name'])
+                    ->delete();
+
+            DB::commit();
+                return response()->json(['success' => true, 'msg' => 'deleted map success full'], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
 
         }
     }
