@@ -12,7 +12,7 @@ class SetMapAddressRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'      => ['required', 'string', 'min:3', 'max:255'],
+            'name'      => ['required', 'string', 'min:3', 'max:255', 'unique:maps,name'],
             'color'     => ['nullable', 'string'],
             'longitude' => ['required', 'string'],
             'latitude'  => ['required', 'string'],

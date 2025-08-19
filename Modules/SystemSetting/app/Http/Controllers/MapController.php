@@ -28,10 +28,10 @@ class MapController extends Controller
         try {
             DB::beginTransaction();
 
-                Map::create($credentials);
+                $map = Map::create($credentials);
 
             DB::commit();
-                return response()->json(['success' => true, 'msg' => 'add map address successFull'], 200);
+                return response()->json(['success' => true, 'msg' => 'add map address successful', 'data' => $map], 200);
 
         } catch (\Exception $e) {
             DB::rollback();
@@ -49,7 +49,7 @@ class MapController extends Controller
                     ->delete();
 
             DB::commit();
-                return response()->json(['success' => true, 'msg' => 'deleted map success full'], 200);
+                return response()->json(['success' => true, 'msg' => 'deleted map successful'], 200);
 
         } catch (\Exception $e) {
             DB::rollBack();
