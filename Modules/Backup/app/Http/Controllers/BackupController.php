@@ -15,10 +15,7 @@ use Modules\SystemSetting\Models\SystemSettings;
 
 class BackupController extends Controller
 {
-    public function __construct()
-    {
-
-    }
+    public function __construct() {}
 
     public function getConfigBackup (Request $request)
     {
@@ -31,14 +28,10 @@ class BackupController extends Controller
         try {
             DB::beginTransaction();
 
-            $backupConfig = BackupConfig::first();
-
-            !$backupConfig
-                ? $backupConfig = BackupConfig::create($credentials)
-                : $backupConfig->update($credentials);
+            $backupConfig = BackupConfig::create($credentials);
 
 //                    set cron job
-            CronTabService::handel($credentials['run_backup_daily'], $credentials['password']);
+            CronTabService::handel($credentials['run_backup_at'], $credentials['password']);
 
             DB::commit();
             return response()->json(['success' => true, 'msg' => 'set config backup successFully', 'data' => $backupConfig], 200);

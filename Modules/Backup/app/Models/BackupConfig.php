@@ -15,7 +15,7 @@ class BackupConfig extends Model
      */
     protected $fillable = [
         'destination_path',
-        'run_backup_daily',
+        'run_backup_at',
     ];
 
 

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->string('destination_path');
-            $table->string('run_backup_daily');
+            $table->timestamp('run_backup_at');
 
             $table->timestamps();
         });
