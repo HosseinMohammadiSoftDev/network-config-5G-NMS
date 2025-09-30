@@ -1,50 +1,45 @@
 <?php
 
-namespace App\Console\Commands;
+namespace Modules\Backup\Services;
 
-use Illuminate\Console\Command;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\File;
 use Modules\Backup\Models\BackupConfig;
 use Modules\Backup\Models\BackupHistory;
 use Modules\Server\Models\Server;
-use Illuminate\Support\Facades\File;
 use Symfony\Component\Yaml\Yaml;
 
-
-class backup extends Command
+class BackupService
 {
-    protected $signature = 'backup:run';
-
-    protected $description = 'run backup as servers save to system detination path.';
-
-    public function handle()
+    public function handle(BackupConfig $backupConfig) : void
     {
+        $backupConfig->load('history');
+
+        if ($backupConfig?->history?->status === BackupHistory::SUCCESSFULY) return; // exit
+
 //            backup history
-        $backupHistory = BackupHistory::create(['started_at' => now(), 'status' => BackupHistory::RUNING]);
+        $backupHistory = BackupHistory::create([
+            'started_at'       => now(),
+            'status'           => BackupHistory::RUNING,
+            'backup_config_id' => $backupConfig['id']
+        ]);
 
         try {
 
-            $backupConfig = BackupConfig::first();
-                if (!$backupConfig)
-                    throw ValidationException::withMessages(['validation' => ['not set config backup.']]);
-
             $storagePath = $backupConfig['destination_path'] . now()->toString();
 
-            if (file_exists($storagePath))
-                File::deleteDirectory($storagePath);
+            if (file_exists($storagePath)) File::deleteDirectory($storagePath);
 
-//            create backup folder
-            File::makeDirectory($storagePath, 0777, true, true);
+            File::makeDirectory($storagePath, 0777, true, true); // create backup folder
 
 
             $servers = Server::with('modules')->get();
-//                create server name folder
+//      create server name folder
             foreach ($servers as $server) {
                 $serverFolder = "{$storagePath}/{$server->name}";
                 File::makeDirectory($serverFolder);
 
-//         create yaml file to folder server
+//      create yaml file to folder server
                 foreach ($server->modules as $module) {
                     $configFile = "{$serverFolder}/{$module->name}.yaml";
                     File::put(
@@ -53,7 +48,7 @@ class backup extends Command
                     );
                 }
             }
-                $this->info('The command was successful!');
+
 
             $backupHistory->update([
                 'name' => now()->toString(),
@@ -67,12 +62,12 @@ class backup extends Command
         } catch (\Exception $e) {
 
             $backupHistory->update([
-               'name' => now()->toString(),
-               'destination_path' => $backupConfig->destination_path,
-               'message' => $e->getMessage(),
-               'servers' => $servers->pluck('name'),
-               'status' => BackupHistory::FAILED,
-               'finished_at' => now()
+                'name' => now()->toString(),
+                'destination_path' => $backupConfig->destination_path,
+                'message' => $e->getMessage(),
+                'servers' => $servers->pluck('name'),
+                'status' => BackupHistory::FAILED,
+                'finished_at' => now()
             ]);
         }
 
