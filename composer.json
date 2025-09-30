@@ -19,7 +19,8 @@
         "symfony/config": "^7.3",
         "symfony/process": "^7.2",
         "symfony/serializer": "^7.2",
-        "symfony/yaml": "^7.2"
+        "symfony/yaml": "^7.2",
+        "ext-posix": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
