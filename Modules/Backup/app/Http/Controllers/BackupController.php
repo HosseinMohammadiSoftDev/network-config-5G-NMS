@@ -17,9 +17,14 @@ class BackupController extends Controller
 {
     public function __construct() {}
 
-    public function getConfigBackup (Request $request)
+    public function index (Request $request): JsonResponse
     {
-        return response()->json(['success' => true, 'data' => BackupConfig::cursor()]);
+        $backupConfig = BackupConfig::when($request->input('take'),
+            fn ($query) => $query->orderBy('run_backup_at', $request->input('order', 'desc'))
+            ->take($request->input('take'))
+        )->get();
+
+        return response()->json(['success' => true, 'data' => $backupConfig]);
     }
     public function create (SetConfigBackupRequest $request): JsonResponse
     {
