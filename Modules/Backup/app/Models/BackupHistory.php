@@ -4,6 +4,8 @@ namespace Modules\Backup\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 // use Modules\Backup\Database\Factories\BackupHistoryFactory;
 
 class BackupHistory extends Model
@@ -26,7 +28,11 @@ class BackupHistory extends Model
         'message',
         'start_time',
         'finish_time',
+        'backup_config_id',
     ];
 
-
+    public function backupConfig (): BelongsTo
+    {
+        return $this->belongsTo(BackupConfig::class);
+    }
 }

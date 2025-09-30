@@ -21,6 +21,12 @@ return new class extends Migration
 
             $table->tinyInteger('status')->default(0)->comment('0:runing 1:success 2:failed');
 
+            $table->foreignId('backup_config_id')
+                ->nullable()
+                ->constrained('backup_configs')
+                ->onUpdate('set null')
+                ->onDelete('set null');
+
             $table->string('message')->nullable();
 
             $table->timestamp('start_time')->nullable();
