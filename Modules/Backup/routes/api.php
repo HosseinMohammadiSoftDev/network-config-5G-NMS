@@ -16,8 +16,10 @@ use Modules\Backup\Http\Controllers\BackupController;
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
-    Route::post('set-config-backup', [BackupController::class, 'setConfigBackup']);
-    Route::get('get-config-backup', [BackupController::class, 'getConfigBackup']);
+    Route::get('get-config-backup', [BackupController::class, 'index']);
+    Route::post('set-config-backup', [BackupController::class, 'create']);
+    Route::patch('edit-config-backup', [BackupController::class, 'edit']);
+    Route::delete('delete-config-backup/{backupConfig}', [BackupController::class, 'destroy']);
 
     Route::get('get-history-backup', [BackupController::class, 'getHistoryBackup']);
 });

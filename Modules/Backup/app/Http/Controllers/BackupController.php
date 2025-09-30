@@ -3,15 +3,17 @@
 namespace Modules\Backup\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Modules\Backup\Http\Requests\ConfigBackup\EditBackupConfigRequest;
 use Modules\Backup\Http\Requests\ConfigBackup\SetConfigBackupRequest;
 use Modules\Backup\Http\Requests\TimeCronJob\SetTimeCronJobAndDestinationPathBackupRequest;
 use Modules\Backup\Http\Requests\TimeCronJob\SetTimeCronJobBackupRequest;
 use Modules\Backup\Models\BackupConfig;
 use Modules\Backup\Models\BackupHistory;
+use Modules\Backup\Services\BackupService;
 use Modules\Backup\Services\CronTabService;
-use Modules\SystemSetting\Models\SystemSettings;
 
 class BackupController extends Controller
 {
@@ -49,11 +51,43 @@ class BackupController extends Controller
                 return response()->json(['success' => false, 'msg' => $e->getMessage()], 500);
         }
     }
+    public function edit (EditBackupConfigRequest $request): JsonResponse
+    {
+        $credentials = $request->validated();
+
+        try {
+            DB::beginTransaction();
+
+                $backupConfig = tap(BackupConfig::find($credentials['id']))
+                    ->update($credentials);
+
+            DB::commit();
+                return response()->json(['success' => true, 'msg' => 'edit config backup successFully', 'data' => $backupConfig], 200);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+                throw $e;
+        }
+    }
+    public function destroy (BackupConfig $backupConfig): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+
+                tap($backupConfig->delete());
+
+            DB::commit();
+                return response()->json(['success' => true, 'msg' => 'deleted backup config successFul', 'data' => $backupConfig], 200);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+                throw $e;
+        }
+    }
 
 
 
-//      history backup
-    public function getHistoryBackup (Request $request)
+    public function getHistoryBackup (Request $request): JsonResponse
     {
         return response()->json(['success' => true, 'data' => BackupHistory::cursor()]);
     }
