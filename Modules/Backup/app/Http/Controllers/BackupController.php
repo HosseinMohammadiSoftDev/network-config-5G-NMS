@@ -21,7 +21,7 @@ class BackupController extends Controller
     {
         return response()->json(['success' => true, 'data' => BackupConfig::cursor()]);
     }
-    public function setConfigBackup(SetConfigBackupRequest $request)
+    public function create (SetConfigBackupRequest $request): JsonResponse
     {
         $credentials = $request->validated();
 
@@ -31,7 +31,8 @@ class BackupController extends Controller
             $backupConfig = BackupConfig::create($credentials);
 
 //                    set cron job
-            CronTabService::handel($credentials['run_backup_at'], $credentials['password']);
+            $cronTabService = new CronTabService($credentials['password']);
+            $cronTabService->set();
 
             DB::commit();
             return response()->json(['success' => true, 'msg' => 'set config backup successFully', 'data' => $backupConfig], 200);

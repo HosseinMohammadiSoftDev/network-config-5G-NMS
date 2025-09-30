@@ -2,28 +2,38 @@
 
 namespace Modules\Backup\Services;
 
+use Illuminate\Support\Facades\Process;
+
 class CronTabService
 {
-    public function __construct()
-    {
+    private $cronTime = '* * * * *';
+    private $cronCommand;
+    private $password;
 
+    public function __construct(string $password)
+    {
+        $this->cronCommand = $this->cronTime . ' cd /home/mohammadi/Desktop/5G-back && php artisan schedule:run >> /dev/null 2>&1';
+        $this->password = $password;
     }
 
 
-    public static function handel($runBackupDaily, string $password)
+    public function set() : void
     {
-        $cronTime = ($runBackupDaily > 1) ? "0 12 */$runBackupDaily * *" : '0 12 * * *';
-        $cronCommand = $cronTime . ' cd /var/www/html/back-end && php artisan backup:run >> /dev/null 2>&1';
+//        validate to not respite crontab record
+        $listCommand  = "echo " . escapeshellarg($this->password) . " | sudo -S crontab -l 2>/dev/null";
+        $currentCrons = Process::run($listCommand)->output() ?? '';
 
-//            run command to system
-        $execCommand = "echo '{$password}' | sudo -S sh -c '(crontab -l 2>/dev/null; echo \"{$cronCommand}\") | sudo crontab -'";
+        if (str_contains($currentCrons, $this->cronCommand)) return; // EXIT
 
-        exec($execCommand . ' 2>&1', $output, $returnVar);
 
-//        error to run exec command
-        if ($returnVar !== 0)
-            throw new \RuntimeException('Crontab Error:' .  implode("\n", $output));
 
+//            run command to system unix
+        $execCommand = "echo '{$this->password}' | sudo -S sh -c '(crontab -l 2>/dev/null; echo \"{$this->cronCommand}\") | sudo crontab -'";
+
+        $commandResult = Process::run($execCommand . ' 2>&1');
+
+        if (! empty($commandResult->errorOutput()))
+            throw new \RuntimeException('Crontab Error:' .  implode("\n", $commandResult->errorOutput()));
     }
 
 }
