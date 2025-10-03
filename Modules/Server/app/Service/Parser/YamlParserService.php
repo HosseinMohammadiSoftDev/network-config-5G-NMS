@@ -66,4 +66,21 @@ class YamlParserService
         return $array;
     }
 
+
+    public static function uploadModuleFile (UploadedFile $file)
+    {
+
+        try {
+
+            $arrayContent = YamlParserService::parseYamlToArray($file);
+
+        } catch (Exception $e) {
+            throw $e;
+        }
+
+        $jsonContent = json_encode($arrayContent, JSON_PRETTY_PRINT);
+
+        return $jsonContent;
+
+    }
 }

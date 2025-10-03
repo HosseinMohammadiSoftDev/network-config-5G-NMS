@@ -33,7 +33,6 @@ class ModuleController extends ApiController
     public function __construct()
     {}
 
-        // show Config in database
     public function showConfigModule ($serverId, $moduleId)
     {
         $module = Module::where('id', $moduleId)
@@ -172,35 +171,16 @@ class ModuleController extends ApiController
     }
 
 
-
-        // create New Module And Upload File .Yaml Convert to Json Upload To database
-    private function uploadModuleFile ($file)
-    {
-
-        try {
-
-            $arrayContent = YamlParserService::parseYamlToArray($file);
-
-        } catch (Exception $e) {
-            throw $e;
-        }
-
-        $jsonContent = json_encode($arrayContent, JSON_PRETTY_PRINT);
-
-        return $jsonContent;
-
-    }
     public function createModule (CreateModulesRequest $request)
     {
         $creadtional = $request->validated();
         $serverIds = $creadtional['server_id'];
 
-        $jsonContent = $this->uploadModuleFile($request->file('config_file'));
+        $jsonContent = YamlParserService::uploadModuleFile($request->file('config_file'));
 
         $yamlContent = YamlParserService::convertJsonToYaml($jsonContent);
 
-        if (is_array($jsonContent) || is_object($jsonContent))
-            return $jsonContent;
+        if (is_array($jsonContent) || is_object($jsonContent)) return $jsonContent;
 
         $failedServers = [];
         $createdModules = [];
@@ -220,11 +200,9 @@ class ModuleController extends ApiController
                     // check permission
                 $this->chackPermissionModule($server);
 
-                if (!$server)
-                    $failedServers[] = $serverId;
+                if (!$server) $failedServers[] = $serverId;
 
-                if ($server && $server['is_down'] == 1)
-                    return response()->json(['msg'=> 'server is off', 'server' => $server], 422);
+                if ($server && $server['is_down'] == Server::OFF) return response()->json(['msg'=> 'server is off', 'server' => $server], 422);
 
                     $module->servers()->syncWithoutDetaching([
                         $serverId => [
@@ -246,11 +224,12 @@ class ModuleController extends ApiController
 
 
                 $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
+                if ($commandWarning) throw ValidationException::withMessages($commandWarning);
 
             $module->servers()->syncWithoutDetaching([$serverId]);
 
                 $createdModules[] = [
-                    'server' => [
+                        'server' => [
                         'server_id' => $server['id'],
                         'server_name' => $server['name'],
                         'server_ip' => $server['ip']
@@ -282,14 +261,13 @@ class ModuleController extends ApiController
                     ->log('A new module has been created');
             }
 
-            if (!empty($failedServers))
-                return response()->json(['msg' => 'An issue occurred while adding the module to the server', 'server-faild' => $failedServers], 422);
+            if (!empty($failedServers)) return response()->json(['msg' => 'An issue occurred while adding the module to the server', 'server-faild' => $failedServers], 422);
 
             DB::commit();
 
             return response()->json([
                 'success' => $commandWarning ? false : true,
-                'msg' => 'The module was successfully created on the servers',
+                'msg' => $commandWarning ? 'Failed to create the module on the servers' : 'The module was successfully created on the servers',
                 'data' => ['created_modules' => $createdModules]
             ], $commandWarning ? 422 : 200);
 
@@ -673,7 +651,7 @@ class ModuleController extends ApiController
     private function sendDefaultConfigToServers(array $serverIds, Request $request, Module $module, int $port)
     {
         $yamlContent = $request->file('config_file')->getContent();
-        $jsonContent = $this->uploadModuleFile($request->file('config_file'));
+        $jsonContent = YamlParserService::uploadModuleFile($request->file('config_file'));
 
         foreach ($serverIds as $serverId) {
             $server = Server::find($serverId);
@@ -783,7 +761,7 @@ class ModuleController extends ApiController
 
                     // update file
                 if ($configFile) {
-                    $jsonConfig = $this->uploadModuleFile($configFile);
+                    $jsonConfig = YamlParserService::uploadModuleFile($configFile);
                     $this->updateConfigForDB($module, $serverIds, $jsonConfig, $request, $credentials['port'] ?? 22);
                 }
 
@@ -852,9 +830,6 @@ class ModuleController extends ApiController
     }
 
 
-
-
-        // expert file
     public function expertModuleFileIsServer (ExpertModuleFileIsServerRequset $request)
     {
         $credentials = $request->validated();
@@ -908,22 +883,16 @@ class ModuleController extends ApiController
     }
 
 
+    public function undoConfigModule (UndoConfigModulesRequest $request)
+    {
+        $creadtional = $request->validated();
 
+        $pivotData = $request['module']->servers()->where('server_id', $creadtional['server_id'])->first()->pivot;
+        $modulePreviousConfig = $pivotData['previous_config'];
 
+        if ($modulePreviousConfig == null) throw ValidationException::withMessages(['module' => 'The module does not have a previous value, you cannot revert it to the previous value']);
 
-        // Undo Config module
-  public function undoConfigModule (UndoConfigModulesRequest $request)
-  {
-    $creadtional = $request->validated();
-
-
-    $pivotData = $request['module']->servers()->where('server_id', $creadtional['server_id'])->first()->pivot;
-    $modulePreviousConfig = $pivotData['previous_config'];
-
-    if ($modulePreviousConfig == null)
-        throw ValidationException::withMessages(['module' => 'The module does not have a previous value, you cannot revert it to the previous value']);
-
-    try {
+        try {
             // ssh to server format yaml
             $yamlContent = YamlParserService::convertJsonToYaml($pivotData['previous_config']);
             $outputCommand = $this->sendConfigToServer(
@@ -931,18 +900,84 @@ class ModuleController extends ApiController
                 $creadtional['password'],
                 $request['module']['name'],
                 $yamlContent, $request['server'],
-                    $creadtional['port'] ?? 22,
+                $creadtional['port'] ?? 22,
                 'undo-config-module',
                 'undoConfigModule'
             );
 
 
-                // save to datebase format json
+            // save to datebase format json
             $pivotData['current_config'] = $pivotData['previous_config'];
             $pivotData->save();
 
 
             $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
+            if ($commandWarning) throw ValidationException::withMessages($commandWarning);
+
+
+            activity('undo-config-module')
+                ->causedBy(Auth::user())
+                ->performedOn($request['module'])
+                ->event('undo-config-module')
+                ->withProperties([
+                    'type-log' => 'server',
+                    'route' => request()->fullUrl(),
+                    'method' => 'undoConfigModule',
+                    'user' => Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                    'user_role' => Auth::user()->roles()->pluck('name')->first(),
+                    'module_id' => $request['module']['id'],
+                    'module_name' => $request['module']['name'],
+                    'module_type' => $request['module']['type'],
+                    'server_id' => $request['server']?->id
+                ])
+                ->log('The module configuration has been reverted to the previous step');
+
+
+            return response()->json([
+                'success' => $commandWarning ? false : true,
+                'msg' => 'The module configuration has been reverted to the previous step',
+                'commandWarning' => $commandWarning,
+                'config' => json_decode($pivotData['current_config'], true)
+            ], $commandWarning ? 422 : 200);
+
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            return response()->json(['Error' => $e->getMessage()], 422);
+        }
+    }
+    public function undoToInitialConfigModule (UndoToInitialConfigModulesRequest $request)
+    {
+        $creadtional = $request->validated();
+
+
+        $pivotData = $request['module']->servers()->where('server_id', $creadtional['server_id'])->first()->pivot;
+        $moduleInitialConfig = $pivotData['initial_config'];
+
+        try {
+            DB::beginTransaction();
+
+                    // ssh to server format yaml
+            $yamlContent = YamlParserService::convertJsonToYaml($moduleInitialConfig);
+
+            $outputCommand = $this->sendConfigToServer(
+                $creadtional['username'],
+                $creadtional['password'],
+                $request['module']['name'],
+                $yamlContent, $request['server'],
+                $creadtional['port'] ?? 22,
+                'undo-initial-config-module',
+                'undoToInitialConfigModule'
+            );
+
+
+            // save to datebase format json
+            $pivotData['current_config'] = $pivotData['initial_config'];
+            $pivotData->save();
+
+
+            $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
+            if ($commandWarning) throw ValidationException::withMessages($commandWarning);
 
 
             activity('undo-config-module')
@@ -957,85 +992,25 @@ class ModuleController extends ApiController
                     'user_role' =>Auth::user()->roles()->pluck('name')->first(),
                     'module_id' => $request['module']['id'],
                     'module_name' => $request['module']['name'],
-                    'module_type'=> $request['module']['type'],
-                    'server_id' => $request['server']?->id
+                    'module_type' => $request['module']['type'],
+                    'server' => $request['server']
                 ])
-            ->log('The module configuration has been reverted to the previous step');
+            ->log('The module configuration has been reverted to its initial state');
 
+            DB::commit();
+                return response()->json([
+                    'success' => $commandWarning ? false : true,
+                    'msg' => 'The module configuration has been reverted to its initial state',
+                    'commandWarning' => $commandWarning,
+                    'config' => json_decode($pivotData['initial_config'], true)
+                ], $commandWarning ? 422 : 200);
 
-            return response()->json([
-                'success' => $commandWarning ? false : true,
-                'msg' => 'The module configuration has been reverted to the previous step',
-                'commandWarning' => $commandWarning,
-                'config' => json_decode($pivotData['current_config'], true)
-            ], $commandWarning ? 422 : 200);
-
-    } catch (\Exception $e) {
-        return response()->json(['Error' => $e->getMessage()], 422);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            DB::rollback();
+                return response()->json(['error'=> $e->getMessage()], 422);
+        }
     }
-  }
-  public function undoToInitialConfigModule (UndoToInitialConfigModulesRequest $request)
-  {
-    $creadtional = $request->validated();
-
-
-    $pivotData = $request['module']->servers()->where('server_id', $creadtional['server_id'])->first()->pivot;
-    $moduleInitialConfig = $pivotData['initial_config'];
-
-    try {
-        DB::beginTransaction();
-
-                // ssh to server format yaml
-        $yamlContent = YamlParserService::convertJsonToYaml($moduleInitialConfig);
-
-        $outputCommand = $this->sendConfigToServer(
-            $creadtional['username'],
-            $creadtional['password'],
-            $request['module']['name'],
-            $yamlContent, $request['server'],
-            $creadtional['port'] ?? 22,
-            'undo-initial-config-module',
-            'undoToInitialConfigModule'
-        );
-
-
-        // save to datebase format json
-        $pivotData['current_config'] = $pivotData['initial_config'];
-        $pivotData->save();
-
-
-        $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
-
-
-        activity('undo-config-module')
-            ->causedBy(Auth::user())
-            ->performedOn($request['module'])
-            ->event('undo-config-module')
-            ->withProperties([
-                'type-log' => 'server',
-                'route' => request()->fullUrl(),
-                'method' => 'undoConfigModule',
-                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                'user_role' =>Auth::user()->roles()->pluck('name')->first(),
-                'module_id' => $request['module']['id'],
-                'module_name' => $request['module']['name'],
-                'module_type' => $request['module']['type'],
-                'server' => $request['server']
-            ])
-        ->log('The module configuration has been reverted to its initial state');
-
-        DB::commit();
-            return response()->json([
-                'success' => $commandWarning ? false : true,
-                'msg' => 'The module configuration has been reverted to its initial state',
-                'commandWarning' => $commandWarning,
-                'config' => json_decode($pivotData['initial_config'], true)
-            ], $commandWarning ? 422 : 200);
-
-    } catch (\Exception $e) {
-        DB::rollback();
-            return response()->json(['error'=> $e->getMessage()], 422);
-    }
-  }
 
 }
