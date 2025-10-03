@@ -5,6 +5,7 @@ use Modules\Server\Http\Controllers\ModuleController;
 use Modules\Server\Http\Controllers\ServerController;
 use Modules\Server\Http\Controllers\ServiceController;
 use Modules\Server\Http\Controllers\CommandController;
+use \Modules\Server\Http\Controllers\ModuleScheduleController;
 
 /*
  *--------------------------------------------------------------------------
@@ -39,6 +40,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::middleware(['permission:module/delete|role:admin|expert'])->delete('delete-module', [ModuleController::class, 'deleteModule']);
     Route::middleware(['permission:module/read|role:admin|expert'])->get('show-all-modules', [ModuleController::class, 'showAllModules']);
     Route::middleware(['permission:module/delete|role:admin|expert'])->post('edit-module', [ModuleController::class, 'editModule']);
+
+    Route::resource('module/schedule',ModuleScheduleController::class)
+        ->middleware(['role:admin']);
+
 
 //      command service
     Route::middleware(['permission:module/update|role:admin|expert'])->post('restart-service-config', [CommandController::class, 'restartServiceModule']);
