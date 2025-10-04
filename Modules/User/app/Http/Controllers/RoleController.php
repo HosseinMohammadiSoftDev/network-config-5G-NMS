@@ -32,7 +32,7 @@ class RoleController extends ApiController
                 'name' => 'visitor',
                 'permissions' => array_merge(
                     ['VM/read', 'module/read'],
-//                    $serverPermissions
+                    $serverPermissions
                 ),
             ],
             [
@@ -43,7 +43,7 @@ class RoleController extends ApiController
                         'module/read', 'module/create', 'module/update', 'module/delete',
                         'monitoring'
                     ],
-//                    $serverPermissions
+                    $serverPermissions
                 ),
             ]
         ];
