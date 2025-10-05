@@ -22,17 +22,18 @@ class SyncModuleMiddelware
     {
         $systemSetting = SystemSetting::first()
             ? SystemSetting::first()
-            : SystemSetting::create(['is_connected' => true, 'last_connection_nms' => Carbon::now()->subMinutes(15)->toIso8601String()]); //defalte
+            : SystemSetting::create(['is_connected' => false]); //defalte
 
 
-//        is not connected
+//        is not {connected
         if (!$this->isChackeConnection())
             return $next($request);
 
+dd(AutoSyncData::handelChangedModuleThisBBU(Module::all(), 'return-connection-server'));
 
         if (Carbon::parse($systemSetting['last_connection_nms'])->lt(Carbon::now()->subMinutes(15))) {
             $this->seterDataServer->excludeModuleChangesBBU();
-            AutoSyncData::handelChangedModuleThisBBU(Module::all(), 'retunr-connection-server');
+            AutoSyncData::handelChangedModuleThisBBU(Module::all(), 'return-connection-server');
         }
 
 
@@ -50,8 +51,7 @@ class SyncModuleMiddelware
         $ip = env('NMS_UNIQUE_IP');
         exec("ping -c 1 -W 1 $ip", $output, $result);
 
-        if ($result === 0)
-            return true;
+        if ($result === 0) return true;
 
         return false;
     }

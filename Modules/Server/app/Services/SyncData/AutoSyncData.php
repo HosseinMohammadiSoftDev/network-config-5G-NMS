@@ -20,30 +20,38 @@ class AutoSyncData
         $systemSetting = SystemSetting::first()
             ? SystemSetting::first()
             : SystemSetting::create([
-                'nms_server_ip' => '192.168.100.18',
+                'nms_server_ip' => env('NMS_UNIQUE_IP'),
                 'is_connected' => true,
                 'last_connection_nms' => Carbon::now()->subMinutes(15)
             ]);
 
-        self::$appDomainNMS = 'http://' . $systemSetting['nms_server_ip'] . ':8000/api' ?? config('nms.app_domain');
-        self::$ipNMS = $systemSetting['nms_server_ip'] ?? config('nms.ip');
+        self::$appDomainNMS = env('NMS_APP_DOMAIN');
+        self::$ipNMS =  env('NMS_UNIQUE_IP');
     }
 
-//      auto sync data
-//          send change module to rru
+
+    /**
+     * @descreption :
+     *      send module changes (if connect by nms server )
+     *
+     * @param mixed $module
+     * @param string $action
+     * @param Module|null $oldModuleData
+     * @return array|mixed
+     * @throws \Illuminate\Http\Client\ConnectionException
+     */
     private static function HTTPService (mixed $module, string $action, ?Module $oldModuleData = null)
     {
         self::init();
 
         $response = Http::withHeaders([
             'Accept' => 'application/json'
-        ])->post(self::$appDomainNMS . 'auto-sync/receive-changed-module-bbu', [
+        ])->post(self::$appDomainNMS . env('NMS_END_POINT'), [
             'module' => $module ?? null,
             'action' => $action,
             'old_module_data' => $oldModuleData ?? null
         ]);
 
-//    dd($response->json());
         return $response->json();
     }
     private static function isConnectedRRU () : bool
@@ -71,11 +79,11 @@ class AutoSyncData
     {
         try {
 
-            if (!self::isConnectedRRU() && !$action === 'retunr-connection-server') {
+            if (!self::isConnectedRRU() && !$action === 'return-connection-server') {
                 self::isExistsThisServerToRRU();
 
                 $module->update(['is_updated' => true]);
-                return;  // break as mothod
+                return;  // EXIT
             }
 
             switch ($action) {
@@ -95,12 +103,12 @@ class AutoSyncData
                     self::HTTPService($module, 'delete');
                     break;
 
-                case 'retunr-connection-server' :
-                    self::HTTPService($module, 'retunr-connection-server');
+                case 'return-connection-server' :
+                    self::HTTPService($module, 'return-connection-server');
                     break;
 
                 default :
-                    throw new \RuntimeException('undifinde action auto sync');
+                    throw new \RuntimeException('undefined action auto sync');
             }
         } catch (\Exception $e) {
             throw $e;
@@ -110,7 +118,7 @@ class AutoSyncData
 
 
 
-//      recive change module as rru
+//      recive change module as rru (save shcanges module this server as rru)
     public static function handelChangedModuleToRRU (array $module, string $action, ?array $oldModuleData = null)
     {
         $seterDataService = new SeterDataServer();
