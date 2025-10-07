@@ -13,12 +13,14 @@ class TraceServerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'server_ids' => ['required', 'array'],
-            'server_ids.*' => ['required', 'integer', 'exists:servers,id'],
-            'module_ids' => ['required', 'array'],
-            'module_ids.*' => ['required', 'integer', 'exists:modules,id'],
-            'username' => ['required', 'string', 'min:1', 'max:255'],
-            'password' => ['required', 'string', 'min:1', 'max:255'],
+            'servers'            => ['required', 'array'],
+            'servers.*.id'       => ['required', 'integer', 'exists:servers,id'],
+            'servers.*.username' => ['required', 'string', 'min:1'],
+            'servers.*.password' => ['required', 'string', 'min:1'],
+            'servers.*.port'     => ['integer'],
+
+            'servers.*.module_ids'   => ['array'],
+            'servers.*.module_ids.*' => ['required', 'integer', 'exists:modules,id'],
         ];
     }
 
@@ -27,19 +29,17 @@ class TraceServerRequest extends FormRequest
 
     public function withValidator ($validator)
     {
-        if ($validator->errors()->any())
-            return;
+        if ($validator->errors()->any()) return;
 
+        $serverIds = collect($this->input('servers'))->pluck('id')->toArray();
+        $servers   = Server::whereIn('id', $serverIds)->get();
 
-            $servers = Server::whereIn('id' ,$this->input('server_ids'))->get();
         $validator->after(function ($validator) use ($servers) {
 
             foreach ($servers as $server) {
-                if (!$server['ip'])
-                    return $validator->errors()->add('validation', 'selected server is not ip address.');
+                if (!$server['ip']) return $validator->errors()->add('validation', 'selected server is not ip address.');
 
-                if ($server['is_down'])
-                    return $validator->errors()->add('validation', 'selected server is down.');
+                if ($server['is_down']) return $validator->errors()->add('validation', 'selected server is down.');
             }
 
             $this->merge(['servers' => $servers]);

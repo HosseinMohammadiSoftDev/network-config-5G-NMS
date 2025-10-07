@@ -5,6 +5,7 @@ namespace Modules\SystemSetting\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Modules\Server\Helpers\SshHelper;
 use Modules\Server\Models\Module;
@@ -24,6 +25,10 @@ class TraceController extends Controller
 //          start trace
     private function processRuner ($process, $server)
     {
+        $process->setTimeout(20);
+
+        Log::info($process->getCommandLine());
+
         $process->run(function ($type, $buffer) use ($server, &$output) {
             $output .= $buffer;
 
@@ -40,6 +45,8 @@ class TraceController extends Controller
     }
     private function processStarter ($process, $server)
     {
+        $process->setTimeout(20);
+
         $output = '';
 
         $process->start(function ($type, $buffer) use ($server, &$output, &$hasError) {
@@ -57,15 +64,15 @@ class TraceController extends Controller
             'output' => $output,
         ];
     }
-    private function commandHelperStartServer (string $username, string $password, Server $server, array $moduleName)
+    private function commandHelperStartServer (string $username, string $password, Server $server, array $moduleName = null)
     {
         $ip = $server['ip'];
 
-        $impledModuleName = implode(' ', $moduleName);
+        $impledModuleName = !empty($moduleName) ? implode(' ', $moduleName) : null;
 
         $tsharkControllPath  = base_path('Modules/SystemSetting/app/Http/Services/Bash/tshark-control.sh');
         $setShPath           = base_path('Modules/SystemSetting/app/Http/Services/Bash/set.sh');
-        $remotePath          = '/home/mohammadi/Desktop/trace/';
+        $remotePath          = env('TRACE_REMOTE_PATH');
 
         $makeDirCommand = "sshpass -p '{$password}' ssh -o StrictHostKeyChecking=no {$username}@{$ip} 'mkdir -p {$remotePath}'";
 
@@ -93,12 +100,7 @@ class TraceController extends Controller
     }
     public function traceServerStart(TraceServerRequest $request)
     {
-        $credentials     = $request->validated();
-        $username        = $credentials['username'];
-        $password        = $credentials['password'];
-        $servers         = $request['servers'];
-        $moduleName      = Module::whereIn('id', $credentials['module_ids'])->pluck('name')->toArray();
-
+        $credentials = $request->validated();
 
         try {
             DB::beginTransaction();
@@ -106,8 +108,22 @@ class TraceController extends Controller
             $results   = [];
             $processes = [];
 
-            foreach ($servers as $server) {
-                $commands = $this->commandHelperStartServer($username, $password, $server, $moduleName);
+            foreach ($request['servers'] as $server) {
+
+                $serverIndex = array_search($server['id'], array_column($credentials['servers'], 'id'));
+                $username    = $credentials['servers'][$serverIndex]['username'];
+                $password    = $credentials['servers'][$serverIndex]['password'];
+                $port        = $credentials['servers'][$serverIndex]['port'] ?? 22;
+
+                $moduleName  = isset($credentials['servers'][$serverIndex]['module_ids'])
+                    ? Module::whereIn('id', $credentials['servers'][$serverIndex]['module_ids'])->pluck('name')->toArray()
+                    : null;
+
+                $commands    = $this->commandHelperStartServer($username, $password, $server, $moduleName);
+
+                $sshHelper = new sshHelper($server, $username, $password, $creadtional['port'] ?? 22, 7);
+                $sshHelper->testConnection();
+
 
                 foreach (['makeDirCommand', 'commandScpTsharkControl', 'commandScpSetSh',
                              'permissionCommand', 'commandRunScript'] as $key) {
@@ -135,7 +151,8 @@ class TraceController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-                return response()->json(['status' => false, 'message'=> $e->getMessage(),], 422);
+//                return response()->json(['status' => false, 'message'=> $e->getMessage(),], 422);
+                throw $e;
         }
     }
 
@@ -143,12 +160,13 @@ class TraceController extends Controller
 
 
 //        stop trace
-    private function commandHelperStopServer (string $username, string $password, Server $server, array $moduleName)
+    private function commandHelperStopServer (string $username, string $password, Server $server, array $moduleName = null)
     {
-        $localPath    = '/home/mohammadi/Desktop/trace/';
+        $localPath    = env('TRACE_REMOTE_PATH');
         $setShCommand = 'bash ' . $localPath . 'set.sh';
         $remotePath   = '/tmp/' . $server['ip'] . '.pcapng';
-        $logFilePath  = '/var/log/bbdh/';
+        $logFilePath  = env('TRACE_LOG_FILE_PATH');
+        $moduleName   = $server->modules()->pluck('name')->toArray();
 
         $logFiles = array_map(function ($name) use ($logFilePath) {
             return "{$logFilePath}{$name}*";
@@ -164,7 +182,7 @@ class TraceController extends Controller
 //        $commandStopTshark = "sshpass -p '{$password}' ssh -tt {$username}@{$server['ip']}"
 //            . " 'echo \"{$password}\" | sudo -S bash {$localPath}tshark-control.sh stop'";
 
-        $commandStopTshark = "sshpass -p '1' ssh -tt mohammadi@192.168.100.18 \"echo '1' | sudo -S bash /home/mohammadi/Desktop/trace/tshark-control.sh stop\"";
+        $commandStopTshark = "sshpass -p '{$password}' ssh -tt {$username}@{$server['ip']} \"echo '{$password}' | sudo -S bash {$localPath}tshark-control.sh stop\"";
 
         $commandScpPcapFile = "sshpass -p '{$password}' scp -o StrictHostKeyChecking=no {$username}@{$server['ip']}:'{$remotePath}' {$localPath}";
 
@@ -190,10 +208,6 @@ class TraceController extends Controller
     public function traceServerStop (TraceServerRequest $request)
     {
         $credentials = $request->validated();
-        $username    = $credentials['username'];
-        $password    = $credentials['password'];
-        $servers     = $request['servers'];
-        $moduleName  = Module::whereIn('id', $credentials['module_ids'])->pluck('name')->toArray();
 
         try {
             DB::beginTransaction();
@@ -202,11 +216,21 @@ class TraceController extends Controller
                 $processes = [];
 
             try {
-                foreach ($servers as $server) {
+                foreach ($request['servers'] as $server) {
+
+                    $serverIndex = array_search($server['id'], array_column($credentials['servers'], 'id'));
+                    $username    = $credentials['servers'][$serverIndex]['username'];
+                    $password    = $credentials['servers'][$serverIndex]['password'];
+                    $port        = $credentials['servers'][$serverIndex]['port'] ?? 22;
+
+                    $moduleName  = isset($credentials['servers'][$serverIndex]['module_ids'])
+                        ? Module::whereIn('id', $credentials['servers'][$serverIndex]['module_ids'])->pluck('name')->toArray()
+                        : null;
+
                     $commands = $this->commandHelperStopServer($username, $password, $server, $moduleName);
 
-                    foreach (['commandStopTshark', 'commandScpPcapFile', 'commandMergePcap', 'scpMmeLogCommand',
-                                 'mergeMmeLogCommand'] as $key) {
+                    foreach (['commandStopTshark', 'commandScpPcapFile', 'commandMergePcap'
+                             , 'scpMmeLogCommand', 'mergeMmeLogCommand'] as $key) {
 
                         $proc = Process::fromShellCommandline($commands[$key]);
                         $started = $this->processStarter($proc, $server);
