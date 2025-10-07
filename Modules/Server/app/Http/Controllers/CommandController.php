@@ -22,13 +22,30 @@ class CommandController extends Controller
     public function showInterfaceVm (ShowInterfaceVmRequest $request)
     {
         $credentials = $request->validated();
+        $serverIds   = array_column($credentials['servers'], 'id');
 
         try {
-            $server = server::find($credentials['server_id']);
+            $servers = server::whereIn('id', $serverIds)->get();
 
             $command = 'ip link show'; // command as systemctl
 
-            return $this->runCommandModuleToServer($credentials, $command, $server,'show-interface-vm', 'showInterfaceVm');
+            $result = [];
+            foreach ($servers as $server) {
+                 $serverIndex = array_search($server['id'], array_column($credentials['servers'], 'id'));
+
+                 $connectionData = [
+                     'username' => $credentials['servers'][$serverIndex]['username'],
+                     'password' => $credentials['servers'][$serverIndex]['password'],
+                 ];
+
+                $result[$server->name] = [
+                    'server_id' => $server->id,
+                    'server_name' => $server->name,
+                    'command_output' => $this->runCommandModuleToServer($connectionData, $command, $server,'show-interface-vm', 'showInterfaceVm'),
+                ];
+            }
+
+            return $result;
 
         } catch (\Exception $e) {
             throw ValidationException::withMessages(['warning' => $e->getMessage()]);
@@ -63,7 +80,8 @@ class CommandController extends Controller
             if (! empty(CommandOutputAnalyzerService::extractErrors($outputCommand)))
                 throw ValidationException::withMessages(CommandOutputAnalyzerService::extractErrors($outputCommand));
 
-            return response()->json(['message' => $outputCommand]);
+//            return response()->json(['message' => $outputCommand]);
+            return $outputCommand;
 
         } catch (ValidationException $e) {
             throw $e;

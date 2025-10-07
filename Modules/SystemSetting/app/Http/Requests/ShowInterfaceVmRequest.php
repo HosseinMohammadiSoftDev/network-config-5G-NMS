@@ -12,10 +12,11 @@ class ShowInterfaceVmRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'server_id' => ['required', 'integer', 'exists:servers,id'],
-            'username' => ['required', 'string'],
-            'password' => ['required', 'string'],
-            'port' => ['numeric'],
+            'servers' => ['required', 'array'],
+            'servers.*.id'       => ['required', 'integer', 'exists:servers,id'],
+            'servers.*.password' => ['required', 'string'],
+            'servers.*.username' => ['required', 'string'],
+            'servers.*.port'     => ['numeric']
         ];
     }
 

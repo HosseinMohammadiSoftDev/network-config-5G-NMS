@@ -17,7 +17,7 @@ class CreateModulesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'min:3', 'max:24', 'regex:/^[^<>{}\/|\~`!@#$%&*()_\-+="\':;؟،]*$/u', function ($attribute, $value, $fail) {
+            'name' => ['required', 'string', 'min:3', 'max:24', 'regex:/^[^<>{}\/\~`!@#$%&*()\="\':;؟،]*$/u', function ($attribute, $value, $fail) {
                 $serverIds = request('server_id');
                 if (!is_array($serverIds))
                     $serverIds = [$serverIds];
@@ -35,9 +35,17 @@ class CreateModulesRequest extends FormRequest
 
             }],
             'type' => ['required', 'string', 'min:2', 'max:255', 'regex:/^[^<>{}\/|\~`!@#$%&*()_\-+="\':;؟،]*$/u'],
+            'config_file' => ['required', 'file',  function ($attribute, $value, $fail) {
 
-            'server_id' => ['nullable', 'array'],
-            'server_id.*' => ['required', 'integer', 'exists:servers,id',  function ($attribute, $value, $fail) {
+                if (!preg_match('/\.(yaml|yml|yaml\.in)$/i', $value->getClientOriginalName())) {
+                    $fail('The file must be one of the following formats: .yaml, .yml, or .yaml.in');
+                    return;
+                }
+            }],
+
+
+            'servers'            => ['required', 'array'],
+            'servers.*.id'       => ['required', 'integer', 'exists:servers,id',  function ($attribute, $value, $fail) {
                 $server = DB::table('servers')->where('id', $value)->first();
                     if (!$server) {
                         $fail("The selected server ID ($value) is invalid.");
@@ -50,18 +58,9 @@ class CreateModulesRequest extends FormRequest
                     }
                 }
             ],
-
-            'config_file' => ['required', 'file',  function ($attribute, $value, $fail) {
-
-                    if (!preg_match('/\.(yaml|yml|yaml\.in)$/i', $value->getClientOriginalName())) {
-                        $fail('The file must be one of the following formats: .yaml, .yml, or .yaml.in');
-                            return;
-                    }
-                },
-            ],
-            'username' => ['required', 'string'],
-            'password' => ['required', 'string'],
-            'port' => ['nullable', 'integer'],
+            'servers.*.username' => ['required', 'string'],
+            'servers.*.password' => ['required', 'string'],
+            'servers.*.port'     => ['integer'],
 
         ];
     }

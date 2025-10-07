@@ -18,7 +18,7 @@ class EditModuleRequest extends FormRequest
     {
         return [
             'module_id' => ['required', 'integer', 'exists:modules,id'],
-            'name' => ['nullable', 'string', 'min:2', 'max:24', 'regex:/^[^<>{}\/|\~`!@#$%&*()_\-+="\':;؟،]*$/u'],
+            'name' => ['nullable', 'string', 'min:2', 'max:24', 'regex:/^[^<>{}\/|\~`!@#$%&*()\+="\':;؟،]*$/u'],
             'type' => ['nullable', 'string', 'regex:/^[^<>{}\/|\~`!@#$%&*()_\-+="\':;؟،]*$/u'],
             // 'server_id'=> ['required', 'integer','exists:servers,id'],
 
@@ -31,8 +31,8 @@ class EditModuleRequest extends FormRequest
                 },
             ],
 
-            'server_ids' => ['nullable', 'array'],
-            'server_ids.*' => ['required', 'integer', 'exists:servers,id',  function ($attribute, $value, $fail) {
+            'servers'            => ['nullable', 'array'],
+            'servers.*.id'       => ['required', 'integer', 'exists:servers,id',  function ($attribute, $value, $fail) {
                 $server = DB::table('servers')->where('id', $value)->first();
                     if (!$server) {
                         $fail("The selected server ID ($value) is invalid.");
@@ -45,9 +45,9 @@ class EditModuleRequest extends FormRequest
                     }
                 }
             ],
-            'username' => ['required', 'string', 'min:1', 'max:255'],
-            'password' => ['required', 'string', 'min:1', 'max:255'],
-            'port' => ['nullable', 'integer']
+            'servers.*.username' => ['required', 'string', 'min:1', 'max:255'],
+            'servers.*.password' => ['required', 'string', 'min:1', 'max:255'],
+            'servers.*.port'     => ['nullable', 'integer']
         ];
     }
 
@@ -56,8 +56,8 @@ class EditModuleRequest extends FormRequest
     public function messages()
     {
         return [
-            'name.regex' => 'The name field contains invalid characters. characters like < > { } / | \ ~ ` ! @ # $ % & * ( ) _ - + = " \' : ; are not allowed.',
-            'type.regex' => 'The name field contains invalid characters. characters like < > { } / | \ ~ ` ! @ # $ % & * ( ) _ - + = " \' : ; are not allowed.',
+            'name.regex' => 'The name field contains invalid characters. characters like < > { } / | \ ~ ` ! @ # $ % & * ( ) + = " \' : ; are not allowed.',
+            'type.regex' => 'The name field contains invalid characters. characters like < > { } / | \ ~ ` ! @ # $ % & * ( ) + = " \' : ; are not allowed.',
         ];
     }
 

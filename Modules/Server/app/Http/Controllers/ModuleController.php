@@ -173,16 +173,14 @@ class ModuleController extends ApiController
 
     public function createModule (CreateModulesRequest $request)
     {
-        $creadtional = $request->validated();
-        $serverIds = $creadtional['server_id'];
-
+        $credential  = $request->validated();
+        $serverIds   = array_column($credential['servers'], 'id');
         $jsonContent = YamlParserService::uploadModuleFile($request->file('config_file'));
-
         $yamlContent = YamlParserService::convertJsonToYaml($jsonContent);
 
         if (is_array($jsonContent) || is_object($jsonContent)) return $jsonContent;
 
-        $failedServers = [];
+        $failedServers  = [];
         $createdModules = [];
 
 
@@ -190,13 +188,18 @@ class ModuleController extends ApiController
             DB::beginTransaction();
 
             $module = Module::create([
-                'name' => $creadtional['name'],
-                'type' => $creadtional['type'],
+                'name' => $credential['name'],
+                'type' => $credential['type'],
             ]);
 
 
             foreach ($serverIds as $serverId) {
-                $server = Server::find($serverId);
+                $server      = Server::find($serverId);
+                $serverIndex = array_search($serverId, array_column($credential['servers'], 'id'));
+                $username    = $credential['servers'][$serverIndex]['username'];
+                $password    = $credential['servers'][$serverIndex]['password'];
+                $port        = $credential['servers'][$serverIndex]['port'] ?? 22;
+
                     // check permission
                 $this->chackPermissionModule($server);
 
@@ -211,13 +214,13 @@ class ModuleController extends ApiController
                         ]
                     ]);
 
-
                 $outputCommand = $this->sendConfigToServer(
-                    $creadtional['username'],
-                    $creadtional['password'],
-                    $creadtional['name'],
-                    $yamlContent, $server,
-                        $creadtional['port'] ?? 22,
+                    $username,
+                    $password,
+                    $credential['name'],
+                    $yamlContent,
+                    $server,
+                    $port ?? 22,
                     'create-module',
                     'createModule'
                 );
@@ -226,16 +229,16 @@ class ModuleController extends ApiController
                 $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
                 if ($commandWarning) throw ValidationException::withMessages($commandWarning);
 
-            $module->servers()->syncWithoutDetaching([$serverId]);
+                 $module->servers()->syncWithoutDetaching([$serverId]);
 
                 $createdModules[] = [
-                        'server' => [
-                        'server_id' => $server['id'],
+                    'server' => [
+                        'server_id'   => $server['id'],
                         'server_name' => $server['name'],
-                        'server_ip' => $server['ip']
+                        'server_ip'   => $server['ip']
                     ],
                     'module' => [
-                        'module_id' => $module['id'],
+                        'module_id'   => $module['id'],
                         'module_name' => $module['name'],
                         'module_type' => $module['type']
                     ]
@@ -252,8 +255,8 @@ class ModuleController extends ApiController
                         'user_role' =>Auth::user()->roles()->pluck('name')->first(),
                         'method' => 'createModule',
                         'module' => [
-                            'name' => $creadtional['name'],
-                            'type' => $creadtional['type'],
+                            'name' => $credential['name'],
+                            'type' => $credential['type'],
                             'server_id' => $serverId,
                         ],
                         'server' => $server
@@ -616,8 +619,15 @@ class ModuleController extends ApiController
         $encodedConfig = json_encode($moduleConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         foreach ($serverIds as $serverId) {
-            $server = Server::find($serverId);
+
+            $server       = Server::find($serverId);
             $serverModule = $module->servers()->where('server_id', $serverId)->first();
+
+            $serverIndex  = array_search($server['id'], array_column($request['servers'], 'id'));
+            $username     = $request['servers'][$serverIndex]['username'];
+            $password     = $request['servers'][$serverIndex]['password'];
+            $port         = $request['servers'][$serverIndex]['port'] ?? 22;
+
 
             if ($serverModule) {
 
@@ -628,8 +638,8 @@ class ModuleController extends ApiController
 
                 $yamlContent = YamlParserService::convertJsonToYaml($pivotData->current_config);
                 $outputCommand = $this->sendConfigToServer(
-                    $request['username'],
-                    $request['password'],
+                    $username,
+                    $password,
                     $module->name,
                     $yamlContent,
                     $server,
@@ -654,7 +664,13 @@ class ModuleController extends ApiController
         $jsonContent = YamlParserService::uploadModuleFile($request->file('config_file'));
 
         foreach ($serverIds as $serverId) {
-            $server = Server::find($serverId);
+
+            $server      = Server::find($serverId);
+            $serverIndex = array_search($server['id'], array_column($request['servers'], 'id'));
+            $username    = $request['servers'][$serverIndex]['username'];
+            $password    = $request['servers'][$serverIndex]['password'];
+            $port        = $request['servers'][$serverIndex]['port'] ?? 22;
+
 
             $defaultConfig = [
                 'initial_config' => $jsonContent,
@@ -665,8 +681,8 @@ class ModuleController extends ApiController
 
             $yamlContent = YamlParserService::convertJsonToYaml($defaultConfig['initial_config']);
             $outputCommand = $this->sendConfigToServer(
-                $request['username'],
-                $request['password'],
+                $username,
+                $password,
                 'default_module',
                 $yamlContent,
                 $server,
@@ -690,7 +706,13 @@ class ModuleController extends ApiController
       $pivotData = $module->servers()->first()->pivot;
 
         foreach ($serverIds as $serverId) {
-            $server = Server::find($serverId);
+
+            $server      = Server::find($serverId);
+            $serverIndex = array_search($server['id'], array_column($request['servers'], 'id'));
+            $username    = $request['servers'][$serverIndex]['username'];
+            $password    = $request['servers'][$serverIndex]['password'];
+            $port        = $request['servers'][$serverIndex]['port'] ?? 22;
+
 
             if (!$module->servers->contains($serverId)) {
                 $module->servers()->attach($serverId, [
@@ -701,8 +723,8 @@ class ModuleController extends ApiController
 
             $yamlContent = YamlParserService::convertJsonToYaml($pivotData['initial_config']);
             $this->sendConfigToServer(
-                $request['username'],
-                $request['password'],
+                $username,
+                $password,
                 $module['name'],
                 $yamlContent,
                 $server,
@@ -740,88 +762,86 @@ class ModuleController extends ApiController
 
             $module = Module::find($credentials['module_id']);
             $oldModule = clone $module;
-            $serverIds = $credentials['server_ids'] ?? [];
+            $serverIds = array_column($credentials['servers'], 'id') ?? [];
             $configFile = $request->file('config_file');
 
-            if ($module->servers->isEmpty() && !$configFile)
-                throw ValidationException::withMessages(['config' => 'config file required']);
+            if ($module->servers->isEmpty() && !$configFile) throw ValidationException::withMessages(['config' => 'config file required']);
 
-            // check permissions
-        foreach ($serverIds as $serverId) {
-            $server = Server::find($serverId);
-            $this->chackPermissionModule($server);
+                // check permissions
+            foreach ($serverIds as $serverId) {
+                $server = Server::find($serverId);
+                $this->chackPermissionModule($server);
 
-            if ($server['is_down'] === Server::OFF)
-                throw ValidationException::withMessages(['msg' => 'server : ' . $server['name'] . ' is off']);
-        }
+                if ($server['is_down'] === Server::OFF) throw ValidationException::withMessages(['msg' => 'server : ' . $server['name'] . ' is off']);
+            }
 
-        if ($serverIds) {
+            if ($serverIds) {
 
-            $this->syncModuleWithServers($module, $serverIds, $request, $credentials['port'] ?? 22);
+                $this->syncModuleWithServers($module, $serverIds, $request, $credentials['port'] ?? 22);
 
-                    // update file
-                if ($configFile) {
-                    $jsonConfig = YamlParserService::uploadModuleFile($configFile);
-                    $this->updateConfigForDB($module, $serverIds, $jsonConfig, $request, $credentials['port'] ?? 22);
-                }
+                        // update file
+                    if ($configFile) {
+                        $jsonConfig = YamlParserService::uploadModuleFile($configFile);
+                        $this->updateConfigForDB($module, $serverIds, $jsonConfig, $request, $credentials['port'] ?? 22);
+                    }
 
-        } else
-            $this->syncModuleWithServers($module, $serverIds, $request, $credentials['port'] ?? 22);
+            } else
+                $this->syncModuleWithServers($module, $serverIds, $request, $credentials['port'] ?? 22);
 
 
 
-            $types = implode(',', array_map('trim', explode(',', $credentials['type'] ?? $module['type'])));
+                $types = implode(',', array_map('trim', explode(',', $credentials['type'] ?? $module['type'])));
 
-            $module->update([
-                'name' => $credentials['name'] ?? $module->name,
-                'type' => $types,
-            ]);
+                $module->update([
+                    'name' => $credentials['name'] ?? $module->name,
+                    'type' => $types,
+                ]);
 
-            $module->load('servers');
+                $module->load('servers');
 
 
-            activity('edit-module')
-                ->causedBy(Auth::user())
-                ->performedOn($module)
-                ->event('update')
-                ->withProperties([
-                    'type-log' => 'server',
-                    'route' => request()->fullUrl(),
-                    'method' => 'editModule',
-                    'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                    'user_role' =>Auth::user()->roles()->pluck('name')->first(),
-                    'old_module_data' => [
-                        'id' => $oldModule->id,
-                        'name' => $oldModule->name,
-                        'type' => $oldModule->type,
-                    ],
-                    'new_module_data' => [
-                        'id' => $module->id,
-                        'name' => $module->name,
-                        'type' => $module->type,
-                    ],
-                    'module_server' => [
-                        'id' => $module->servers->first()->id,
-                        'name' => $module->servers->first()->name,
-                        'path_config' => $module->servers->first()->path_config,
-                        'path_fun_config' => $module->servers->first()->path_fun_config,
-                        'ip' => $module->servers->first()->ip
-                    ]
-                ])
-                ->log('The export file config is taken from the module configuration.');
+                activity('edit-module')
+                    ->causedBy(Auth::user())
+                    ->performedOn($module)
+                    ->event('update')
+                    ->withProperties([
+                        'type-log' => 'server',
+                        'route' => request()->fullUrl(),
+                        'method' => 'editModule',
+                        'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                        'user_role' =>Auth::user()->roles()->pluck('name')->first(),
+                        'old_module_data' => [
+                            'id' => $oldModule->id,
+                            'name' => $oldModule->name,
+                            'type' => $oldModule->type,
+                        ],
+                        'new_module_data' => [
+                            'id' => $module->id,
+                            'name' => $module->name,
+                            'type' => $module->type,
+                        ],
+                        'module_server' => [
+                            'id' => $module->servers->first()->id,
+                            'name' => $module->servers->first()->name,
+                            'path_config' => $module->servers->first()->path_config,
+                            'path_fun_config' => $module->servers->first()->path_fun_config,
+                            'ip' => $module->servers->first()->ip
+                        ]
+                    ])
+                    ->log('The export file config is taken from the module configuration.');
 
 
 
             DB::commit();
-            return response()->json([
-                'message' => 'Module updated successfully',
-                'module' => [
-                    'module_name' => $module['name'],
-                    'module_type' => $module['type'],
-                    'module_server' => $module->servers->pluck('id')->toArray(),
-                    'module_server_name' => $module->servers->pluck('name')->toArray(),
-                ]
-            ], 200);
+                return response()->json([
+                    'message' => 'Module updated successfully',
+                    'module' => [
+                        'module_name' => $module['name'],
+                        'module_type' => $module['type'],
+                        'module_server' => $module->servers->pluck('id')->toArray(),
+                        'module_server_name' => $module->servers->pluck('name')->toArray(),
+                    ]
+                ], 200);
 
         } catch (\Exception $e){
             DB::rollBack();
@@ -885,9 +905,8 @@ class ModuleController extends ApiController
 
     public function undoConfigModule (UndoConfigModulesRequest $request)
     {
-        $creadtional = $request->validated();
-
-        $pivotData = $request['module']->servers()->where('server_id', $creadtional['server_id'])->first()->pivot;
+        $credential           = $request->validated();
+        $pivotData            = $request['module']->servers()->where('server_id', $credential['server_id'])->first()->pivot;
         $modulePreviousConfig = $pivotData['previous_config'];
 
         if ($modulePreviousConfig == null) throw ValidationException::withMessages(['module' => 'The module does not have a previous value, you cannot revert it to the previous value']);
@@ -896,11 +915,11 @@ class ModuleController extends ApiController
             // ssh to server format yaml
             $yamlContent = YamlParserService::convertJsonToYaml($pivotData['previous_config']);
             $outputCommand = $this->sendConfigToServer(
-                $creadtional['username'],
-                $creadtional['password'],
+                $credential['username'],
+                $credential['password'],
                 $request['module']['name'],
                 $yamlContent, $request['server'],
-                $creadtional['port'] ?? 22,
+                $credential['port'] ?? 22,
                 'undo-config-module',
                 'undoConfigModule'
             );
@@ -948,10 +967,8 @@ class ModuleController extends ApiController
     }
     public function undoToInitialConfigModule (UndoToInitialConfigModulesRequest $request)
     {
-        $creadtional = $request->validated();
-
-
-        $pivotData = $request['module']->servers()->where('server_id', $creadtional['server_id'])->first()->pivot;
+        $credential          = $request->validated();
+        $pivotData           = $request['module']->servers()->where('server_id', $credential['server_id'])->first()->pivot;
         $moduleInitialConfig = $pivotData['initial_config'];
 
         try {
@@ -961,11 +978,11 @@ class ModuleController extends ApiController
             $yamlContent = YamlParserService::convertJsonToYaml($moduleInitialConfig);
 
             $outputCommand = $this->sendConfigToServer(
-                $creadtional['username'],
-                $creadtional['password'],
+                $credential['username'],
+                $credential['password'],
                 $request['module']['name'],
                 $yamlContent, $request['server'],
-                $creadtional['port'] ?? 22,
+                $credential['port'] ?? 22,
                 'undo-initial-config-module',
                 'undoToInitialConfigModule'
             );
