@@ -226,7 +226,7 @@ class ModuleController extends ApiController
                 );
 
 
-                $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
+                $commandWarning = ! empty($outputCommand) ? CommandOutputAnalyzerService::extractErrors($outputCommand) : null;
                 if ($commandWarning) throw ValidationException::withMessages($commandWarning);
 
                  $module->servers()->syncWithoutDetaching([$serverId]);
@@ -418,7 +418,9 @@ class ModuleController extends ApiController
                     'updateSingleModule'
                 );
 
-                $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
+                $commandWarning = ! empty($output) ? CommandOutputAnalyzerService::extractErrors($output) : null;
+                if ($commandWarning) throw ValidationException::withMessages($commandWarning);
+
 
                 LogModuleService::logModuleUpdate($moduleServer, $server, $data);
             }
@@ -518,7 +520,9 @@ class ModuleController extends ApiController
                 );
 
 
-                $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
+                $commandWarning = ! empty($output) ? CommandOutputAnalyzerService::extractErrors($output) : null;
+                if ($commandWarning) throw ValidationException::withMessages($commandWarning);
+
 
                 LogModuleService::logModuleUpdate($module, $server,  $request->input('data'));
             }
@@ -650,7 +654,9 @@ class ModuleController extends ApiController
 
                 $pivotData->save();
 
-                $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
+                $commandWarning = ! empty($output) ? CommandOutputAnalyzerService::extractErrors($output) : null;
+                if ($commandWarning) throw ValidationException::withMessages($commandWarning);
+
 
                 if (! empty($outputCommand))
                     throw ValidationException::withMessages(['commandWarning' => $commandWarning]);
@@ -867,8 +873,8 @@ class ModuleController extends ApiController
             $sshHelper = new sshHelper($server, $credentials['username'], $credentials['password'], $credentials['port'] ?? 22);
             $output = $sshHelper->getFileContent($command);
 
-            if (! empty(CommandOutputAnalyzerService::extractErrors($output)))
-                throw ValidationException::withMessages(CommandOutputAnalyzerService::extractErrors($output));
+            $commandWarning = ! empty($output) ? CommandOutputAnalyzerService::extractErrors($output) : null;
+            if ($commandWarning) throw ValidationException::withMessages($commandWarning);
 
 
             activity('export-config-module')
@@ -930,7 +936,7 @@ class ModuleController extends ApiController
             $pivotData->save();
 
 
-            $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
+            $commandWarning = ! empty($outputCommand) ? CommandOutputAnalyzerService::extractErrors($outputCommand) : null;
             if ($commandWarning) throw ValidationException::withMessages($commandWarning);
 
 
@@ -993,7 +999,7 @@ class ModuleController extends ApiController
             $pivotData->save();
 
 
-            $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
+            $commandWarning = ! empty($outputCommand) ? CommandOutputAnalyzerService::extractErrors($outputCommand) : null;
             if ($commandWarning) throw ValidationException::withMessages($commandWarning);
 
 
