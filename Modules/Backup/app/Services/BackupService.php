@@ -15,11 +15,9 @@ class BackupService
     {
         $backupConfig->load('history');
 
-        if ($backupConfig?->history?->status === BackupHistory::SUCCESSFULY) return; // exit
-
 //            backup history
         $backupHistory = BackupHistory::create([
-            'started_at'       => now(),
+            'start_time'       => now(),
             'status'           => BackupHistory::RUNING,
             'backup_config_id' => $backupConfig['id']
         ]);
@@ -56,18 +54,18 @@ class BackupService
                 'message' => 'backup successfull',
                 'status' => BackupHistory::SUCCESSFULY,
                 'servers' => $servers->pluck('name'),
-                'finished_at' => now()
+                'finish_time' => now()
             ]);
 
         } catch (\Exception $e) {
 
             $backupHistory->update([
-                'name' => now()->toString(),
+                'name'        => now()->toString(),
                 'destination_path' => $backupConfig->destination_path,
-                'message' => $e->getMessage(),
-                'servers' => $servers->pluck('name'),
-                'status' => BackupHistory::FAILED,
-                'finished_at' => now()
+                'message'     => $e,
+                'servers'     => $servers->pluck('name'),
+                'status'      => BackupHistory::FAILED,
+                'finish_time' => now()
             ]);
         }
 

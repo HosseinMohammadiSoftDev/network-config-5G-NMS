@@ -8,14 +8,16 @@ use Modules\Server\Service\Schedule\ModuleScheduleService;
 
 Schedule::call(function () {
 
-    $backupService  = new BackupService();
+    $backupService         = new BackupService();
+    $runBackup             = new \Modules\Backup\Services\RunBackupDueLastRun();
     $moduleScheduleService = new ModuleScheduleService();
+    $backupConfigs         = BackupConfig::get();
 
-    $backupConfig = BackupConfig::query()
-        ->whereTime('run_backup_at', '>=', now())
-        ->first();
+    foreach ($backupConfigs as $backupConfig) {
 
-    if ($backupConfig) $backupService->handle($backupConfig);
+        if ($runBackup->handel($backupConfig->last_run_backup_at ?? $backupConfig->created_at, $backupConfig->run_backup_at))
+            $backupService->handle($backupConfig);
+    }
 
 
     $moduleSchedule = ModuleSchedule::query()

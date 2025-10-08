@@ -21,10 +21,7 @@ class BackupController extends Controller
 
     public function index (Request $request): JsonResponse
     {
-        $backupConfig = BackupConfig::when($request->input('take'),
-            fn ($query) => $query->orderBy('run_backup_at', $request->input('order', 'desc'))
-            ->take($request->input('take'))
-        )->get();
+        $backupConfig = BackupConfig::cursor();
 
         return response()->json(['success' => true, 'data' => $backupConfig]);
     }

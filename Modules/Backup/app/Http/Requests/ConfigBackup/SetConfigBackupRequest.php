@@ -15,8 +15,7 @@ class SetConfigBackupRequest extends FormRequest
         return [
             'password'         => ['required', 'string'],
             'destination_path' => ['required', 'string', 'regex:/^\/(?:[a-zA-Z0-9_\-\.]+\/)*[a-zA-Z0-9_\-\.]+\/$/',],
-            'run_backup_at'    => ['required', 'date_format:Y-m-d H:i:s', 'after:' . now()
-            ],
+            'run_backup_at'    => ['required', 'date_format:d H:i'],
         ];
     }
 

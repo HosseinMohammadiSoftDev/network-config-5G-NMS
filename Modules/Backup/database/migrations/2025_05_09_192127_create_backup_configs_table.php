@@ -15,9 +15,8 @@ return new class extends Migration
             $table->id();
 
             $table->string('destination_path');
-            $table->timestamp('run_backup_at');
-
-            $table->softDeletes();
+            $table->string('run_backup_at');
+            $table->timestamp('last_run_backup_at')->nullable();
 
             $table->timestamps();
         });
