@@ -287,14 +287,13 @@ class ServerController extends ApiController
 
 
                 // is stop server
-        if ($server['is_down'] == Server::OFF)
-            return response()->json(['msg' => 'this off server'], 403);
+        if ($server['is_down'] == Server::OFF) return response()->json(['msg' => 'this off server'], 403);
 
 
             try {
 
-                 $sshHelper = new sshHelper($server, $creadtional['username'], $creadtional['password'], $creadtional['port'] ?? 22, 7);
-                 $sshHelper->testConnection();
+//                 $sshHelper = new sshHelper($server, $creadtional['username'], $creadtional['password'], $creadtional['port'] ?? 22, 7);
+//                 $sshHelper->testConnection();
 
             activity('test-connection')
             ->causedBy(Auth::user())

@@ -351,11 +351,11 @@ class ModuleController extends ApiController
             throw ValidationException::withMessages(['server.path_run_config' => 'You did not specify a configuration address run config']);
 
 
-        $sshHelper = new sshHelper($server, $username, $password, $port);
+//        $sshHelper = new sshHelper($server, $username, $password, $port);
 
         // update module
-        $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $server['path_config'] . $moduleName . '.yaml';
-        return $sshHelper->runCommandModule($commandUpdateFileModule, $typeCommand, $method, $server);
+//        $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $server['path_config'] . $moduleName . '.yaml';
+//        return $sshHelper->runCommandModule($commandUpdateFileModule, $typeCommand, $method, $server);
 
         // restart module
 //        $commandRestart = $server['path_run_config'] . 'bbdh-' . $moduleName . 'd' . ' restart';
