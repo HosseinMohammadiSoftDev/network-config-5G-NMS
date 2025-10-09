@@ -8,6 +8,7 @@ use Modules\Server\Helpers\SshHelper;
 use Modules\Server\Models\ModuleSchedule;
 use Modules\Server\Models\Server;
 use Modules\Server\Utility\CommandOutputAnalyzerService;
+use Symfony\Component\Yaml\Yaml;
 
 class ModuleScheduleService
 {
@@ -18,36 +19,34 @@ class ModuleScheduleService
         if ($moduleSchedule['status'] == ModuleSchedule::SUCCESS) return; // EXIT
 
         try {
-            DB::beginTransaction();
+            $pivotData = $moduleSchedule->module->servers()->where('server_id', $moduleSchedule['server_id'])->first()->pivot;
 
-                $pivotData = $moduleSchedule->module->servers()->where('server_id', $moduleSchedule['server_id'])->first()->pivot;
+            $jsonConfig = json_encode(Yaml::parse($moduleSchedule->config), JSON_PRETTY_PRINT);
 
-                $currentConfig = $pivotData['current_config'];
+            DB::transaction(function () use ($moduleSchedule, $jsonConfig, $pivotData) {
+                DB::table('module_server')
+                    ->where('module_id', $moduleSchedule->module_id)
+                    ->where('server_id', $moduleSchedule->server_id)
+                    ->update([
+                        'previous_config' => $pivotData->current_config,
+                        'current_config' => $jsonConfig,
+                    ]);
+            });
 
-                $pivotData['previous_config'] = $currentConfig;
-                $pivotData['current_config'] = $moduleSchedule['config'];
-                $pivotData->save();
+           $outputCommand = $this->sendConfigToServer(
+                $moduleSchedule['password_ssh'],
+                $moduleSchedule['username_ssh'],
+                $moduleSchedule->module->name,
+                $moduleSchedule['config'],
+                $moduleSchedule->server,
+                'moduleSchedule',
+                'scheduleService'
+            );
 
-
-                $outputCommand = $this->sendConfigToServer(
-                    $moduleSchedule['username_ssh'],
-                    $moduleSchedule['password_ssh'],
-                    $moduleSchedule->module->name,
-                    $moduleSchedule['config'],
-                    $moduleSchedule->server,
-                    $creadtional['port'] ?? 22,
-                    'moduleSchedule',
-                    'scheduleService'
-                );
-
-                $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
-                if ($commandWarning) throw ValidationException::withMessages($commandWarning);
-
-
-            DB::commit();
+            $commandWarning = ! empty($outputCommand) ? CommandOutputAnalyzerService::extractErrors($outputCommand) : null;
+            if ($commandWarning) throw ValidationException::withMessages($commandWarning);
 
         } catch (\Exception $e) {
-            DB::rollBack();
                 throw $e;
         }
     }
