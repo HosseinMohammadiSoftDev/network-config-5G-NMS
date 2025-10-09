@@ -3,6 +3,7 @@
 namespace Modules\SystemSetting\Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Modules\SystemSetting\Models\SystemSettings;
 
 class SystemSettingDatabaseSeeder extends Seeder
 {
@@ -11,6 +12,8 @@ class SystemSettingDatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // $this->call([]);
+        if (!SystemSettings::exists())
+            SystemSettings::create();
+
     }
 }
