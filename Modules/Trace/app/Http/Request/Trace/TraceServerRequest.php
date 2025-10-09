@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\SystemSetting\Http\Requests\Trace;
+namespace Modules\Trace\Http\Request\Trace;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\Server\Models\Server;
@@ -19,6 +19,7 @@ class TraceServerRequest extends FormRequest
             'servers.*.password' => ['required', 'string', 'min:1'],
             'servers.*.port'     => ['integer'],
 
+            'servers.*.interface'    => ['string'],
             'servers.*.module_ids'   => ['array'],
             'servers.*.module_ids.*' => ['required', 'integer', 'exists:modules,id'],
         ];

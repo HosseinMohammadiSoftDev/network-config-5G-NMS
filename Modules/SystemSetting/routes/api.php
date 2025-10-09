@@ -2,11 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Server\Http\Controllers\CommandController;
-use Modules\SystemSetting\Http\Controllers\SystemSettingsController;
-use Modules\SystemSetting\Http\Controllers\TraceController;
-use Modules\SystemSetting\Http\Controllers\RouteController;
 use Modules\SystemSetting\Http\Controllers\MonitoringController;
 use Modules\SystemSetting\Http\Controllers\RecapchaController;
+use Modules\SystemSetting\Http\Controllers\RouteController;
+use Modules\SystemSetting\Http\Controllers\SystemSettingsController;
 
 /*
  *--------------------------------------------------------------------------
@@ -59,11 +58,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 //    show vm interface
     Route::post('show-interface-vm', [CommandController::class, 'showInterfaceVm']);
-
-
-//        trace server
-    Route::post('trace-server-start', [TraceController::class, 'traceServerStart']);
-    Route::post('trace-server-stop', [TraceController::class, 'traceServerStop']);
 
 
 //        route server

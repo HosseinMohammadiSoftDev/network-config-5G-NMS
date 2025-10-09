@@ -14,6 +14,5 @@ use Modules\Trace\Http\Controllers\TraceController;
  *
 */
 
-Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
-    Route::apiResource('trace', TraceController::class)->names('trace');
-});
+Route::post('trace-server-start', [TraceController::class, 'traceServerStart']);
+Route::post('trace-server-stop', [TraceController::class, 'traceServerStop']);

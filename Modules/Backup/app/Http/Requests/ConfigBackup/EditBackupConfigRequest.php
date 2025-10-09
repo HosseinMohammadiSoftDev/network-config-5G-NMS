@@ -15,7 +15,7 @@ class EditBackupConfigRequest extends FormRequest
         return [
             'id'               => ['required', 'integer', 'exists:backup_configs,id'],
             'destination_path' => ['string'],
-            'run_backup_at'    => ['date_format:Y-m-d H:i:s', 'after:' . now()],
+            'run_backup_at'    => ['date_format:d H:i'],
         ];
     }
 
