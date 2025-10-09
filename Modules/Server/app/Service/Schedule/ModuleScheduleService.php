@@ -43,11 +43,32 @@ class ModuleScheduleService
                 'scheduleService'
             );
 
-            $commandWarning = ! empty($outputCommand) ? CommandOutputAnalyzerService::extractErrors($outputCommand) : null;
-            if ($commandWarning) throw ValidationException::withMessages($commandWarning);
+           $commandWarning = ! empty($outputCommand) ? CommandOutputAnalyzerService::extractErrors($outputCommand) : null;
+           if ($commandWarning) throw ValidationException::withMessages($commandWarning);
+
+            activity('module schedule')
+                ->event('schedule')
+                ->withProperties([
+                    'type-log' => 'schedule',
+                    'time'     => now(),
+                    'module_schedule' => $moduleSchedule,
+                ])
+            ->log('run module schedule schedule successfully');
+
 
         } catch (\Exception $e) {
-                throw $e;
+
+            activity('module schedule')
+                ->event('schedule')
+                ->withProperties([
+                    'type-log' => 'schedule',
+                    'time'     => now(),
+                    'module_schedule' => $moduleSchedule,
+                    'errors'   => $e->getMessage()
+                ])
+                ->log('Problem in process run module schedule schedule came into being');
+
+            throw $e;
         }
     }
 
