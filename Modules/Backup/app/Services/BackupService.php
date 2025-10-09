@@ -3,6 +3,7 @@
 namespace Modules\Backup\Services;
 
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Modules\Backup\Models\BackupConfig;
 use Modules\Backup\Models\BackupHistory;
@@ -48,16 +49,38 @@ class BackupService
             }
 
 
+            activity('backup_modules')
+                ->event('schedule')
+                ->withProperties([
+                    'type-log' => 'schedule',
+                    'time'     => now(),
+                    'destination_path' => $storagePath,
+                    'servers'  => $servers->pluck('name')->toArray(),
+                ])
+                ->log('run backup module schedule successFul');
+
             $backupHistory->update([
-                'name' => now()->toString(),
+                'name'        => now()->toString(),
                 'destination_path' => $backupConfig->destination_path,
-                'message' => 'backup successfull',
-                'status' => BackupHistory::SUCCESSFULY,
-                'servers' => $servers->pluck('name'),
+                'message'     => 'backup successfull',
+                'status'      => BackupHistory::SUCCESSFULY,
+                'servers'     => $servers->pluck('name'),
                 'finish_time' => now()
             ]);
 
         } catch (\Exception $e) {
+
+            activity('backup_modules')
+                ->event('schedule')
+                ->withProperties([
+                    'type-log' => 'schedule',
+                    'time'     => now(),
+                    'destination_path' => $storagePath,
+                    'servers'  => $servers->pluck('name')->toArray(),
+                    'errors'   => $e->getMessage()
+                ])
+                ->log('Problem in process run backup module schedule came into being');
+
 
             $backupHistory->update([
                 'name'        => now()->toString(),
