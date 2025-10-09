@@ -3,5 +3,6 @@
     "Log": true,
     "Server": true,
     "SystemSetting": true,
-    "Backup": true
+    "Backup": true,
+    "Trace": true
 }
