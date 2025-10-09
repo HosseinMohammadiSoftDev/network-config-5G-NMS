@@ -340,22 +340,18 @@ class ModuleController extends ApiController
         string $method,
 
     ) {
-        // is down server
-        if ($server['is_down'] == Server::OFF)
-            throw ValidationException::withMessages(['server.down' => 'this server: ' . $server['name'] .' is off']);
+        if ($server['is_down'] == Server::OFF) throw ValidationException::withMessages(['server.down' => 'this server: ' . $server['name'] .' is off']);
 
-        if (!$server['path_config'])
-            throw ValidationException::withMessages(['server.path_config' => 'You did not specify a configuration address config']);
+        if (!$server['path_config']) throw ValidationException::withMessages(['server.path_config' => 'You did not specify a configuration address config']);
 
-        if (!$server['path_run_config'])
-            throw ValidationException::withMessages(['server.path_run_config' => 'You did not specify a configuration address run config']);
+        if (!$server['path_run_config']) throw ValidationException::withMessages(['server.path_run_config' => 'You did not specify a configuration address run config']);
 
 
-//        $sshHelper = new sshHelper($server, $username, $password, $port);
+        $sshHelper = new sshHelper($server, $username, $password, $port);
 
         // update module
-//        $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $server['path_config'] . $moduleName . '.yaml';
-//        return $sshHelper->runCommandModule($commandUpdateFileModule, $typeCommand, $method, $server);
+        $commandUpdateFileModule = 'echo ' . escapeshellarg($yamlContent) . ' > ' . $server['path_config'] . $moduleName . '.yaml';
+        return $sshHelper->runCommandModule($commandUpdateFileModule, $typeCommand, $method, $server);
 
         // restart module
 //        $commandRestart = $server['path_run_config'] . 'bbdh-' . $moduleName . 'd' . ' restart';
@@ -418,7 +414,7 @@ class ModuleController extends ApiController
                     'updateSingleModule'
                 );
 
-                $commandWarning = ! empty($output) ? CommandOutputAnalyzerService::extractErrors($output) : null;
+                $commandWarning = ! empty($outputCommand) ? CommandOutputAnalyzerService::extractErrors($outputCommand) : null;
                 if ($commandWarning) throw ValidationException::withMessages($commandWarning);
 
 
