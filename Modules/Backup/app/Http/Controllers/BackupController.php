@@ -5,6 +5,7 @@ namespace Modules\Backup\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Modules\Backup\Http\Requests\ConfigBackup\EditBackupConfigRequest;
 use Modules\Backup\Http\Requests\ConfigBackup\SetConfigBackupRequest;
@@ -14,6 +15,7 @@ use Modules\Backup\Models\BackupConfig;
 use Modules\Backup\Models\BackupHistory;
 use Modules\Backup\Services\BackupService;
 use Modules\Backup\Services\CronTabService;
+use Modules\Backup\Transformers\GetBackupConfigResource;
 
 class BackupController extends Controller
 {
@@ -21,13 +23,18 @@ class BackupController extends Controller
 
     public function index (Request $request): JsonResponse
     {
-        $backupConfig = BackupConfig::cursor();
+        $backupConfig = BackupConfig::with([
+            'user:id,first_name,last_name,auth_name',
+            'user.roles:name',
+            'user.permissions:name'
+        ])->get();
 
-        return response()->json(['success' => true, 'data' => $backupConfig]);
+        return response()->json(['success' => true, 'data' => GetBackupConfigResource::collection($backupConfig)]);
     }
     public function create (SetConfigBackupRequest $request): JsonResponse
     {
-        $credentials = $request->validated();
+        $credentials            = $request->validated();
+        $credentials['user_id'] = Auth::id();
 
         try {
             DB::beginTransaction();
@@ -50,7 +57,8 @@ class BackupController extends Controller
     }
     public function edit (EditBackupConfigRequest $request): JsonResponse
     {
-        $credentials = $request->validated();
+        $credentials            = $request->validated();
+        $credentials['user_id'] = Auth::id();
 
         try {
             DB::beginTransaction();

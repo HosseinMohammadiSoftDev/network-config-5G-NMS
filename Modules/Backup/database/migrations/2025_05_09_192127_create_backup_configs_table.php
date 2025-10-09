@@ -18,6 +18,12 @@ return new class extends Migration
             $table->string('run_backup_at');
             $table->timestamp('last_run_backup_at')->nullable();
 
+            $table->foreignId('user_id')
+                ->nullable()
+                ->constrained()
+                ->onDelete('set null')
+                ->onUpdate('set null');
+
             $table->timestamps();
         });
     }

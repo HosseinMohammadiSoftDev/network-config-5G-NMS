@@ -3,7 +3,9 @@
 namespace Modules\User\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Laravel\Sanctum\HasApiTokens;
+use Modules\Backup\Models\BackupConfig;
 use Modules\Server\Models\Server;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Permission\Traits\HasRoles;
@@ -75,5 +77,12 @@ class User extends Authenticatable
         return $this->server?->getAllPermissions()
             ?->map(fn ($permission) => $permission->name)
             ?? collect();
+    }
+
+
+
+    public function BackupConfig () : HasOne
+    {
+        return $this->hasOne(BackupConfig::class);
     }
 }

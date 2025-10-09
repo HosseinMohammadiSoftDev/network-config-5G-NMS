@@ -5,8 +5,10 @@ namespace Modules\Backup\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\User\Models\User;
 
 class BackupConfig extends Model
 {
@@ -19,6 +21,7 @@ class BackupConfig extends Model
         'destination_path',
         'run_backup_at',
         'last_run_backup_at',
+        'user_id',
     ];
 
     protected $casts = [
@@ -57,5 +60,10 @@ class BackupConfig extends Model
     public function history (): HasOne
     {
         return $this->hasOne(BackupHistory::class);
+    }
+
+    public function user (): belongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }
