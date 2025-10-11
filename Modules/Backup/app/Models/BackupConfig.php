@@ -52,7 +52,7 @@ class BackupConfig extends Model
         return [
             $next->copy()->format('Y-m-d H:i'),
             $next->copy()->addDays($intervalDays)->format('Y-m-d H:i'),
-            $next->copy()->addDays($intervalDays)->format('Y-m-d H:i'),
+            $next->copy()->addDays($intervalDays * 2)->format('Y-m-d H:i'),
         ];
     }
 
