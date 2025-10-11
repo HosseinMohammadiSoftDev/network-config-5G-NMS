@@ -16,10 +16,11 @@ use Modules\Backup\Models\BackupHistory;
 use Modules\Backup\Services\BackupService;
 use Modules\Backup\Services\CronTabService;
 use Modules\Backup\Transformers\GetBackupConfigResource;
+use Modules\User\Services\PaginationService;
 
 class BackupController extends Controller
 {
-    public function __construct() {}
+    public function __construct(private PaginationService $paginationService) {}
 
     public function index (Request $request): JsonResponse
     {
@@ -106,6 +107,8 @@ class BackupController extends Controller
 
     public function getHistoryBackup (Request $request): JsonResponse
     {
-        return response()->json(['success' => true, 'data' => BackupHistory::cursor()]);
+        $perPage = ($request->input('paginate') ?? 10);
+
+        return response()->json(['success' => true, 'data' => $this->paginationService->paginate(BackupHistory::query(), $request, ['id', 'name', 'status', 'created_at', 'updated_at'])]);
     }
 }
