@@ -41,12 +41,18 @@ class BackupController extends Controller
 
             $backupConfig = BackupConfig::create($credentials);
 
+            $backupConfig->load([
+                'user:id,first_name,last_name,auth_name',
+                'user.roles:name',
+                'user.permissions:name'
+            ]);
+
 //                    set cron job
             $cronTabService = new CronTabService($credentials['password']);
             $cronTabService->set();
 
             DB::commit();
-            return response()->json(['success' => true, 'msg' => 'set config backup successFully', 'data' => $backupConfig], 200);
+            return response()->json(['success' => true, 'msg' => 'set config backup successFully', 'data' => new GetBackupConfigResource($backupConfig)], 200);
 
         } catch (\RuntimeException $e) {
             throw $e;
@@ -66,8 +72,14 @@ class BackupController extends Controller
                 $backupConfig = tap(BackupConfig::find($credentials['id']))
                     ->update($credentials);
 
+                $backupConfig->load([
+                    'user:id,first_name,last_name,auth_name',
+                    'user.roles:name',
+                    'user.permissions:name'
+                ]);
+
             DB::commit();
-                return response()->json(['success' => true, 'msg' => 'edit config backup successFully', 'data' => $backupConfig], 200);
+                return response()->json(['success' => true, 'msg' => 'edit config backup successFully', 'data' => new GetBackupConfigResource($backupConfig)], 200);
 
         } catch (\Exception $e) {
             DB::rollback();
