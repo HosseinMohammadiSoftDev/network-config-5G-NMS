@@ -5,6 +5,7 @@ use Modules\Server\Http\Controllers\ModuleController;
 use Modules\Server\Http\Controllers\ServerController;
 use Modules\Server\Http\Controllers\ServiceController;
 use Modules\Server\Http\Controllers\CommandController;
+use Modules\Server\Http\Controllers\SyncServerDataController;
 
 /*
  *--------------------------------------------------------------------------
@@ -52,4 +53,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::middleware(['permission:VM/status|role:admin|expert'])->post('server-stop', [ServerController::class, 'serverStop']);
     Route::middleware(['permission:VM/status|role:admin|expert'])->post('server-start', [ServerController::class, 'ServerStart']);
     Route::middleware(['role:admin|expert|visitor'])->post('server-status', [ServerController::class, 'serverStatus']);
+});
+
+
+Route::get('get-data-server', [SyncServerDataController::class, 'getDataServer']);
+Route::get('get-data-modules/{serverIP}', [SyncServerDataController::class, 'getDataModules']);
+Route::get('get-data-module-changed/{serverIP}', [SyncServerDataController::class, 'getDataModuleChanged']);
+
+Route::prefix('auto-sync/')->group(function () {
+    Route::post('receive-changed-module-bbu', [SyncServerDataController::class, 'receiveChangeModuleBBU']);
+    Route::get('send-module-change-to-buu', [SyncServerDataController::class, 'sendModuleChangeToBBU']);
 });

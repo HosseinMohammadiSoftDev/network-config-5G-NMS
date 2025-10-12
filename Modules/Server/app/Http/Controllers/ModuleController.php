@@ -4,6 +4,7 @@ namespace Modules\Server\Http\Controllers;
 
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationData;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
@@ -13,7 +14,9 @@ use Modules\Server\Models\Server;
 use Illuminate\Support\Facades\DB;
 use Modules\Server\Services\ConfigManager;
 use Modules\Server\Services\ConfService;
+use Modules\Server\Services\Modules\EditModuleService;
 use Modules\Server\Services\Paeser\NeonPaeser;
+use Modules\Server\Services\SyncData\AutoSyncData;
 use Modules\Server\Utility\CommandOutputAnalyzerService;
 use Modules\User\Models\Permission;
 use Illuminate\Support\Facades\Auth;
@@ -230,8 +233,6 @@ class ModuleController extends ApiController
         if (is_array($jsonContent) || is_object($jsonContent))
             return $jsonContent;
 
-        $failedServers = [];
-        $createdModules = [];
 
         try {
             DB::beginTransaction();
@@ -268,6 +269,8 @@ class ModuleController extends ApiController
                     $creadtional['password'], $server, $module);
 
             $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
+
+            AutoSyncData::sendModuleChangeToBBU($server, $module->with('servers')->get(), 'create');
 
             $module->servers()->syncWithoutDetaching([$serverId]);
 
@@ -334,9 +337,11 @@ class ModuleController extends ApiController
         }
 
 
-        foreach ($serverModule as $server)
+        foreach ($serverModule as $server) {
             $this->chackPermissionModule($server);
 
+            AutoSyncData::sendModuleChangeToBBU($server, $module->load('servers'), 'delete');
+        }
 
         $module->delete();
 
@@ -384,87 +389,18 @@ class ModuleController extends ApiController
 
         return $content;
     }
-    public function createAndDeletePermission ()
-    {
-        $servers = Server::pluck('name')->toArray();
-
-        $existingPermissions = Permission::where('name', 'like', 'server/%')->pluck('name')->toArray();
-
-        $currentServerPermissions = array_map(fn($server) => "server/{$server}", $servers);
-
-        $newPermissions = array_diff($currentServerPermissions, $existingPermissions);
-        foreach ($newPermissions as $newPermission)
-            Permission::create(['name' => $newPermission, 'guard_name' => 'web']);
-
-
-        $removedPermissions = array_diff($existingPermissions, $currentServerPermissions);
-        foreach ($removedPermissions as $removedPermission)
-            Permission::where('name', $removedPermission)->delete();
-
-    }
     public function chackPermissionModule($server)
     {
-        $this->createAndDeletePermission();
-
         $user = Auth::user();
-        if ($user->hasRole('admin'))
-            return true;
-
+        if ($user->hasRole('admin')) return true;
 
         $serverPermission = 'server/' . $server['name'];
-        if ($user->hasPermissionTo($serverPermission))
-            return true;
+        if ($user->hasPermissionTo($serverPermission)) return true;
 
         throw ValidationException::withMessages([
             'msg' => 'You do not have permission to use this server : ' . $server['name'],
             'your-permissions' => $user->getAllPermissions()->pluck('name')
         ]);
-    }
-    public function getArrayChanges($array1, $array2) {
-        $changes = [];
-
-        foreach ($array2 as $key => $value) {
-            if (!array_key_exists($key, $array1))
-                $changes[$key] = $value;
-
-            elseif (is_array($value) && is_array($array1[$key])) {
-                $subChanges = $this->getArrayChanges($array1[$key], $value);
-
-                if (!empty($subChanges))
-                    $changes[$key] = $subChanges;
-
-            elseif ($array1[$key] !== $value)
-                $changes[$key] = [
-                    'old' => $array1[$key],
-                    'new' => $value
-                ];
-            }
-        }
-
-        return $changes;
-    }
-    private function logModuleUpdate($module, $server, $array2)
-    {
-        $array1 = json_decode($module->pivot->current_config_json, true);
-        $change = json_encode($this->getArrayChanges($array1, $array2));
-
-        activity('update-module-config')
-            ->causedBy(Auth::user())
-            ->event('update-config-module')
-            ->withProperties([
-                'type-log' => 'server',
-                'route' => request()->fullUrl(),
-                'method' => 'updateConfigModule',
-                'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                'user_role' =>Auth::user()->roles()->pluck('name')->first(),
-                'changes' => $change,
-                'server' => $server,
-                'server_id' => $server->id,
-                'module_id' => $module['id'],
-                'module_name' => $module['name'],
-                'module_type' => $module['type'],
-            ])
-            ->log('The configuration values have been changed');
     }
     private function updateSingleModule ($request)
     {
@@ -476,8 +412,7 @@ class ModuleController extends ApiController
             })
         ->first();
 
-        if (!$module)
-            throw ValidationException::withMessages(['error' => 'The module with the provided ID was not found on the server you specified.']);
+        if (!$module) throw ValidationException::withMessages(['error' => 'The module with the provided ID was not found on the server you specified.']);
 
         $serverIdsInModuleName = $module->servers->pluck('id');
         $data = $request->input('data', []);
@@ -490,25 +425,26 @@ class ModuleController extends ApiController
             $this->chackPermissionModule($server);
 
 //                content config file
-            $configContent = $this->catConfigFileContent($module, $server
-                    , $request['username'], $request['password']);
-
+            $configContent = $this->catConfigFileContent($module, $server, $request['username'], $request['password']);
 
 //                update change to json fromat
             $configManaager = new ConfigManager($configContent);
                 $newConfigContent = $configManaager->applyChanges($data);
 
 
-
 //                update change to json content to database
             $currentConfig = $this->updateModuleConfigInDatabase($module['id'], $data, $server, $newConfigContent);
 
-
 //                send conf file content to server
-            $outputCommand = $this->sendConfigToServer($request['username'], $request['password'],
-                        $module, $newConfigContent, $server);
+            $outputCommand = $this->sendConfigToServer($request['username'], $request['password'], $module, $newConfigContent, $server);
 
             $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
+
+            if (! empty(CommandOutputAnalyzerService::extractErrors($outputCommand)))
+                throw ValidationException::withMessages(CommandOutputAnalyzerService::extractErrors($outputCommand));
+
+
+            AutoSyncData::sendModuleChangeToBBU($server, $module, 'update-config');
 
             $this->logModuleUpdate($module->servers->find($server['id']), $server, $data);
 
@@ -605,6 +541,8 @@ class ModuleController extends ApiController
 
                 $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
 
+                AutoSyncData::sendModuleChangeToBBU($server, $module, 'update-config');
+
                 $this->logModuleUpdate($module->servers->find($server['id']), $server, $data);
             }
 
@@ -655,12 +593,9 @@ class ModuleController extends ApiController
     }
     private function sendConfigToServer(string $username, string $password, Module $module, string $confContent, Server $server)
     {
-        // is down server
-        if ($server['is_down'] == Server::OFF)
-            throw ValidationException::withMessages(['server' => 'this server: ' . $server['name'] .' is off']);
+        if ($server['is_down'] == Server::OFF) throw ValidationException::withMessages(['server' => 'this server: ' . $server['name'] .' is off']);
 
-        if (!$module['path_config'])
-            throw ValidationException::withMessages(['path_config' => 'You did not specify a configuration address config']);
+        if (!$module['path_config']) throw ValidationException::withMessages(['path_config' => 'You did not specify a configuration address config']);
 
 
         $sshHelper = new sshHelper($server, $username, $password);
@@ -678,12 +613,10 @@ class ModuleController extends ApiController
     }
     private function updateModuleConfigInDatabase($moduleId, $data, Server $server, string $confContent)
     {
-        if ($server['is_down'] == Server::OFF)
-            throw ValidationException::withMessages(['msg' => 'server is off']);
+        if ($server['is_down'] == Server::OFF) throw ValidationException::withMessages(['msg' => 'server is off']);
         $module = Module::find($moduleId);
 
-        if (!$module)
-            throw ValidationException::withMessages(['msg' => 'module is notfund']);
+        if (!$module) throw ValidationException::withMessages(['msg' => 'module is notfund']);
 
 
             // example value in data user
@@ -845,28 +778,28 @@ class ModuleController extends ApiController
     }
 
 
-
-
-        // Undo Config module
     public function undoConfigModule (UndoConfigModulesRequest $request)
     {
         $creadtional = $request->validated();
-            $server = Server::find($creadtional['server_id']);
 
+        $server = Server::find($creadtional['server_id']);
 
-        $module = $server->modules()->where('modules.id', $creadtional['module_id'])->first();
-        if (!$module)
-            throw ValidationException::withMessages(['module' => 'module is not found']);
+        $module = Module::where('id', $request['module_id'])
+            ->whereHas('servers', function ($query) use ($server) {
+                $query->where('server_id', $server->id);
+            })
+        ->first();
 
-        if ($server['is_down'] == Server::OFF)
-            throw ValidationException::withMessages(['server'=> 'server is off']);
+        if (!$module) throw ValidationException::withMessages(['module' => 'module is not found']);
+
+        if ($server['is_down'] == Server::OFF) throw ValidationException::withMessages(['server'=> 'server is off']);
 
 
         $pivotData = $module->servers()->where('server_id', $creadtional['server_id'])->first()->pivot;
         $modulePreviousConfig = $pivotData['previous_config_json'];
 
-        if ($modulePreviousConfig == null)
-            throw ValidationException::withMessages(['previous_config' => 'The module does not have a previous value, you cannot revert it to the previous value']);
+        if ($modulePreviousConfig == null) throw ValidationException::withMessages(['previous_config' => 'The module does not have a previous value, you cannot revert it to the previous value']);
+
 
 
         try {
@@ -881,8 +814,12 @@ class ModuleController extends ApiController
             $pivotData['current_config_json'] = $pivotData['previous_config_json'];
                 $pivotData->save();
 
-
             $commandWarning = CommandOutputAnalyzerService::extractErrors($outpotCommand);
+
+            if (! empty(CommandOutputAnalyzerService::extractErrors($commandWarning)))
+                throw ValidationException::withMessages(CommandOutputAnalyzerService::extractErrors($commandWarning));
+
+            AutoSyncData::sendModuleChangeToBBU($server, $module->load('servers'), 'update-config');
 
             activity('undo-config-module')
                 ->causedBy(Auth::user())
@@ -904,7 +841,7 @@ class ModuleController extends ApiController
             return response()->json([
                 'success' => $commandWarning ? false : true,
                 'msg' => 'The module configuration has been reverted to the previous step',
-                'config' => json_decode($pivotData['current_config'], true),
+                'config' => json_decode($pivotData['current_config_json'], true),
                 'commandWarning' => $commandWarning
             ], $commandWarning ? 422 : 200);
 
@@ -917,35 +854,38 @@ class ModuleController extends ApiController
     public function undoToInitialConfigModule (UndoToInitialConfigModulesRequest $request)
     {
         $creadtional = $request->validated();
-            $server = Server::find($creadtional['server_id']);
+        $server      = Server::find($creadtional['server_id']);
+        $module      = Module::where('id', $request['module_id'])
+            ->whereHas('servers', function ($query) use ($server) {
+                $query->where('server_id', $server->id);
+            })
+        ->first();
 
+        if (!$module) throw ValidationException::withMessages(['module' => 'module is not found']);
 
-        $module = $server->modules()->where('modules.id', $creadtional['module_id'])->first();
-            if (!$module)
-                throw ValidationException::withMessages(['module' => 'module is not found']);
-
-
-        if ($server && $server['is_down'] == 1)
-            throw ValidationException::withMessages(['server'=> 'server is off']);
-
+        if ($server && $server['is_down'] == Server::OFF) throw ValidationException::withMessages(['server'=> 'server is off']);
 
         $pivotData = $module->servers()->where('server_id', $creadtional['server_id'])->first()->pivot;
-            $moduleInitialConfig = $pivotData['initial_config_json'];
+
+        $moduleInitialConfig = $pivotData['initial_config_json'];
 
         try {
+
             // ssh to server format yaml
         $confContent = $pivotData['initial_config_conf'];
-
-        $outputCommand = $this->sendConfigToServer($creadtional['username'], $creadtional['password'],
-            $module, $confContent, $server);
-
+        $outputCommand = $this->sendConfigToServer($creadtional['username'], $creadtional['password'], $module, $confContent, $server);
 
             // save to datebase format json
-            $pivotData['current_config_json'] = $pivotData['initial_config_json'];
-                $pivotData->save();
+        $pivotData['current_config_json'] = $pivotData['initial_config_json'];
+        $pivotData->save();
 
         $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
 
+        if (! empty(CommandOutputAnalyzerService::extractErrors($commandWarning)))
+            throw ValidationException::withMessages(CommandOutputAnalyzerService::extractErrors($commandWarning));
+
+
+        AutoSyncData::sendModuleChangeToBBU($server, $module->load('servers'), 'update-config');
 
             activity('undo-config-module')
                 ->causedBy(Auth::user())
