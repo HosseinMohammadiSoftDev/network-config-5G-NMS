@@ -114,17 +114,17 @@ class SeterDataServer
     public function createModule (array $module)
     {
         Module::updateOrCreate([
-            'name' => $module[0]['name']
+            'name'        => $module[0]['name']
         ],[
-            'name' => $module[0]['name'],
-            'type' => $module[0]['type'],
-            'extension' => $module[0]['extension'],
+            'name'        => $module[0]['name'],
+            'type'        => $module[0]['type'],
+            'extension'   => $module[0]['extension'],
             'path_config' => $module[0]['path_config'],
 
 //                config content
-            'current_config_json' => $module[0]['servers'][0]['pivot']['current_config_json'],
-            'initial_config_json' => $module[0]['servers'][0]['pivot']['initial_config_json'],
-            'initial_config_conf' => $module[0]['servers'][0]['pivot']['initial_config_conf'],
+            'current_config_json'  => $module[0]['servers'][0]['pivot']['current_config_json'],
+            'initial_config_json'  => $module[0]['servers'][0]['pivot']['initial_config_json'],
+            'initial_config_conf'  => $module[0]['servers'][0]['pivot']['initial_config_conf'],
             'previous_config_conf' => $module[0]['servers'][0]['pivot']['previous_config_conf'],
         ]);
     }
@@ -133,31 +133,31 @@ class SeterDataServer
         Module::where('name', $oldModuleData['name'])
             ->update([
 //                update module data
-                'name' => $module[0]['name'],
-                'type' => $module[0]['type'],
-                'extension' => $module[0]['extension'],
-                'path_config' => $module[0]['path_config'],
+                'name'        => $module['name'],
+                'type'        => $module['type'],
+                'extension'   => $module['extension'],
+                'path_config' => $module['path_config'],
 
 //                  update config module
-                'initial_config_json' => $module[0]['servers'][0]['pivot']['initial_config_json'],
-                'previous_config_json' => $module[0]['servers'][0]['pivot']['previous_config_json'] ?? null,
-                'current_config_json' => $module[0]['servers'][0]['pivot']['current_config_json'],
-                'initial_config_conf' => $module[0]['servers'][0]['pivot']['initial_config_conf'],
-                'previous_config_conf' => $module[0]['servers'][0]['pivot']['previous_config_conf'],
+                'initial_config_json'  => $module['servers'][0]['pivot']['initial_config_json'],
+                'previous_config_json' => $module['servers'][0]['pivot']['previous_config_json'] ?? null,
+                'current_config_json'  => $module['servers'][0]['pivot']['current_config_json'],
+                'initial_config_conf'  => $module['servers'][0]['pivot']['initial_config_conf'],
+                'previous_config_conf' => $module['servers'][0]['pivot']['previous_config_conf'],
             ]);
 
     }
     public function updateConfigModule (array $module)
     {
-        Module::where('name', $module[0]['name'])
+        Module::where('name', $module['name'])
             ->update([
 
 //                update config module
-                'initial_config_json' => $module[0]['servers'][0]['pivot']['initial_config_json'],
-                'previous_config_json' => $module[0]['servers'][0]['pivot']['previous_config_json'] ?? null,
-                'current_config_json' => $module[0]['servers'][0]['pivot']['current_config_json'],
-                'initial_config_conf' => $module[0]['servers'][0]['pivot']['initial_config_conf'],
-                'previous_config_conf' => $module[0]['servers'][0]['pivot']['previous_config_conf']
+                'initial_config_json'  => $module['servers'][0]['pivot']['initial_config_json'],
+                'previous_config_json' => $module['servers'][0]['pivot']['previous_config_json'] ?? null,
+                'current_config_json'  => $module['servers'][0]['pivot']['current_config_json'],
+                'initial_config_conf'  => $module['servers'][0]['pivot']['initial_config_conf'],
+                'previous_config_conf' => $module['servers'][0]['pivot']['previous_config_conf']
             ]);
     }
     public function deleteModule (array $module)

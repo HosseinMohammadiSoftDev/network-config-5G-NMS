@@ -62,9 +62,14 @@ Route::post('nms-server-data', [SystemSettingController::class, 'nmsServerData']
 
 //      sync data
 //    get and set to sqlite as server RRU
-Route::get('sync-data', [SyncServerDataController::class, 'syncData']);
+//Route::get('sync-data', [SyncServerDataController::class, 'syncData']);
 
 
+
+Route::get('get-data-server', [SyncServerDataController::class, 'getDataServer']);
+Route::get('get-data-modules', [SyncServerDataController::class, 'getDataModules']);
+Route::get('get-data-module-changed', [SyncServerDataController::class, 'getDataModuleChanged']);
+Route::get('exclude-module-changes-bbu', [SyncServerDataController::class, 'excludeModuleChangesBBU']);
 
 // get data as RRU
 Route::prefix('auto-sync/')->group(function () {

@@ -29,7 +29,6 @@ class SyncModuleMiddelware
         if (!$this->isChackeConnection())
             return $next($request);
 
-dd(AutoSyncData::handelChangedModuleThisBBU(Module::all(), 'return-connection-server'));
 
         if (Carbon::parse($systemSetting['last_connection_nms'])->lt(Carbon::now()->subMinutes(15))) {
             $this->seterDataServer->excludeModuleChangesBBU();

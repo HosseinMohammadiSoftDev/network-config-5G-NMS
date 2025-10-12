@@ -3,17 +3,19 @@
 namespace Modules\Server\Services\SyncData;
 
 
-use http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
 use Modules\Server\Models\Module;
-use Modules\Server\Models\Server;
+
+/**
+ * descreption :
+ *      get data as BBU :
+ *          -
+ */
 
 class GeterDataService
 {
-    public function __construct(
-        private SeterDataServer $seterDataServer)
-    {}
+    public function __construct(private SeterDataServer $seterDataServer) {}
 
 
 //    get data as RRU
@@ -67,9 +69,9 @@ class GeterDataService
             $server = $this->getDataServer();
 
             $allModule = $this->getDataModules($server['data']['ip']);
-            $ModuleChanged = $this->getDataModuleChanged($server['data']['ip']);
+            $moduleChanged = $this->getDataModuleChanged($server['data']['ip']);
 
-            $this->seterDataServer->syncDataToDatabase($server['data'], $allModule['data'], $ModuleChanged['data']);
+            $this->seterDataServer->syncDataToDatabase($server['data'], $allModule['data'], $moduleChanged['data']);
 
 //             defrent module
             $this->seterDataServer->defModule($allModule['data']);
