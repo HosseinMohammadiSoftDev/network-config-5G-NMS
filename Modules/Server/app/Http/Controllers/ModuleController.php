@@ -374,128 +374,25 @@ class ModuleController extends ApiController
             'your-permissions' => $user->getAllPermissions()->pluck('name')
         ]);
     }
-    private function updateSingleModule ($request, int $port)
-    {
-        $server = Server::find($request['server_id']);
-
-        $module = Module::where('id', $request['module_id'])
-            ->whereHas('servers', function ($query) use ($server) {
-                $query->where('server_id', $server->id);
-            })
-        ->first();
-
-        if (!$module)
-            throw ValidationException::withMessages(['module' => 'The module with the provided ID was not found on the server you specified.']);
-
-        $serverIdsInModuleName = $module->servers->pluck('id');
-        $data = $request->input('data', []);
-
-
-        DB::beginTransaction();
-
-        try {
-
-            foreach ($module->servers as $moduleServer)
-            {
-                $this->chackPermissionModule($moduleServer);
-
-                $currentConfig = $this->updateModuleConfigInDatabase($module['id'], $data, $moduleServer);
-
-                $yamlContent = YamlParserService::convertJsonToYaml($currentConfig);
-
-                $outputCommand = $this->sendConfigToServer(
-                    $request['username'],
-                    $request['password'],
-                    $module['name'],
-                    $yamlContent,
-                    $moduleServer,
-                    $port,
-                    'update-module',
-                    'updateSingleModule'
-                );
-
-                $commandWarning = ! empty($outputCommand) ? CommandOutputAnalyzerService::extractErrors($outputCommand) : null;
-                if ($commandWarning) throw ValidationException::withMessages($commandWarning);
-
-
-                LogModuleService::logModuleUpdate($moduleServer, $server, $data);
-            }
-
-            DB::commit();
-
-            $serversData = $module->servers->map(function ($server) {
-                return [
-                    'id' => $server->id,
-                    'name' => $server->name,
-                    'is_down' => $server->is_down,
-                ];
-            });
-
-            return response()->json([
-                'config' => json_decode($currentConfig, true),
-                'commandWarning' => $commandWarning,
-                'serverDetaile' => $serversData,
-                'serverIdsInModuleName' => $serverIdsInModuleName
-            ], $commandWarning ? 422 : 200);
-
-        } catch (ValidationException $e) {
-            throw $e;
-        } catch (InvalidArgumentException $e) {
-                DB::rollBack();
-
-                $message = $e->getMessage();
-                $message = preg_replace('/\x1b\[[0-9;]*m/', '', $message); // حذف کدهای ANSI
-                $message = preg_replace('/\r?\n.*?\[root@localhost.*?$/', '', $message); // حذف اطلاعات اضافی مربوط به خط فرمان
-
-                preg_match_all('/\b(FATAL|ERROR):\s.*?(?=\s\(.*?\)|$)/m', $message, $matches);
-
-                $formattedMessages = $matches[0] ?? [];
-
-                $separatedMessages = [];
-                foreach ($formattedMessages as $index => $msg) {
-                    $separatedMessages["Error-" . ($index + 1)] = $msg;
-                }
-
-            throw new HttpResponseException(response()->json([
-                'msg' => 'server error!',
-                'error' => [
-                    'type' => 'restart-service-error',
-                    'message' => $separatedMessages
-                ]
-            ], 422));
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            $message = $e->getMessage();
-
-            throw new HttpResponseException(response()->json([
-                'msg' => 'server error',
-                'error' => [
-                    'type' => 'server-error',
-                    'message' => $message
-                ]
-            ], 422));
-        }
-    }
-    private function updateMultipleModules(array $serverIds, Request $request, int $port)
+    private function updateMultipleModules(array $serverIds, Request $request)
     {
         $module = Module::find($request['module_id']);
 
-            // validate
         $serverIdsInModuleName = $module->servers->pluck('id');
-        foreach ($serverIds as $serverId) {
-            if (!in_array($serverId, $serverIdsInModuleName->toArray()))
-                throw ValidationException::withMessages(['module' => 'An invalid server ID has been sent among the server IDs']);
-        }
-
-        $servers = $module->servers()
-            ->whereIn('server_id', $serverIds)
-            ->get();
+        foreach ($serverIds as $serverId)
+            if (!in_array($serverId, $serverIdsInModuleName->toArray())) throw ValidationException::withMessages(['module' => 'An invalid server ID has been sent among the server IDs']);
 
 
         DB::beginTransaction();
         try {
-            foreach ($servers as $server) {
+            foreach ($serverIds as $serverId) {
+
+                $server      = Server::find($serverId);
+                $serverIndex = array_search($serverId, array_column($request['servers'], 'id'));
+                $username    = $request['servers'][$serverIndex]['username'];
+                $password    = $request['servers'][$serverIndex]['password'];
+                $port        = $request['servers'][$serverIndex]['port'] ?? 22;
+
                 $module = $server->modules()->wherePivot('module_id', $request['module_id'])->first();
 
                 $this->chackPermissionModule($module, $server);
@@ -505,8 +402,8 @@ class ModuleController extends ApiController
                 $yamlContent = YamlParserService::convertJsonToYaml($updatedModule);
 
                 $outputCommand = $this->sendConfigToServer(
-                    $request['username'],
-                    $request['password'],
+                    $username,
+                    $password,
                     $module['name'],
                     $yamlContent,
                     $server,
@@ -516,7 +413,7 @@ class ModuleController extends ApiController
                 );
 
 
-                $commandWarning = ! empty($output) ? CommandOutputAnalyzerService::extractErrors($output) : null;
+                $commandWarning = ! empty($outputCommand) ? CommandOutputAnalyzerService::extractErrors($outputCommand) : null;
                 if ($commandWarning) throw ValidationException::withMessages($commandWarning);
 
 
@@ -597,14 +494,12 @@ class ModuleController extends ApiController
     public function updateConfigModule(UpdateConfigModuleRequest $request)
     {
         $credentials = $request->validated();
-
-        $serverIds = $request->input('servers', []);
+        $serverIds   = array_column($credentials['servers'], 'id');
 
         try {
-            if (!empty($serverIds))
-                return $this->updateMultipleModules($serverIds, $request, $credentials['port'] ?? 22);
-            else
-                return $this->updateSingleModule($request, $credentials['port'] ?? 22);
+
+            return $this->updateMultipleModules($serverIds, $request);
+
         } catch (\Exception $e) {
             throw $e;
         }
@@ -875,7 +770,6 @@ class ModuleController extends ApiController
 
             activity('export-config-module')
                 ->causedBy(Auth::user())
-                ->performedOn($request['module'])
                 ->event('get')
                 ->withProperties([
                     'type-log' => 'server',

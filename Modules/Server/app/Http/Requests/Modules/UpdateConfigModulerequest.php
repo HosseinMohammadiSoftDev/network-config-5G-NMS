@@ -14,28 +14,25 @@ class UpdateConfigModulerequest extends FormRequest
     {
         return [
             'module_id' => ['required', 'exists:modules,id', 'integer'],
-            'server_id' => ['required', 'integer', 'exists:servers,id'],
             'data' => ['required', 'array'],
 
-            'servers' => ['nullable', 'array'],
-            'servers.*' => ['required', 'integer', 'exists:servers,id',  function ($attribute, $value, $fail) {
+            'servers'            => ['required', 'array'],
+            'servers.*.id'       => ['required', 'integer', 'exists:servers,id',  function ($attribute, $value, $fail) {
                 $server = DB::table('servers')->where('id', $value)->first();
-                    if (!$server) {
-                        $fail("The selected server ID ($value) is invalid.");
-                        return;
-                    }
-
-                    if (empty($server->path_config) || empty($server->path_run_config)) {
-                        $fail("The selected server ($value) is missing required configuration paths (path_config and path_run_config).");
-                        return;
-                    }
+                if (!$server) {
+                    $fail("The selected server ID ($value) is invalid.");
+                    return;
                 }
-            ],
 
-            // 'data.*' => ['required', 'string'],
-            'username' => ['required', 'string'],
-            'password' => ['required', 'string'],
-            'port' => ['nullable', 'integer'],
+                if (empty($server->path_config) || empty($server->path_run_config)) {
+                    $fail("The selected server ($value) is missing required configuration paths (path_config and path_run_config).");
+                    return;
+                }
+            }],
+
+            'servers.*.username' => ['required', 'string'],
+            'servers.*.password' => ['required', 'string'],
+            'servers.*.port'     => ['integer'],
         ];
     }
 
