@@ -27,6 +27,8 @@ class Module extends Model
         'previous_config_json',
         'current_config_json',
 
+        'is_updated',
+
 //        .conf fild
         'initial_config_conf',
         'previous_config_conf',

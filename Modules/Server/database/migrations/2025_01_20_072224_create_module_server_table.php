@@ -24,6 +24,7 @@ return new class extends Migration
                     ->onDelete('cascade')
                     ->onUpdate('cascade');
 
+            $table->boolean('is_updated')->default(false);
                             // config module
 //                                    json format
                     $table->text('initial_config_json')->nullable()->comment('initial config module to format son');
