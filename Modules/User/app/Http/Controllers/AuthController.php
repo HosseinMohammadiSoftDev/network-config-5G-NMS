@@ -50,8 +50,8 @@ class AuthController extends ApiController
 
 
 //          validation bbu server
-        if ($user['server_id'] || request()->ip() === env('BBU_SERVER_IP'))
-            $this->validationBbuServer($user);
+//        if ($user['server_id'] || request()->ip() === env('BBU_SERVER_IP'))
+//            $this->validationBbuServer($user);
 
 
 //        $user->tokens()->delete();
