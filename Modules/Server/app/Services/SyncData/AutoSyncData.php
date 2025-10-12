@@ -11,11 +11,9 @@ use PHPUnit\Event\RuntimeException;
 
 class AutoSyncData
 {
-    public function __construct()
-    {}
+    public function __construct() {}
 
 
-//      auto sync data
 //          recive change module as bbu
     public static function handelChangeModuleBBU(array $module, string $action, ?array $oldModuleData = null)
     {
@@ -63,7 +61,6 @@ class AutoSyncData
             'old_module_data' => $oldModuleData ?? null
         ]);
 
-//dd($response->json());
         return $response->json();
     }
     private static function isConnectedRRU (Server $server) : bool
@@ -80,7 +77,7 @@ class AutoSyncData
     {
         if (! self::isConnectedRRU($server)) {
             $module->update(['is_updated' => true]);
-            return;  // break as mothod
+            return;  // EXIT
         }
 
 

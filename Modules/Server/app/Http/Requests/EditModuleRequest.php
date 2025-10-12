@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Http\FormRequest;
+use Modules\Server\Utility\DirectoryUtility;
 
 class EditModuleRequest extends FormRequest
 {
@@ -20,7 +21,6 @@ class EditModuleRequest extends FormRequest
             'module_id' => ['required', 'integer', 'exists:modules,id'],
             'name' => ['nullable', 'string', 'min:2', 'max:255'],
             'type' => ['nullable', 'string', 'in:LTE,GSM,RRU'],
-            // 'server_id'=> ['required', 'integer','exists:servers,id'],
 
             'config_file' => ['nullable', 'file',  function ($attribute, $value, $fail) {
 

@@ -6,6 +6,13 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
 use Modules\Server\Models\Server;
 
+/**
+ *  descreption :
+ *      get data as BBU
+ *          - get all modules
+ *          - get changes modules
+ *          -
+ */
 class GeterDataService
 {
     public function __construct(

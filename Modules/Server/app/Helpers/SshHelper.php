@@ -4,6 +4,7 @@ namespace Modules\Server\Helpers;
 
 use Exception;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Modules\Server\Models\Server;
 use phpseclib3\Net\SFTP;
 use phpseclib3\Net\SSH2;
 use InvalidArgumentException;
@@ -17,7 +18,7 @@ class SshHelper
 {
     protected $ssh;
 
-    public function __construct(private $server, private $username, private $password, private $port = 22, private $timeout = 1)
+    public function __construct(private Server $server, private string $username, private string $password, private $port = 22, private $timeout = 1)
     {
 
         if (!$this->ssh || !$this->ssh->isConnected())
@@ -30,7 +31,7 @@ class SshHelper
     }
 
         // log
-    protected function logActivity($event, $method, $extra = [])
+    protected function logActivity(string $event, string $method, array $extra = [])
     {
         activity($event)
             ->causedBy(Auth::user())
@@ -48,7 +49,13 @@ class SshHelper
             ->log($event);
     }
 
-    public function runCommand($command)
+    /**
+     * run command
+     * @param string $command
+     * @return bool|string|null
+     * @throws Exception
+     */
+    public function runCommand(string $command)
     {
         try {
             $this->ssh->setTimeout(1);
@@ -68,7 +75,7 @@ class SshHelper
             throw $e;
         }
     }
-    public function getFileContent($command)
+    public function getFileContent(string $command)
     {
         $fileContent = $this->ssh->exec($command);
 
@@ -83,7 +90,7 @@ class SshHelper
 
 
 
-    public function runCommandModule($command, $typeCommand, $method, $server): string
+    public function runCommandModule(string $command, string $typeCommand, string $method, Server $server): string
     {
         $output = $this->runCommand($command);
 
@@ -99,7 +106,7 @@ class SshHelper
 
         return $output;
     }
-    public function execRunCommand ($command, $typeCommand, $method, $server): string
+    public function execRunCommand (string $command, string $typeCommand, string $method, Server $server): string
     {
         $output = $this->ssh->exec($command);
             $this->ssh->disconnect();

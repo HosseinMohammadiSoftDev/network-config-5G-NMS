@@ -39,11 +39,10 @@ use Modules\Server\Http\Requests\Undo\UndoToInitialConfigModulesRequest;
 
 class ModuleController extends ApiController
 {
-    public function __construct(
+    public function __construct (
         private PaginationService $paginationService,
         private ConfService $confService
-    )
-    {}
+    ) {}
 
         // show Config in database
     public function showConfigModule ($serverId, $moduleId)
@@ -57,8 +56,7 @@ class ModuleController extends ApiController
         }])
         ->first();
 
-        if (!$module)
-            throw ValidationException::withMessages(['module' => 'The module with the provided ID was not found on the server you specified.']);
+        if (!$module) throw ValidationException::withMessages(['module' => 'The module with the provided ID was not found on the server you specified.']);
 
 
 
@@ -90,8 +88,8 @@ class ModuleController extends ApiController
     public function showAllServiseAndModulesInServer ($serverId)
     {
         $server = Server::with(['modules:id,name,type'])->find($serverId);
-            if(!$server)
-                return response()->json(['msg' => 'invalide server id'], 404);
+
+        if(!$server) return response()->json(['msg' => 'invalide server id'], 404);
 
 
         $modulesGroupedByType = collect();
@@ -116,7 +114,7 @@ class ModuleController extends ApiController
 
     public function ShowAllModules (Request $request)
     {
-        $user = Auth::user();
+        $user    = Auth::user();
         $perPage = ($request->input('paginate') ?? 10);
 
         if ($user->hasRole('admin')) {
@@ -223,9 +221,11 @@ class ModuleController extends ApiController
     public function createModule (CreateModulesRequest $request)
     {
         $creadtional = $request->validated();
-            $serverIds = $creadtional['server_id'];
-
+        $serverIds   = $creadtional['server_id'];
         $jsonContent = $this->uploadModuleFile($request->file('config_file'));
+
+        $failedServers  = [];
+        $createdModules = [];
 
         if (is_array($jsonContent) || is_object($jsonContent))
             return $jsonContent;
@@ -246,14 +246,12 @@ class ModuleController extends ApiController
 
             foreach ($serverIds as $serverId) {
                 $server = Server::find($serverId);
-                    // check permission
+
                 $this->chackPermissionModule($server);
 
-                if (!$server)
-                    $failedServers[] = $serverId;
+                if (!$server) $failedServers[] = $serverId;
 
-                if ($server && $server['is_down'] == Server::OFF)
-                    throw ValidationException::withMessages(['server'=> 'server is off : ' . $server['name']]);
+                if ($server && $server['is_down'] == Server::OFF) throw ValidationException::withMessages(['server'=> 'server is off : ' . $server['name']]);
 
 
                     $module->servers()->syncWithoutDetaching([
@@ -326,10 +324,10 @@ class ModuleController extends ApiController
     }
     public function deleteModule (deleteModuleRequest $request)
     {
-        $validated = $request->validated();
-        $module = Module::find($validated['module_id']);
-
+        $validated    = $request->validated();
+        $module       = Module::find($validated['module_id']);
         $serverModule =  $module->servers()->get();
+
         if (!$serverModule) {
             $module->delete();
             return response()->json(['msg' => 'Module Deleted', 'module' => $module]);

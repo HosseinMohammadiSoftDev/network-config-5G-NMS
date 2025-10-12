@@ -174,7 +174,7 @@ class SeterDataService
                 $moduleUpdated->servers()->attach($server->id, $configData);
         }
     }
-    public function returnConnectionServer (Server $server, array $modules)
+    public function returnConnectionServer (Server $server, array $modules): void
     {
         $this->saveModuleChanged($server, $modules);
 
