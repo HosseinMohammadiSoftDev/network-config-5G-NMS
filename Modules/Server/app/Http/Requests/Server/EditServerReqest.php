@@ -20,7 +20,7 @@ class EditServerReqest extends FormRequest
                 'min:2',
                 'max:127',
                 Rule::unique('servers', 'name')->ignore($this->server_id, 'id'),
-                'regex:/^[^<>{}\/|\~`!@#$%&*()_\-+="\':;؟،]*$/u'
+                'regex:/^[^<>{}\/|\~`!@#$%&*()\+="\':;؟،]*$/u'
             ],
 
 
