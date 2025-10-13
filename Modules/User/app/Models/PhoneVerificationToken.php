@@ -9,19 +9,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class PhoneVerificationToken extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory;
 
     protected $fillable = [
         'expired_at',
         'token',
         'phone',
     ];
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logAll()
-            ->useLogName('phone-verification-token')
-            ->logOnlyDirty();
-    }
 }
