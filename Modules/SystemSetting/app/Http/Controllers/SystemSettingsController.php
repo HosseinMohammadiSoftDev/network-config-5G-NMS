@@ -137,8 +137,6 @@ class SystemSettingsController extends ApiController
 
             $systemSetting = SystemSettings::first();
 
-            $oldConnectionDataPanelSms = clone Crypt::decrypt($systemSetting['config_connection_sms']) ?? 'no content';
-
                 !$systemSetting
                     ? $systemSetting = SystemSettings::create($creadtioanle)
                     : $systemSetting->update(['config_connection_sms'
@@ -155,7 +153,6 @@ class SystemSettingsController extends ApiController
                     'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
                     'user_role' =>Auth::user()->roles()->pluck('name')->first(),
                     'config-connection-panel-sms' => [
-                        'old-config' => $oldConnectionDataPanelSms,
                         'new-config' => $systemSetting->config_connection_sms
                     ]
                 ])

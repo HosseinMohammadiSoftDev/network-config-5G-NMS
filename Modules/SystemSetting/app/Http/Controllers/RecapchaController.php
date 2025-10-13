@@ -27,8 +27,6 @@ class RecapchaController extends Controller
 
             $systemSetting = SystemSettings::first();
 
-            $oldStatusRecapcha = clone $systemSetting->active_online_capcha;
-
             !$systemSetting
                 ? $systemSetting = $systemSetting->create($creadtioanle)
                 : $systemSetting->update(['active_online_capcha'
@@ -44,10 +42,7 @@ class RecapchaController extends Controller
                     'method' => 'setLoginBySMS',
                     'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
                     'user_role' =>Auth::user()->roles()->pluck('name')->first(),
-                    'recapcha' => [
-                        'old-status' => $oldStatusRecapcha,
-                        'new-status' => $systemSetting->active_online_capcha,
-                    ]
+                    'recapcha' => $systemSetting->active_online_capcha
                 ])
                 ->log('change of status recapcha the system');
 
