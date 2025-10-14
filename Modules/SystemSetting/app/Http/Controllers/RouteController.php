@@ -12,32 +12,27 @@ use Modules\SystemSetting\Http\Requests\Route\RouteServerRequest;
 
 class RouteController extends Controller
 {
-    public function __construct()
-    {
-
-    }
+    public function __construct() {}
 
 
     public function showRouteServer(RouteServerRequest $request)
     {
         $credentials = $request->validated();
 
-        $server = $request['server'];
+        $server   = $request['server'];
         $username = $credentials['username'];
         $password = $credentials['password'];
+        $port     = $credentials['port'] ?? 22;
 
         try {
             DB::beginTransaction();
 
-
-
             $command = 'ip route show';
-                $ssh = new SshHelper($server, $username, $password);
-                   $output = $ssh->runCommandModule($command, 'show-route', 'showRouteServer');
-
+            $ssh     = new SshHelper($server, $username, $password, $port, 5);
+            $output  = $ssh->runCommandModule($command, 'show-route', 'showRouteServer');
 
             DB::commit();
-                return response()->json(['success' => true, 'msg' => 'show route server successFuly', 'output' => $output], 200);
+                return response()->json(['success' => true, 'msg' => 'show route server successfully', 'output' => $output], 200);
 
         } catch (\Exception $e) {
             DB::rollback();
@@ -48,10 +43,10 @@ class RouteController extends Controller
     {
         $credentials = $request->validated();
 
-        $server = $request['server'];
+        $server   = $request['server'];
         $username = $credentials['username'];
         $password = $credentials['password'];
-        $port = $credentials['port'] ?? 22;
+        $port     = $credentials['port'] ?? 22;
 
 
         try {
@@ -62,13 +57,13 @@ class RouteController extends Controller
                 : $command = 'ip route add ' . $credentials['destination_ip'] . ' via ' . $credentials['geteway_ip'];
 
 
-                $ssh = new SshHelper($server, $username, $password, $port);
-                    $output = $ssh->runCommandModule($command, 'add-route', 'addRouteServer');
+                $ssh    = new SshHelper($server, $username, $password, $port);
+                $output = $ssh->runCommandModule($command, 'add-route', 'addRouteServer');
 
 
 
             DB::commit();
-            return response()->json(['success' => true, 'msg' => 'add route server successFul', 'output' => $output], 200);
+            return response()->json(['success' => true, 'msg' => 'add route server successfully', 'output' => $output], 200);
 
         } catch (\Exception $e) {
             DB::rollback();
@@ -79,10 +74,10 @@ class RouteController extends Controller
     {
         $credentials = $request->validated();
 
-        $server = $request['server'];
+        $server   = $request['server'];
         $username = $credentials['username'];
         $password = $credentials['password'];
-        $port = $credentials['port'] ?? 22;
+        $port     = $credentials['port'] ?? 22;
 
         try {
             DB::beginTransaction();
@@ -92,16 +87,16 @@ class RouteController extends Controller
                 : $command = 'ip route del ' . $credentials['destination_ip'] . ' via ' . $credentials['geteway_ip'];
 
 
-            $ssh = new SshHelper($server, $username, $password, $port);
-                $output = $ssh->runCommandModule($command, 'delete-route', 'deleteRouteServer');
+            $ssh    = new SshHelper($server, $username, $password, $port);
+            $output = $ssh->runCommandModule($command, 'delete-route', 'deleteRouteServer');
 
 
             DB::commit();
-            return response()->json(['success' => true, 'msg' => 'show route server successFul', 'output' => $output], 200);
+               return response()->json(['success' => true, 'msg' => 'show route server successfully', 'output' => $output], 200);
 
         } catch (\Exception $e) {
             DB::rollback();
-            throw $e;
+                throw $e;
         }
     }
 }

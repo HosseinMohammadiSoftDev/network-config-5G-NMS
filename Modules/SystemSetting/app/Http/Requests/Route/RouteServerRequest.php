@@ -14,8 +14,9 @@ class RouteServerRequest extends FormRequest
     {
         return [
             'server_id' => ['required', 'integer', 'exists:servers,id'],
-            'username' => ['required', 'string', 'max:255', 'min:1'],
-            'password' => ['required', 'string', 'max:255', 'min:1'],
+            'username'  => ['required', 'string', 'max:255', 'min:1'],
+            'password'  => ['required', 'string', 'max:255', 'min:1'],
+            'port'      => ['numeric'],
         ];
     }
 

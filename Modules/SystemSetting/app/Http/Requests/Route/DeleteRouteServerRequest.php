@@ -11,12 +11,12 @@ class DeleteRouteServerRequest extends FormRequest
     {
         return [
             'server_id' => ['required', 'integer', 'exists:servers,id'],
-            'username' => ['required', 'string', 'max:255', 'min:1'],
-            'password' => ['required', 'string', 'max:255', 'min:1'],
-            'port' => ['integer'],
+            'username'  => ['required', 'string', 'max:255', 'min:1'],
+            'password'  => ['required', 'string', 'max:255', 'min:1'],
+            'port'      => ['integer'],
 
-            'destination_ip' => ['required', 'string', 'regex:/^(?:\d{1,3}\.){3}\d{1,3}(?:\/\d{1,2})?$/'],
-            'geteway_ip' => ['required', 'string', 'regex:/^(?:\d{1,3}\.){3}\d{1,3}(?:\/\d{1,2})?$/'],
+            'destination_ip'  => ['required', 'string', 'regex:/^(?:\d{1,3}\.){3}\d{1,3}(?:\/\d{1,2})?$/'],
+            'geteway_ip'      => ['required', 'string', 'regex:/^(?:\d{1,3}\.){3}\d{1,3}(?:\/\d{1,2})?$/'],
             'interface_route' => ['string']
         ];
     }
