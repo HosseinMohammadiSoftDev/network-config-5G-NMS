@@ -14,6 +14,7 @@ use Modules\Server\Models\Server;
 use Illuminate\Support\Facades\DB;
 use Modules\Server\Services\ConfigManager;
 use Modules\Server\Services\ConfService;
+use Modules\Server\Services\Modules\ConfigLogModuleService;
 use Modules\Server\Services\Modules\EditModuleService;
 use Modules\Server\Services\Paeser\NeonPaeser;
 use Modules\Server\Services\SyncData\AutoSyncData;
@@ -44,7 +45,8 @@ class ModuleController extends ApiController
 {
     public function __construct (
         private PaginationService $paginationService,
-        private ConfService $confService
+        private ConfService $confService,
+        private ConfigLogModuleService $logModuleService,
     ) {}
 
         // show Config in database
@@ -270,7 +272,7 @@ class ModuleController extends ApiController
 
             $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
 
-            AutoSyncData::sendModuleChangeToBBU($server, $module->with('servers')->get(), 'create');
+            AutoSyncData::sendModuleChangeToBBU($server, $module->load('servers'), 'create');
 
             $module->servers()->syncWithoutDetaching([$serverId]);
 
@@ -446,7 +448,7 @@ class ModuleController extends ApiController
 
             AutoSyncData::sendModuleChangeToBBU($server, $module, 'update-config');
 
-            $this->logModuleUpdate($module->servers->find($server['id']), $server, $data);
+            $this->logModuleService->logModuleUpdate($module->servers->find($server['id']), $server, $data);
 
 
             DB::commit();
@@ -543,7 +545,7 @@ class ModuleController extends ApiController
 
                 AutoSyncData::sendModuleChangeToBBU($server, $module, 'update-config');
 
-                $this->logModuleUpdate($module->servers->find($server['id']), $server, $data);
+                $this->logModuleService->logModuleUpdate($module->servers->find($server['id']), $server, $data);
             }
 
             DB::commit();

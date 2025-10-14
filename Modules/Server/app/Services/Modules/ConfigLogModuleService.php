@@ -31,7 +31,7 @@ class ConfigLogModuleService
 
         return $changes;
     }
-    public function logModuleUpdate(Module $module, Server $server, array $array2)
+    public function logModuleUpdate($module, $server, array $array2)
     {
         $array1 = json_decode($module->pivot->current_config_json, true);
         $change = json_encode($this->getArrayChanges($array1, $array2));
