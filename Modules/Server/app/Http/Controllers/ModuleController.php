@@ -8,6 +8,7 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Modules\Server\Helpers\SshHelper;
@@ -772,20 +773,19 @@ class ModuleController extends ApiController
                 ->causedBy(Auth::user())
                 ->event('get')
                 ->withProperties([
-                    'type-log' => 'server',
-                    'route' => request()->fullUrl(),
-                    'method' => 'expertModuleFileIsServer',
-                    'user' =>  Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
-                    'user_role' =>Auth::user()->roles()->pluck('name')->first(),
-                    'module_id' => $request['module']['id'],
-                    'module_name' => $request['module']['name'],
-                    'module_type'=> $request['module']['type'],
-                    'server' => $server
+                    'type-log'    => 'server',
+                    'route'       => request()->fullUrl(),
+                    'method'      => 'expertModuleFileIsServer',
+                    'user'        => Auth::user()->makeHidden(['roles', 'permissions'])->toArray(),
+                    'user_role'   => Auth::user()->roles()->pluck('name')->first(),
+                    'module_id'   => $module['id'],
+                    'module_name' => $module['name'],
+                    'module_type' => $module['type'],
+                    'server'      => $server
                 ])
                 ->log('The export file config is taken from the module configuration.');
 
 
-            // defalte headers
             return response($output, 200, [
                 'Content-Type' => 'application/octet-stream',
                 'Content-Disposition' => "attachment; filename={$module->name}.yaml",
