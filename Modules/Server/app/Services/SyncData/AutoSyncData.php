@@ -15,14 +15,14 @@ class AutoSyncData
 
 
 //          recive change module as bbu
-    public static function handelChangeModuleBBU(array $module, string $action, ?array $oldModuleData = null)
+    public static function handelChangeModuleBBU(array $module, string $action, ?array $oldModuleData = null): void
     {
         $seterDataService = new SeterDataService();
         $server = $seterDataService->getDataServer();
 
         switch ($action) {
             case 'create' :
-                return $seterDataService->createModule($server, $module);
+                $seterDataService->createModule($server, $module);
                     break;
 
             case 'update' :
@@ -37,8 +37,8 @@ class AutoSyncData
                 $seterDataService->deleteModule($module);
                     break;
 
-            case 'retunr-connection-server' :
-                return $seterDataService->returnConnectionServer($server, $module);
+            case 'return-connection-server' :
+                $seterDataService->returnConnectionServer($server, $module);
                     break;
 
             default :
@@ -55,7 +55,7 @@ class AutoSyncData
     {
         $response = Http::withHeaders([
             'Accept' => 'application/json'
-        ])->post('http://' . $server['ip'] . ':8000/api/' . 'auto-sync/receive-changed-module-rru', [
+        ])->post('http://' . $server['ip'] . env('BBU_PATH') . 'auto-sync/receive-changed-module-rru', [
             'module' => $module,
             'action' => $action,
             'old_module_data' => $oldModuleData ?? null

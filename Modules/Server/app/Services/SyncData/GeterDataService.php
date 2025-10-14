@@ -54,7 +54,7 @@ class GeterDataService
 //    sync bbu record {server, modules, changeModule}
     public function syncData (Server $server)
     {
-        $bbuAppDomain = 'http://'. $server['ip'] . ':8000/api/';
+        $bbuAppDomain = 'http://'. $server['ip'] . env('BBU_PATH');
 
         $allModulesBBU = $this->getDataAllModulesBBU($bbuAppDomain);
 
