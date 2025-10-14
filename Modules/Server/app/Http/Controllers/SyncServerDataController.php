@@ -83,6 +83,6 @@ class SyncServerDataController extends Controller
     {
         $credentials = $request->validated();
 
-        return AutoSyncData::handelChangeModuleBBU($credentials['module'],  $credentials['action'], $credentials['old_module_data'] ?? null);
+        AutoSyncData::handelChangeModuleBBU($credentials['module'],  $credentials['action'], $credentials['old_module_data'] ?? null);
     }
 }
