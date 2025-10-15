@@ -2,12 +2,9 @@
 
 namespace Modules\Server\Http\Requests;
 
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Http\FormRequest;
+use Modules\Server\Models\Module;
 use Modules\Server\Utility\DirectoryUtility;
 
 class EditModuleRequest extends FormRequest
@@ -19,7 +16,37 @@ class EditModuleRequest extends FormRequest
     {
         return [
             'module_id' => ['required', 'integer', 'exists:modules,id'],
-            'name' => ['nullable', 'string', 'min:2', 'max:255'],
+
+            'name' => [
+                'nullable',
+                'string',
+                'min:2',
+                'max:255',
+                function ($attribute, $value, $fail) {
+                    $serverIds = request('server_ids');
+                    $module    = Module::find($this->input('module_id'));
+
+                    if (!is_array($serverIds)) $serverIds = [$serverIds];
+
+                    foreach ($serverIds as $serverId) {
+
+                        if ($value != $module->name) {
+
+                            $moduleNameExists = Module::query()
+                                ->where('name', $value)
+                                ->whereHas('servers', function ($query) use ($serverId) {
+                                    $query->where('servers.id', $serverId);
+                                })
+                                ->exists();
+
+                            if ($moduleNameExists)
+                                return $fail('module name is not unique in this server');
+                        }
+                    }
+                }
+            ],
+
+
             'type' => ['nullable', 'string', 'in:LTE,GSM,RRU'],
 
             'config_file' => ['nullable', 'file',  function ($attribute, $value, $fail) {
