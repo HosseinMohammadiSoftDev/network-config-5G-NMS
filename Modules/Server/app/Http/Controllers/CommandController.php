@@ -118,8 +118,9 @@ class CommandController extends Controller
 
         $command = 'systemctl restart ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
 
-        return $this->runCommandModuleToServer($credentials, $command, $server,'restartModel'
-            , 'restartServiceModule', );
+        $output  = $this->runCommandModuleToServer($credentials, $command, $server,'restartModel', 'restartServiceModule');
+
+        return response()->json(['success' => true, 'message' => $output]);
     }
     public function startServiceModule (restartServiceModuleRequest $request)
     {
@@ -130,7 +131,10 @@ class CommandController extends Controller
 
         $command = 'systemctl start ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
 
-        return $this->runCommandModuleToServer($credentials, $command, $server, 'startModule', 'startServiceModule');
+        $output  = $this->runCommandModuleToServer($credentials, $command, $server, 'startModule', 'startServiceModule');
+
+        return response()->json(['success' => true, 'message' => $output]);
+
     }
     public function stopServiceModule (restartServiceModuleRequest $request)
     {
@@ -141,7 +145,9 @@ class CommandController extends Controller
 
         $command = 'systemctl stop ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
 
-        return $this->runCommandModuleToServer($credentials, $command, $server,'stopModule', 'stopServiceModule');
+        $output  = $this->runCommandModuleToServer($credentials, $command, $server,'stopModule', 'stopServiceModule');
+
+        return response()->json(['success' => true, 'message' => $output]);
     }
     public function statusServiceModule (restartServiceModuleRequest $request)
     {
@@ -152,7 +158,9 @@ class CommandController extends Controller
 
         $command = 'systemctl status ' . 'bbdh-' . $module['name'] . 'd'; // command as systemctl
 
-        return $this->runCommandModuleToServer($credentials, $command, $server, 'statusModule', 'statusServiceModule');
+        $output = $this->runCommandModuleToServer($credentials, $command, $server, 'statusModule', 'statusServiceModule');
+
+        return response()->json(['success' => true, 'message' => $output]);
     }
     public function pingServer (SshServerRequest $request)
     {
@@ -166,6 +174,6 @@ class CommandController extends Controller
 
 
         $sshHelper = new SSHHelper($server, $credentials['username'], $credentials['password']);
-        return response()->json(['message' => $sshHelper->pingRunCommand($command)]);
+        return response()->json(['success' => true, 'message' => $sshHelper->pingRunCommand($command)]);
     }
 }
