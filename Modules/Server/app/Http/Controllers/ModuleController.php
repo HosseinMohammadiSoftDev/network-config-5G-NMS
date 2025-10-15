@@ -440,11 +440,13 @@ class ModuleController extends ApiController
 //                send conf file content to server
             $outputCommand = $this->sendConfigToServer($request['username'], $request['password'], $module, $newConfigContent, $server);
 
-            $commandWarning = CommandOutputAnalyzerService::extractErrors($outputCommand);
+            $commandWarning = CommandOutputAnalyzerService::extractErrors('dsd');
 
             if (! empty(CommandOutputAnalyzerService::extractErrors($outputCommand)))
                 throw ValidationException::withMessages(CommandOutputAnalyzerService::extractErrors($outputCommand));
 
+            $module->refresh();
+            $module->load('servers');
 
             AutoSyncData::sendModuleChangeToBBU($server, $module, 'update-config');
 
@@ -645,6 +647,10 @@ class ModuleController extends ApiController
             'previous_config_conf' => $confContent
         ]);
 
+        $module->refresh();
+        $module->load(['servers' => function($query) use ($server) {
+            $query->where('server_id', $server->id);
+        }]);
 
         return json_encode($moduleConfig);
     }
@@ -688,11 +694,11 @@ class ModuleController extends ApiController
                 $editModuleService->updateConfigModules($module, $serverIds, $jsonConfig, $configFile->getContent(), $request);
             }
 
-            if (isset($validated['name']) && ! empty($validated['name']))
-                $editModuleService->updateConfigNameAsServer();
-
-            if (isset($validated['path_config']) && ! empty($validated['name']))
-                $editModuleService->updateConfigPathAsServer();
+//            if (isset($validated['name']) && ! empty($validated['name']))
+//                $editModuleService->updateConfigNameAsServer($request['username'], $request['password'], $request['port'], $server, $module);
+//
+//            if (isset($validated['path_config']) && ! empty($validated['name']))
+//                $editModuleService->updateConfigPathAsServer();
 
             $types = implode(',', array_map('trim', explode(',', $validated['type'] ?? $module['type'])));
 
