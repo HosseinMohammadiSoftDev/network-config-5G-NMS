@@ -3,6 +3,8 @@
 namespace Modules\Server\Services\Modules;
 
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Modules\Server\Helpers\SshHelper;
 use Modules\Server\Models\Module;
 use Modules\Server\Models\Server;
 
@@ -84,6 +86,23 @@ class EditModuleService
         $this->addModules($module, $serversToAdd, $request, $configContent);
         $this->deleteModules($serversToDelete, $module, $request, $configContent);
 
+    }
+
+
+    private function sendConfigToServer(string $username, string $password, Module $module, string $confContent, Server $server)
+    {
+        if ($server['is_down'] == Server::OFF) throw ValidationException::withMessages(['server' => 'this server: ' . $server['name'] .' is off']);
+
+        if (!$module['path_config']) throw ValidationException::withMessages(['path_config' => 'You did not specify a configuration address config']);
+
+
+        $sshHelper = new sshHelper($server, $username, $password);
+
+        // update module command
+        $commandUpdateFileModule = 'echo ' . escapeshellarg($confContent)
+            . ' > ' . $module['path_config'] . $module['name'] . '.' . $module['extension'];
+
+        return $sshHelper->runCommand($commandUpdateFileModule);
     }
 
 
