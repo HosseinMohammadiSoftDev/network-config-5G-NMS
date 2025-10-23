@@ -13,14 +13,21 @@ class TraceServerRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'current_server_password' => [
+                request()->routeIs('trace-server-stop') ? 'required' : 'nullable',
+                'string'
+            ],
+
             'servers'            => ['required', 'array'],
             'servers.*.id'       => ['required', 'integer', 'exists:servers,id'],
             'servers.*.username' => ['required', 'string', 'min:1'],
             'servers.*.password' => ['required', 'string', 'min:1'],
             'servers.*.port'     => ['integer'],
 
-            'servers.*.module_ids'   => ['array'],
-            'servers.*.module_ids.*' => ['required', 'integer', 'exists:modules,id'],
+            'servers.*.module_ids'        => ['array'],
+            'servers.*.module_ids.*'      => ['required', 'integer', 'exists:modules,id'],
+            'servers.*.interface'         => ['array'],
+            'servers.*.module_identifier' => ['string']
         ];
     }
 
