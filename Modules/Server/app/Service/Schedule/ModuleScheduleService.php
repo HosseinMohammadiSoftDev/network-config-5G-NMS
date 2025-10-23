@@ -19,17 +19,31 @@ class ModuleScheduleService
         if ($moduleSchedule['status'] == ModuleSchedule::SUCCESS) return; // EXIT
 
         try {
-            $pivotData = $moduleSchedule->module->servers()->where('server_id', $moduleSchedule['server_id'])->first()->pivot;
+            $pivotData = $moduleSchedule->module->servers()->where('server_id', $moduleSchedule['server_id'])->first();
+
+             if (! $pivotData) {
+                 $moduleSchedule->module->servers()->syncWithoutDetaching([
+                     $moduleSchedule->server_id => [
+                         'current_config' => $moduleSchedule->config,
+                         'initial_config' => $moduleSchedule->config
+                     ]
+                 ]);
+             }
 
             $jsonConfig = json_encode(Yaml::parse($moduleSchedule->config), JSON_PRETTY_PRINT);
+
+            $pivotData  = $moduleSchedule->module
+                ->servers()
+                ->where('server_id', $moduleSchedule->server_id)
+                ->first();
 
             DB::transaction(function () use ($moduleSchedule, $jsonConfig, $pivotData) {
                 DB::table('module_server')
                     ->where('module_id', $moduleSchedule->module_id)
                     ->where('server_id', $moduleSchedule->server_id)
                     ->update([
-                        'previous_config' => $pivotData->current_config,
-                        'current_config' => $jsonConfig,
+                        'previous_config' => $pivotData->pivot->current_config,
+                        'current_config'  => $jsonConfig,
                     ]);
             });
 
@@ -39,6 +53,7 @@ class ModuleScheduleService
                 $moduleSchedule->module->name,
                 $moduleSchedule['config'],
                 $moduleSchedule->server,
+                $moduleSchedule->port_ssh,
                 'moduleSchedule',
                 'scheduleService'
             );
