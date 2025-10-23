@@ -4,6 +4,7 @@ namespace Modules\SystemSetting\Http\Requests\Trace;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\Server\Models\Server;
+use Modules\Server\Utility\AppUtility;
 
 class TraceServerRequest extends FormRequest
 {
@@ -42,6 +43,9 @@ class TraceServerRequest extends FormRequest
         $servers   = Server::whereIn('id', $serverIds)->get();
 
         $validator->after(function ($validator) use ($servers) {
+
+            if (AppUtility::validatePasswordCurrentServer($this->input('password')))
+                return $validator->errors()->add('password', 'Your current password is incorrect.');
 
             foreach ($servers as $server) {
                 if (!$server['ip']) return $validator->errors()->add('validation', 'selected server is not ip address.');

@@ -3,7 +3,10 @@
 namespace Modules\Backup\Http\Requests\ConfigBackup;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\ValidationException;
 use Modules\Backup\Utilities\DirectoryUtilities;
+use Modules\Server\Helpers\SshHelper;
+use Modules\Server\Utility\AppUtility;
 
 class SetConfigBackupRequest extends FormRequest
 {
@@ -27,6 +30,10 @@ class SetConfigBackupRequest extends FormRequest
             return;
 
         $validator->after(function ($validator) {
+
+
+            if (AppUtility::validatePasswordCurrentServer($this->input('password')))
+                return $validator->errors()->add('password', 'Your current password is incorrect.');
 
             DirectoryUtilities::basicValidator($this->input('destination_path'));
             DirectoryUtilities::OwnerValidator($this->input('destination_path'));
