@@ -1,66 +1,267 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<img src="./Docs/Open5GS-Diagram.pdf" width="100%">
+# 5G Network Configuration Management
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A 5G Network Configuration Management and NMS-oriented project developed to explore different approaches for managing, processing, and controlling network configuration data.
 
-## About Laravel
+Each branch of this repository represents a different implementation model or development approach for the system.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Overview
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+This project focuses on the development of a configuration management system for 5G network environments.
 
-## Learning Laravel
+The main goal is to provide a structured environment for working with network configuration files and exploring different architectural and implementation approaches.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+The project is organized around multiple Git branches, where each branch represents a specific implementation model.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```text
+                         5G NMS
+                           │
+                           ▼
+                Network Configuration
+                           │
+             ┌─────────────┼─────────────┐
+             │             │             │
+             ▼             ▼             ▼
+        Configuration   Validation    Management
+           Files
+             │
+             ▼
+       Network Elements
+        BBU / RRU / gNB
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## Project Goals
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+* Manage 5G network configuration files
+* Explore different configuration management models
+* Provide a foundation for NMS integration
+* Separate configuration processing from business logic
+* Experiment with different software architecture approaches
+* Maintain different implementations using Git branches
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## Repository Structure
 
-## Contributing
+The repository contains multiple branches, with each branch representing a different implementation or architectural approach.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Branch         | Description                       |
+| -------------- | --------------------------------- |
+| `BBDH`         | BBDH implementation               |
+| `BBU-V2`       | BBU-oriented implementation       |
+| Other branches | Alternative implementation models |
 
-## Code of Conduct
+> The branch list may evolve as new implementation models are developed.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## Network Environment
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+The project is designed around a 5G network environment and can be integrated with network elements such as:
 
-## License
+* BBU
+* RRU
+* gNB
+* NMS
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+A simplified communication flow can be represented as:
+
+```text
+             NMS
+              │
+              ▼
+       Configuration Manager
+              │
+       ┌──────┴──────┐
+       │             │
+       ▼             ▼
+      BBU           RRU
+       │
+       ▼
+      gNB
+```
+
+---
+
+## Configuration Management
+
+The system is intended to handle different stages of configuration management:
+
+```text
+Configuration File
+        │
+        ▼
+     Loading
+        │
+        ▼
+    Processing
+        │
+        ▼
+    Validation
+        │
+        ▼
+   Configuration
+    Management
+        │
+        ▼
+     Network
+      Element
+```
+
+Depending on the implementation branch, these stages may be handled differently.
+
+---
+
+## Technology Stack
+
+The project is currently built using:
+
+* PHP
+* Laravel
+* MySQL / MariaDB
+* Laravel Modules
+* REST API
+* Git
+
+---
+
+## Architecture
+
+The project follows a modular Laravel structure.
+
+```text
+app/
+├── Modules/
+│   ├── ...
+│   └── ...
+│
+├── config/
+├── database/
+├── routes/
+├── resources/
+└── tests/
+```
+
+The modular structure allows individual parts of the system to be developed and maintained independently.
+
+---
+
+## Development Approach
+
+One of the main purposes of this repository is to compare different implementation approaches.
+
+Instead of maintaining every approach inside a single codebase, each approach is isolated in its own Git branch.
+
+This makes it possible to:
+
+* Compare implementations
+* Experiment without affecting other models
+* Track architectural changes
+* Test different solutions
+* Preserve previous implementations
+
+---
+
+## Documentation
+
+Additional project documentation is available in the [`Docs`](./Docs) directory.
+
+### Project Documentation
+
+* [Technical Documentation](./Docs/)
+* [Project Report](./Docs/project-report.pdf)
+
+---
+
+## Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/HosseinMohammadiSoftDev/network-config-5G-NMS.git
+cd network-config-5G-NMS
+```
+
+Install PHP dependencies:
+
+```bash
+composer install
+```
+
+Install frontend dependencies:
+
+```bash
+npm install
+```
+
+Create the environment file:
+
+```bash
+cp .env.example .env
+```
+
+Generate the Laravel application key:
+
+```bash
+php artisan key:generate
+```
+
+Configure the database in `.env`, then run:
+
+```bash
+php artisan migrate
+```
+
+Start the development server:
+
+```bash
+php artisan serve
+```
+
+---
+
+## Branch-Based Development
+
+To inspect a specific implementation:
+
+```bash
+git branch -a
+```
+
+Switch to a branch:
+
+```bash
+git switch <branch-name>
+```
+
+For example:
+
+```bash
+git switch BBDH
+```
+
+Each branch should be considered an independent implementation model of the overall system.
+
+---
+
+## Project Status
+
+This repository is an ongoing development and experimentation project.
+
+New implementation models, architectural changes, and network configuration features may be added over time.
+
+---
+
+## Author
+
+**Hossein Mohammadi**
+
+GitHub: [HosseinMohammadiSoftDev](https://github.com/HosseinMohammadiSoftDev)
+
+---
+
+This project is intended primarily for development, experimentation, and educational purposes.
